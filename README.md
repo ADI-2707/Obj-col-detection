@@ -72,6 +72,8 @@ Every active track per frame is written to a timestamped CSV log file with the f
 1. Extract the project folder or clone the repository.
 2. Double-click run.bat in the root folder.
 3. The application will set up everything automatically and open the camera window.
+4. Press q inside the video window (or Ctrl+C in terminal) to close and stop tracking.
+5. The tracking data is automatically saved as a CSV file in data/logs/.
 
 ## Launcher Behavior by Scenario
 
