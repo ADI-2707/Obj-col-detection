@@ -2,10 +2,24 @@
 setlocal
 cd /d "%~dp0"
 
-where python >nul 2>&1
+python -c "import sys" >nul 2>&1
 if errorlevel 1 (
+    where winget >nul 2>&1
+    if not errorlevel 1 (
+        echo [INFO] Python not detected. Installing Python via winget...
+        winget install Python.Python.3.12 --accept-package-agreements --accept-source-agreements
+        if not errorlevel 1 (
+            echo [INFO] Python installed successfully.
+            echo Please close and reopen run.bat to refresh system PATH.
+            echo.
+            pause
+            exit /b 0
+        )
+    )
     echo [ERROR] Python is not installed or not in PATH.
-    echo Please install Python 3.11 or newer and check "Add python.exe to PATH".
+    echo Opening https://www.python.org/downloads/ in browser...
+    start https://www.python.org/downloads/
+    echo Please install Python and ensure "Add python.exe to PATH" is checked.
     echo.
     pause
     exit /b 1
