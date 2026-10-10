@@ -25,6 +25,17 @@ Industrial computer-vision prototype for mill motion monitoring. Foundation for 
 - A webcam or video file for input
 - Internet access on first launch to download dependencies
 
+## Technology Stack and Dependencies
+
+| Component | Purpose | Version Constraint |
+|-----------|---------|-------------------|
+| Python | Runtime execution environment | >= 3.11 |
+| ultralytics | YOLO object detection (CPU mode) | >= 8.3, < 9 |
+| supervision | ByteTrack multi-object tracking | >= 0.25, < 1 |
+| opencv-python-headless | Video capture and visual overlay rendering | >= 4.10, < 5 |
+| torch | Neural network tensor inference backend | Auto-resolved by ultralytics |
+| pytest (dev) | Test runner for test suite execution | >= 8.0, < 9 |
+
 ## Quick Start on Windows
 
 1. Extract the project folder or clone the repository.
