@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=75.0", "wheel"]
+build-backend = "setuptools.backends._legacy:_Backend"
+
+[project]
+name = "mill-motion"
+version = "0.1.0"
+description = "Industrial computer-vision prototype for mill motion monitoring"
+requires-python = ">=3.11"
+license = {text = "MIT"}
+dependencies = [
+    "ultralytics>=8.3,<9",
+    "supervision>=0.25,<1",
+    "opencv-python-headless>=4.10,<5",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0,<9",
+]
+
+[project.scripts]
+mill-motion = "mill_motion.__main__:main"
+
+[tool.setuptools.packages.find]
+include = ["mill_motion*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
