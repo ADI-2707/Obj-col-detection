@@ -36,6 +36,37 @@ Industrial computer-vision prototype for mill motion monitoring. Foundation for 
 | torch | Neural network tensor inference backend | Auto-resolved by ultralytics |
 | pytest (dev) | Test runner for test suite execution | >= 8.0, < 9 |
 
+## Motion Estimation and Visual Telemetry
+
+The system calculates and displays object movement across successive video frames in real time:
+
+### 1. Velocity and Direction Calculation
+- Centroid Tracking: On each frame, the center point (cx, cy) of each tracked object is computed from its bounding box.
+- Displacement: Frame-to-frame pixel displacements (dx, dy) are calculated relative to the previous centroid position.
+- Exponential Moving Average (EMA) Smoothing: To eliminate detector jitter, velocity components are filtered using an exponential moving average (default alpha = 0.4):
+  smoothed_v = alpha * current_displacement + (1 - alpha) * previous_smoothed_v
+- Speed Metric: Speed is calculated as the Euclidean magnitude:
+  speed = sqrt(vx^2 + vy^2)
+  This represents the image-plane speed in pixels per frame.
+- Direction Angle: The movement vector angle is calculated using atan2(vy, vx) and converted to degrees (-180 to +180 relative to the image coordinate plane).
+
+### 2. On-Screen Visual Indicators
+- Bounding Boxes and Labels (Green): Outlines each tracked object with a green rectangle. Above each box, a label shows the persistent track identifier, detected class name, and confidence score (for example, ID:1 person 0.88).
+- Motion Trails (Yellow Gradient): A fading polyline tracing up to the last 30 positions of the object centroid. Recent positions appear brighter and thicker, while older positions fade to indicate movement trajectory.
+- Velocity Vectors (Red Arrow): A directional arrow drawn from the object centroid pointing along its current trajectory. The arrow length scales proportionally with speed (up to a maximum of 80 pixels). Arrows are hidden for stationary objects or noise below 1.0 pixel per frame.
+- Heads-Up Display (White): Displays current frame number and real-time processing framerate (FPS) in the top-left corner.
+
+### 3. Telemetry and CSV Logging
+Every active track per frame is written to a timestamped CSV log file with the following columns:
+- timestamp: UTC ISO-8601 recording timestamp
+- frame_number: Sequential video frame index
+- track_id: Persistent identifier assigned by ByteTrack
+- class_id: Detection class index
+- confidence: Detection confidence score (0.00 to 1.00)
+- x1, y1, x2, y2: Bounding box corner coordinates in image pixels
+- velocity_px_per_frame: Smoothed image-plane speed in pixels per frame
+- direction_deg: Direction of movement in degrees
+
 ## Quick Start on Windows
 
 1. Extract the project folder or clone the repository.
