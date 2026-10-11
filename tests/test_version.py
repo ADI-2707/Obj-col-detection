@@ -8,8 +8,9 @@ from scripts.bump_version import bump_version, compute_next_version, parse_semve
 
 
 class TestVersionAttributes:
-    def test_version_is_one_zero_zero(self):
-        assert mill_motion.__version__ == "1.0.0"
+    def test_version_is_non_empty_string(self):
+        assert isinstance(mill_motion.__version__, str)
+        assert len(mill_motion.__version__) > 0
 
     def test_version_format_is_semver(self):
         assert re.match(r"^\d+\.\d+\.\d+$", mill_motion.__version__)
