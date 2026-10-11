@@ -21,6 +21,9 @@ class TestConfigDefaults:
     def test_default_display_enabled(self, default_config):
         assert default_config.display is True
 
+    def test_default_fullscreen_enabled(self, default_config):
+        assert default_config.fullscreen is True
+
 
 class TestConfigValidation:
     def test_confidence_zero_raises(self):
@@ -63,6 +66,10 @@ class TestConfigValidation:
         with pytest.raises(ValueError, match="stale_track_frames"):
             Config(stale_track_frames=0)
 
+    def test_fullscreen_non_bool_raises(self):
+        with pytest.raises(TypeError, match="fullscreen"):
+            Config(fullscreen="yes")
+
 
 class TestConfigOverrides:
     def test_custom_source_string(self):
@@ -80,6 +87,10 @@ class TestConfigOverrides:
     def test_display_disabled(self):
         config = Config(display=False)
         assert config.display is False
+
+    def test_fullscreen_disabled(self):
+        config = Config(fullscreen=False)
+        assert config.fullscreen is False
 
     def test_frozen_raises_on_mutation(self, default_config):
         with pytest.raises(AttributeError):
