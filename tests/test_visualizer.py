@@ -148,3 +148,28 @@ class TestVisualizerComposeDashboard:
             class_names={0: "person", 1: "cart"},
         )
         assert dash.shape == (1080, 1920, 3)
+
+
+class TestVisualizerTheme:
+    def test_theme_color_palette(self):
+        vis = Visualizer()
+        assert vis.COLOR_BG == (255, 255, 255)
+        assert vis.COLOR_PANEL_BG == (255, 255, 255)
+        assert vis.COLOR_TEXT_MAIN == (15, 20, 28)
+        assert vis.COLOR_LOGO_BLUE == (120, 55, 16)
+        assert vis.COLOR_LOGO_GREEN == (30, 165, 55)
+        assert vis.COLOR_ALERT == (20, 20, 225)
+
+    def test_dashboard_renders_white_background(self):
+        vis = Visualizer()
+        frame = _blank_frame()
+        dash = vis.compose_dashboard(
+            annotated_frame=frame,
+            tracker_ids=[],
+            class_ids=[],
+            confidences=[],
+            bboxes=[],
+            motion_states={},
+            frame_number=0,
+        )
+        assert tuple(dash[0, 0].tolist()) == (255, 255, 255)
