@@ -173,3 +173,100 @@ class TestVisualizerTheme:
             frame_number=0,
         )
         assert tuple(dash[0, 0].tolist()) == (255, 255, 255)
+
+
+class TestVisualizerStatusBadges:
+    def test_renders_moving_badge(self):
+        vis = Visualizer()
+        frame = _blank_frame()
+        dash = vis.compose_dashboard(
+            annotated_frame=frame,
+            tracker_ids=[1],
+            class_ids=[0],
+            confidences=[0.9],
+            bboxes=[(50.0, 50.0, 100.0, 100.0)],
+            motion_states={1: MotionState(5.0, 0.0, [(75.0, 75.0)])},
+            frame_number=0,
+        )
+        assert dash.shape == (1080, 1920, 3)
+
+    def test_renders_static_badge(self):
+        vis = Visualizer()
+        frame = _blank_frame()
+        dash = vis.compose_dashboard(
+            annotated_frame=frame,
+            tracker_ids=[1],
+            class_ids=[0],
+            confidences=[0.9],
+            bboxes=[(50.0, 50.0, 100.0, 100.0)],
+            motion_states={1: MotionState(0.0, 0.0, [(75.0, 75.0)])},
+            frame_number=0,
+        )
+        assert dash.shape == (1080, 1920, 3)
+
+
+class TestVisualizerCollisionAlerts:
+    def test_nominal_alert_when_single_target(self):
+        vis = Visualizer()
+        frame = _blank_frame()
+        dash = vis.compose_dashboard(
+            annotated_frame=frame,
+            tracker_ids=[1],
+            class_ids=[0],
+            confidences=[0.9],
+            bboxes=[(50.0, 50.0, 100.0, 100.0)],
+            motion_states={1: MotionState(0.0, 0.0, [])},
+            frame_number=0,
+        )
+        assert dash.shape == (1080, 1920, 3)
+
+    def test_caution_alert_when_proximity_under_180px(self):
+        vis = Visualizer()
+        frame = _blank_frame()
+        dash = vis.compose_dashboard(
+            annotated_frame=frame,
+            tracker_ids=[1, 2],
+            class_ids=[0, 0],
+            confidences=[0.9, 0.9],
+            bboxes=[(50.0, 50.0, 100.0, 100.0), (160.0, 50.0, 210.0, 100.0)],
+            motion_states={
+                1: MotionState(2.0, 0.0, []),
+                2: MotionState(2.0, 180.0, []),
+            },
+            frame_number=0,
+        )
+        assert dash.shape == (1080, 1920, 3)
+
+    def test_critical_alert_when_proximity_under_80px(self):
+        vis = Visualizer()
+        frame = _blank_frame()
+        dash = vis.compose_dashboard(
+            annotated_frame=frame,
+            tracker_ids=[1, 2],
+            class_ids=[0, 0],
+            confidences=[0.9, 0.9],
+            bboxes=[(50.0, 50.0, 100.0, 100.0), (90.0, 50.0, 140.0, 100.0)],
+            motion_states={
+                1: MotionState(4.0, 0.0, []),
+                2: MotionState(4.0, 180.0, []),
+            },
+            frame_number=0,
+        )
+        assert dash.shape == (1080, 1920, 3)
+
+
+class TestVisualizerHeadingHelper:
+    def test_all_eight_compass_directions(self):
+        from mill_motion.visualizer import _heading_to_compass
+
+        assert _heading_to_compass(0.0) == "N"
+        assert _heading_to_compass(45.0) == "NE"
+        assert _heading_to_compass(90.0) == "E"
+        assert _heading_to_compass(135.0) == "SE"
+        assert _heading_to_compass(180.0) == "S"
+        assert _heading_to_compass(225.0) == "SW"
+        assert _heading_to_compass(270.0) == "W"
+        assert _heading_to_compass(315.0) == "NW"
+        assert _heading_to_compass(360.0) == "N"
+        assert _heading_to_compass(-90.0) == "W"
+

@@ -66,7 +66,7 @@ The monitoring window automatically launches in borderless full-screen mode, sty
 ### 1. Panel Breakdown
 - **Top System Bar**: Displays system identification, tracking operational status, real-time FPS, sequential frame counter, and key controls.
 - **Top-Left (Optical Sensor Feed)**: Houses the live camera stream scaled with aspect-ratio preservation. Overlays high-contrast bounding boxes, persistent track IDs, motion trails, and directional velocity arrows.
-- **Top-Right (Target Telemetry Panel)**: Provides dedicated metric cards for each tracked object including class name, detection confidence percentage, instantaneous velocity (px/frame and px/s), compass heading, coordinate center, and dimensions.
+- **Top-Right (Target Telemetry Panel)**: Provides dedicated metric cards for each tracked object including class name, detection confidence percentage, instantaneous velocity (px/frame and px/s), compass heading, coordinate center, dimensions, and motion status badges with color-matched borders (`STATIC` in black border, `MOVING` in green border).
 - **Bottom (Collision Assessment & Trajectory Radar)**:
   - **Spatial Trajectory Radar**: 2D polar radar scope plotting active targets and their heading vectors relative to image-plane coordinates.
   - **Threat Metrics & Impact Window**: Real-time collision probability gauge, proximity threat level indicator (NOMINAL, CAUTION, CRITICAL), estimated time-to-collision (TTC), closest target pair distance, and safety buffer zone status.
@@ -75,6 +75,10 @@ The monitoring window automatically launches in borderless full-screen mode, sty
 ### 2. Runtime Keyboard Controls
 - **`Q`** or **`ESC`**: Terminate tracking and flush CSV logs to disk.
 - **`F`**: Toggle dynamically between Fullscreen and Windowed mode.
+
+## Motion Estimation and Visual Telemetry
+
+The system calculates and displays object movement across successive video frames in real time:
 
 ### 1. Velocity and Direction Calculation
 - Centroid Tracking: On each frame, the center point (cx, cy) of each tracked object is computed from its bounding box.
