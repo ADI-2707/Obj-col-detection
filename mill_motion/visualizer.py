@@ -487,11 +487,20 @@ class Visualizer:
                 )
 
             status_lbl = "MOVING" if vel > 1.0 else "STATIC"
-            status_color = self.COLOR_LOGO_GREEN if vel > 1.0 else self.COLOR_TEXT_MUTED
+            status_color = self.COLOR_LOGO_GREEN if vel > 1.0 else self.COLOR_TEXT_MAIN
+            status_size, _ = cv2.getTextSize(status_lbl, self.FONT, 0.48, 1)
+            pad_x = 8
+            pad_y = 4
+            bx2 = x2 - 24
+            bx1 = bx2 - status_size[0] - pad_x * 2
+            by1 = card_top + 38
+            by2 = by1 + status_size[1] + pad_y * 2
+            cv2.rectangle(canvas, (bx1, by1), (bx2, by2), self.COLOR_PANEL_BG, cv2.FILLED)
+            cv2.rectangle(canvas, (bx1, by1), (bx2, by2), status_color, 1)
             cv2.putText(
                 canvas,
                 status_lbl,
-                (x2 - 88, card_top + 53),
+                (bx1 + pad_x, by1 + pad_y + status_size[1]),
                 self.FONT,
                 0.48,
                 status_color,
