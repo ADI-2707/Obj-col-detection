@@ -1,4 +1,4 @@
-name: Auto Version Bump
+name: Auto Version Bump and Release
 
 on:
   pull_request:
@@ -10,7 +10,7 @@ permissions:
   contents: write
 
 jobs:
-  bump:
+  bump_and_release:
     if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     steps:
@@ -55,3 +55,11 @@ jobs:
           git tag "v${{ steps.bump.outputs.version }}"
           git push origin main
           git push origin "v${{ steps.bump.outputs.version }}"
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "v${{ steps.bump.outputs.version }}" \
+            --title "Release v${{ steps.bump.outputs.version }}" \
+            --generate-notes
