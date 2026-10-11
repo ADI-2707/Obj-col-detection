@@ -13,6 +13,8 @@ from mill_motion.visualizer import Visualizer
 
 
 class Pipeline:
+    WINDOW_NAME = "Mill Motion"
+
     def __init__(self, config: Config):
         self._config = config
         self._frame_source = FrameSource(config.source)
@@ -31,6 +33,7 @@ class Pipeline:
         self._logger = CSVLogger(output_dir=config.output_dir)
         self._visualizer = Visualizer() if config.display else None
         self._class_names: dict[int, str] = {}
+        self._is_fullscreen = config.fullscreen
 
     def run(self):
         try:
@@ -44,7 +47,14 @@ class Pipeline:
         print(f"[INFO] Source opened: {self._config.source}")
         print(f"[INFO] Frame size: {self._frame_source.frame_size}")
         print(f"[INFO] CSV log: {self._logger.filepath}")
-        print("[INFO] Press 'q' to quit")
+        print("[INFO] Press 'q' or 'ESC' to quit, 'f' to toggle fullscreen")
+
+        if self._visualizer is not None:
+            cv2.namedWindow(self.WINDOW_NAME, cv2.WINDOW_NORMAL)
+            if self._is_fullscreen:
+                cv2.setWindowProperty(
+                    self.WINDOW_NAME, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN
+                )
 
         frame_number = 0
 
@@ -79,9 +89,22 @@ class Pipeline:
                         frame_number=frame_number,
                         class_names=self._class_names,
                     )
-                    cv2.imshow("Mill Motion", annotated)
-                    if cv2.waitKey(1) & 0xFF == ord("q"):
+                    dashboard = self._visualizer.compose_dashboard(
+                        annotated_frame=annotated,
+                        tracker_ids=tracker_ids,
+                        class_ids=class_ids,
+                        confidences=confidences,
+                        bboxes=bboxes,
+                        motion_states=motion_states,
+                        frame_number=frame_number,
+                        class_names=self._class_names,
+                    )
+                    cv2.imshow(self.WINDOW_NAME, dashboard)
+                    key = cv2.waitKey(1) & 0xFF
+                    if key in (ord("q"), 27):
                         break
+                    elif key == ord("f"):
+                        self._toggle_fullscreen()
 
                 frame_number += 1
 
@@ -91,6 +114,15 @@ class Pipeline:
             self._cleanup()
             print(f"[INFO] Processed {frame_number} frames")
             print(f"[INFO] Log saved to {self._logger.filepath}")
+
+    def _toggle_fullscreen(self):
+        self._is_fullscreen = not self._is_fullscreen
+        prop = (
+            cv2.WINDOW_FULLSCREEN
+            if self._is_fullscreen
+            else cv2.WINDOW_NORMAL
+        )
+        cv2.setWindowProperty(self.WINDOW_NAME, cv2.WND_PROP_FULLSCREEN, prop)
 
     def _process_frame(
         self, frame: np.ndarray
