@@ -4,6 +4,7 @@ import time
 import cv2
 import numpy as np
 
+from mill_motion import __version__
 from mill_motion.motion import MotionState
 
 
@@ -172,6 +173,19 @@ class Visualizer:
             y2=bottom_panel_y + bottom_panel_h,
         )
 
+        ver_text = f"v{__version__}"
+        ver_size, _ = cv2.getTextSize(ver_text, self.FONT, 0.40, 1)
+        cv2.putText(
+            canvas,
+            ver_text,
+            (canvas_width - ver_size[0] - 14, canvas_height - 3),
+            self.FONT,
+            0.40,
+            self.COLOR_TEXT_MUTED,
+            1,
+            cv2.LINE_AA,
+        )
+
         return canvas
 
     def _draw_panel(
@@ -221,10 +235,10 @@ class Visualizer:
 
         cv2.putText(
             canvas,
-            "MILL MOTION // INDUSTRIAL MACHINE MONITOR",
+            f"MILL MOTION v{__version__} // INDUSTRIAL MONITOR",
             (24, 33),
             self.FONT,
-            0.60,
+            0.58,
             self.COLOR_LOGO_BLUE,
             1,
             cv2.LINE_AA,
@@ -234,7 +248,7 @@ class Visualizer:
         cv2.putText(
             canvas,
             status_text,
-            (500, 33),
+            (530, 33),
             self.FONT,
             0.55,
             self.COLOR_LOGO_GREEN,
