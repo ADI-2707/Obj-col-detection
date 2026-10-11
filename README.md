@@ -256,6 +256,19 @@ Camera/File -> FrameSource -> Detector -> ObjectTracker -> MotionEstimator -> CS
 
 Each module is independent and communicates through standard data structures. The Pipeline class orchestrates the flow.
 
+## CI/CD and Version Management
+
+### 1. Continuous Integration (CI)
+Every pull request and push to `main` triggers automated testing via GitHub Actions (`.github/workflows/ci.yml`) across Ubuntu and Windows runners on Python 3.11 and 3.12.
+
+### 2. Automated Version Bumping
+When a pull request is successfully merged into `main`, the automated workflow (`.github/workflows/bump_version.yml`) inspects the PR title and labels to bump the version according to Semantic Versioning:
+- **Major (`X.0.0`)**: Triggered when the PR title or labels contain `major` or `breaking`.
+- **Minor (`1.X.0`)**: Triggered when the PR title or labels contain `feat` or `minor`.
+- **Patch (`1.0.X`)**: Default increment for maintenance and fixes.
+
+The workflow updates `mill_motion/__init__.py` and `pyproject.toml`, commits the update, pushes a Git tag (e.g., `v1.0.1`), and the new version is rendered dynamically in the dashboard interface.
+
 ## Limitations
 
 - Frame rate dependent: velocity values change if camera FPS changes
