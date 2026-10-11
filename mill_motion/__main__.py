@@ -38,6 +38,11 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         action="store_true",
         help="disable visualization window",
     )
+    parser.add_argument(
+        "--windowed",
+        action="store_true",
+        help="run in windowed mode instead of fullscreen",
+    )
 
     return parser.parse_args(argv)
 
@@ -61,6 +66,7 @@ def main(argv: list[str] | None = None):
             confidence_threshold=args.confidence,
             output_dir=Path(args.output_dir),
             display=not args.no_display,
+            fullscreen=not args.windowed,
         )
     except (ValueError, TypeError) as exc:
         print(f"[ERROR] Invalid configuration: {exc}", file=sys.stderr)

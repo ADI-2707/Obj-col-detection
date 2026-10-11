@@ -13,8 +13,15 @@ class Config:
     stale_track_frames: int = 60
     output_dir: Path = field(default_factory=lambda: Path("data/logs"))
     display: bool = True
+    fullscreen: bool = True
 
     def __post_init__(self):
+        if not isinstance(self.fullscreen, bool):
+            raise TypeError(
+                f"fullscreen must be a boolean, "
+                f"got {type(self.fullscreen).__name__}"
+            )
+
         if isinstance(self.confidence_threshold, (int, float)):
             if not 0.0 < self.confidence_threshold < 1.0:
                 raise ValueError(

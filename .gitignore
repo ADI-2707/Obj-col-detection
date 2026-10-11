@@ -29,3 +29,5 @@ data/logs/*.csv
 .env.*
 
 *.log
+
+assets/

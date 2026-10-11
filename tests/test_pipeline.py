@@ -89,6 +89,7 @@ class TestCLIParsing:
         assert args.model == "yolov8n.pt"
         assert args.confidence == 0.25
         assert args.no_display is False
+        assert args.windowed is False
 
     def test_custom_args(self):
         from mill_motion.__main__ import parse_args
@@ -98,11 +99,13 @@ class TestCLIParsing:
             "--model", "custom.pt",
             "--confidence", "0.5",
             "--no-display",
+            "--windowed",
         ])
         assert args.source == "video.mp4"
         assert args.model == "custom.pt"
         assert args.confidence == 0.5
         assert args.no_display is True
+        assert args.windowed is True
 
     def test_source_parsing_integer(self):
         from mill_motion.__main__ import _parse_source
@@ -114,3 +117,16 @@ class TestCLIParsing:
         from mill_motion.__main__ import _parse_source
 
         assert _parse_source("video.mp4") == "video.mp4"
+
+
+class TestPipelineFullscreenToggle:
+    @patch("mill_motion.pipeline.cv2.setWindowProperty")
+    @patch("mill_motion.pipeline.Detector")
+    def test_toggle_fullscreen(self, mock_detector_cls, mock_set_prop, headless_config):
+        mock_detector_cls.return_value = MagicMock()
+        pipeline = Pipeline(headless_config)
+        assert pipeline._is_fullscreen is True
+        pipeline._toggle_fullscreen()
+        assert pipeline._is_fullscreen is False
+        pipeline._toggle_fullscreen()
+        assert pipeline._is_fullscreen is True

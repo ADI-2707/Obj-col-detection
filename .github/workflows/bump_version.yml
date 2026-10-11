@@ -1,0 +1,65 @@
+name: Auto Version Bump and Release
+
+on:
+  pull_request:
+    types: [closed]
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  bump_and_release:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Determine bump type
+        id: bump_type
+        run: |
+          TITLE="${{ github.event.pull_request.title }}"
+          LABELS="${{ join(github.event.pull_request.labels.*.name, ' ') }}"
+          COMBINED="$TITLE $LABELS"
+          if echo "$COMBINED" | grep -iqE "major|breaking"; then
+            echo "type=major" >> $GITHUB_OUTPUT
+          elif echo "$COMBINED" | grep -iqE "feat|feature|minor"; then
+            echo "type=minor" >> $GITHUB_OUTPUT
+          else
+            echo "type=patch" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Bump version
+        id: bump
+        run: |
+          NEW_VER=$(python scripts/bump_version.py --type ${{ steps.bump_type.outputs.type }})
+          echo "version=$NEW_VER" >> $GITHUB_OUTPUT
+
+      - name: Commit and push bumped version
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add mill_motion/__init__.py pyproject.toml
+          git commit -m "chore(release): bump version to ${{ steps.bump.outputs.version }} [skip ci]"
+          git tag "v${{ steps.bump.outputs.version }}"
+          git push origin main
+          git push origin "v${{ steps.bump.outputs.version }}"
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "v${{ steps.bump.outputs.version }}" \
+            --title "Release v${{ steps.bump.outputs.version }}" \
+            --generate-notes
