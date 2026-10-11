@@ -39,7 +39,7 @@ Industrial computer-vision prototype for mill motion monitoring. Foundation for 
 
 ## Industrial Fullscreen Dashboard Layout
 
-The monitoring window automatically launches in borderless full-screen mode, styled as an industrial monitoring station with high-contrast slate surfaces, technical panel dividers, and zero visual clutter:
+The monitoring window automatically launches in borderless full-screen mode, styled with a high-clarity industrial white background, crisp black typography, branded corporate logo blue and green accents (from favicon), and basic red alert indicators:
 
 ```
 +--------------------------------------------------------------------------------------------------+
