@@ -29,25 +29,25 @@ def _heading_to_compass(deg: float) -> str:
 class Visualizer:
     COLOR_BG = (255, 255, 255)
     COLOR_PANEL_BG = (255, 255, 255)
-    COLOR_HEADER_BG = (242, 246, 252)
+    COLOR_HEADER_BG = (240, 245, 252)
     COLOR_SUBPANEL_BG = (248, 250, 254)
-    COLOR_BORDER = (185, 198, 215)
-    COLOR_BORDER_SUB = (210, 220, 232)
+    COLOR_BORDER = (180, 195, 215)
+    COLOR_BORDER_SUB = (205, 218, 232)
 
-    COLOR_TEXT_MAIN = (15, 20, 28)
-    COLOR_TEXT_MUTED = (65, 75, 90)
+    COLOR_TEXT_MAIN = (0, 0, 0)
+    COLOR_TEXT_MUTED = (35, 42, 52)
 
     COLOR_LOGO_BLUE = (120, 55, 16)
-    COLOR_LOGO_GREEN = (30, 165, 55)
-    COLOR_ALERT = (20, 20, 225)
-    COLOR_CAUTION = (10, 135, 220)
+    COLOR_LOGO_GREEN = (25, 145, 45)
+    COLOR_ALERT = (20, 20, 220)
+    COLOR_CAUTION = (10, 130, 215)
 
     BOX_COLOR = COLOR_LOGO_GREEN
     TRAIL_COLOR = (240, 175, 0)
     ARROW_COLOR = COLOR_ALERT
     TEXT_COLOR = (255, 255, 255)
     TEXT_BG_COLOR = COLOR_LOGO_BLUE
-    FONT = cv2.FONT_HERSHEY_SIMPLEX
+    FONT = cv2.FONT_HERSHEY_DUPLEX
 
     def __init__(self):
         self._prev_time = time.monotonic()
@@ -80,7 +80,7 @@ class Visualizer:
                 name = class_names[class_id]
             label = f"ID:{track_id} {name} {conf:.2f}"
 
-            label_size, _ = cv2.getTextSize(label, self.FONT, 0.55, 1)
+            label_size, _ = cv2.getTextSize(label, self.FONT, 0.58, 1)
             cv2.rectangle(
                 annotated,
                 (x1, y1 - label_size[1] - 8),
@@ -93,7 +93,7 @@ class Visualizer:
                 label,
                 (x1 + 3, y1 - 4),
                 self.FONT,
-                0.55,
+                0.58,
                 self.TEXT_COLOR,
                 1,
                 cv2.LINE_AA,
@@ -187,30 +187,30 @@ class Visualizer:
         cv2.rectangle(canvas, (x1, y1), (x2, y2), self.COLOR_PANEL_BG, cv2.FILLED)
         cv2.rectangle(canvas, (x1, y1), (x2, y2), self.COLOR_BORDER, 2)
 
-        header_h = 34
+        header_h = 36
         cv2.rectangle(canvas, (x1, y1), (x2, y1 + header_h), self.COLOR_HEADER_BG, cv2.FILLED)
         cv2.line(canvas, (x1, y1 + header_h), (x2, y1 + header_h), self.COLOR_BORDER, 1)
 
         cv2.putText(
             canvas,
             title,
-            (x1 + 14, y1 + 23),
+            (x1 + 16, y1 + 25),
             self.FONT,
-            0.56,
+            0.58,
             self.COLOR_LOGO_BLUE,
-            2,
+            1,
             cv2.LINE_AA,
         )
 
         if tag:
-            tag_size, _ = cv2.getTextSize(tag, self.FONT, 0.48, 1)
+            tag_size, _ = cv2.getTextSize(tag, self.FONT, 0.50, 1)
             cv2.putText(
                 canvas,
                 tag,
-                (x2 - tag_size[0] - 14, y1 + 23),
+                (x2 - tag_size[0] - 16, y1 + 25),
                 self.FONT,
-                0.48,
-                self.COLOR_TEXT_MUTED,
+                0.50,
+                self.COLOR_TEXT_MAIN,
                 1,
                 cv2.LINE_AA,
             )
@@ -226,7 +226,7 @@ class Visualizer:
             self.FONT,
             0.60,
             self.COLOR_LOGO_BLUE,
-            2,
+            1,
             cv2.LINE_AA,
         )
 
@@ -234,11 +234,11 @@ class Visualizer:
         cv2.putText(
             canvas,
             status_text,
-            (490, 33),
+            (500, 33),
             self.FONT,
-            0.54,
+            0.55,
             self.COLOR_LOGO_GREEN,
-            2,
+            1,
             cv2.LINE_AA,
         )
 
@@ -269,7 +269,7 @@ class Visualizer:
         self._draw_panel(canvas, x1, y1, x2, y2, "[ OPTICAL SENSOR FEED ]", tag=tag)
 
         pad_x = 10
-        pad_top = 42
+        pad_top = 44
         pad_bot = 10
         vp_w = (x2 - x1) - (pad_x * 2)
         vp_h = (y2 - y1) - pad_top - pad_bot
@@ -329,7 +329,7 @@ class Visualizer:
             tag=f"COUNT: {len(tracker_ids):02d}",
         )
 
-        content_y = y1 + 46
+        content_y = y1 + 48
         max_y = y2 - 12
 
         if not tracker_ids:
@@ -355,13 +355,13 @@ class Visualizer:
                 self.FONT,
                 0.54,
                 self.COLOR_TEXT_MAIN,
-                2,
+                1,
                 cv2.LINE_AA,
             )
             cv2.putText(
                 canvas,
                 "SYSTEM IDLE // AWAITING MOTION DETECTION",
-                (x1 + 32, content_y + 76),
+                (x1 + 32, content_y + 78),
                 self.FONT,
                 0.48,
                 self.COLOR_TEXT_MUTED,
@@ -370,7 +370,7 @@ class Visualizer:
             )
             return
 
-        card_h = 132
+        card_h = 138
         max_cards = max(1, (max_y - content_y) // (card_h + 10))
         displayed_count = min(len(tracker_ids), max_cards)
 
@@ -402,14 +402,14 @@ class Visualizer:
             cv2.rectangle(
                 canvas,
                 (x1 + 14, card_top),
-                (x2 - 14, card_top + 28),
+                (x2 - 14, card_top + 30),
                 self.COLOR_HEADER_BG,
                 cv2.FILLED,
             )
             cv2.line(
                 canvas,
-                (x1 + 14, card_top + 28),
-                (x2 - 14, card_top + 28),
+                (x1 + 14, card_top + 30),
+                (x2 - 14, card_top + 30),
                 self.COLOR_BORDER_SUB,
                 1,
             )
@@ -419,11 +419,11 @@ class Visualizer:
             cv2.putText(
                 canvas,
                 card_title,
-                (x1 + 24, card_top + 20),
+                (x1 + 24, card_top + 21),
                 self.FONT,
-                0.52,
+                0.54,
                 self.COLOR_LOGO_BLUE,
-                2,
+                1,
                 cv2.LINE_AA,
             )
 
@@ -432,7 +432,7 @@ class Visualizer:
             cv2.putText(
                 canvas,
                 conf_str,
-                (x2 - conf_size[0] - 24, card_top + 20),
+                (x2 - conf_size[0] - 24, card_top + 21),
                 self.FONT,
                 0.48,
                 self.COLOR_TEXT_MAIN,
@@ -458,10 +458,10 @@ class Visualizer:
             row4_val = f"{bw:4.0f} x {bh:4.0f} px"
 
             rows = [
-                (row1_lbl, row1_val, card_top + 50),
-                (row2_lbl, row2_val, card_top + 73),
-                (row3_lbl, row3_val, card_top + 96),
-                (row4_lbl, row4_val, card_top + 119),
+                (row1_lbl, row1_val, card_top + 53),
+                (row2_lbl, row2_val, card_top + 78),
+                (row3_lbl, row3_val, card_top + 103),
+                (row4_lbl, row4_val, card_top + 128),
             ]
 
             for lbl, val, y_pos in rows:
@@ -470,7 +470,7 @@ class Visualizer:
                     lbl,
                     (x1 + 24, y_pos),
                     self.FONT,
-                    0.46,
+                    0.48,
                     self.COLOR_TEXT_MUTED,
                     1,
                     cv2.LINE_AA,
@@ -478,9 +478,9 @@ class Visualizer:
                 cv2.putText(
                     canvas,
                     val,
-                    (x1 + 120, y_pos),
+                    (x1 + 130, y_pos),
                     self.FONT,
-                    0.47,
+                    0.50,
                     self.COLOR_TEXT_MAIN,
                     1,
                     cv2.LINE_AA,
@@ -491,11 +491,11 @@ class Visualizer:
             cv2.putText(
                 canvas,
                 status_lbl,
-                (x2 - 85, card_top + 50),
+                (x2 - 88, card_top + 53),
                 self.FONT,
-                0.46,
+                0.48,
                 status_color,
-                2,
+                1,
                 cv2.LINE_AA,
             )
 
@@ -547,7 +547,7 @@ class Visualizer:
         ax1 = mx2 + 10
         ax2 = x2 - 10
 
-        sub_y1 = y1 + 42
+        sub_y1 = y1 + 44
         sub_y2 = y2 - 10
 
         self._draw_subpanel_box(canvas, rx1, sub_y1, rx2, sub_y2, "SPATIAL TRAJECTORY RADAR")
@@ -593,18 +593,18 @@ class Visualizer:
         cv2.rectangle(canvas, (x1, y1), (x2, y2), self.COLOR_SUBPANEL_BG, cv2.FILLED)
         cv2.rectangle(canvas, (x1, y1), (x2, y2), self.COLOR_BORDER_SUB, 1)
 
-        header_h = 26
+        header_h = 28
         cv2.rectangle(canvas, (x1, y1), (x2, y1 + header_h), self.COLOR_HEADER_BG, cv2.FILLED)
         cv2.line(canvas, (x1, y1 + header_h), (x2, y1 + header_h), self.COLOR_BORDER_SUB, 1)
 
         cv2.putText(
             canvas,
             label,
-            (x1 + 10, y1 + 18),
+            (x1 + 12, y1 + 20),
             self.FONT,
-            0.48,
+            0.50,
             self.COLOR_LOGO_BLUE,
-            2,
+            1,
             cv2.LINE_AA,
         )
 
@@ -630,10 +630,10 @@ class Visualizer:
         cv2.line(canvas, (cx - radius, cy), (cx + radius, cy), self.COLOR_BORDER_SUB, 1)
         cv2.line(canvas, (cx, cy - radius), (cx, cy + radius), self.COLOR_BORDER_SUB, 1)
 
-        cv2.putText(canvas, "N", (cx - 5, cy - radius + 14), self.FONT, 0.42, self.COLOR_TEXT_MAIN, 1)
-        cv2.putText(canvas, "S", (cx - 5, cy + radius - 4), self.FONT, 0.42, self.COLOR_TEXT_MAIN, 1)
-        cv2.putText(canvas, "W", (cx - radius + 4, cy + 5), self.FONT, 0.42, self.COLOR_TEXT_MAIN, 1)
-        cv2.putText(canvas, "E", (cx + radius - 16, cy + 5), self.FONT, 0.42, self.COLOR_TEXT_MAIN, 1)
+        cv2.putText(canvas, "N", (cx - 5, cy - radius + 15), self.FONT, 0.46, self.COLOR_TEXT_MAIN, 1)
+        cv2.putText(canvas, "S", (cx - 5, cy + radius - 5), self.FONT, 0.46, self.COLOR_TEXT_MAIN, 1)
+        cv2.putText(canvas, "W", (cx - radius + 5, cy + 6), self.FONT, 0.46, self.COLOR_TEXT_MAIN, 1)
+        cv2.putText(canvas, "E", (cx + radius - 18, cy + 6), self.FONT, 0.46, self.COLOR_TEXT_MAIN, 1)
 
         if frame_w <= 0 or frame_h <= 0:
             return
@@ -658,9 +658,9 @@ class Visualizer:
                 f"#{tid}",
                 (px + 6, py - 4),
                 self.FONT,
-                0.44,
+                0.46,
                 self.COLOR_TEXT_MAIN,
-                2,
+                1,
                 cv2.LINE_AA,
             )
 
@@ -683,7 +683,7 @@ class Visualizer:
         x2: int,
         y2: int,
     ):
-        banner_y = y1 + 34
+        banner_y = y1 + 36
         banner_h = 34
 
         num_targets = len(tracker_ids)
@@ -736,11 +736,11 @@ class Visualizer:
         cv2.putText(
             canvas,
             f"ALERT: {threat_level}",
-            (x1 + 24, banner_y + 23),
+            (x1 + 24, banner_y + 24),
             self.FONT,
-            0.52,
+            0.54,
             banner_col,
-            2,
+            1,
             cv2.LINE_AA,
         )
 
@@ -756,8 +756,8 @@ class Visualizer:
             ("COLLISION COURSE EVAL", "PARALLEL / SEPARATED"),
         ]
 
-        text_base = banner_y + banner_h + 26
-        line_spacing = 25
+        text_base = banner_y + banner_h + 28
+        line_spacing = 26
         for idx, (label, val) in enumerate(rows):
             y_pos = text_base + idx * line_spacing
             if y_pos > y2 - 8:
@@ -767,7 +767,7 @@ class Visualizer:
                 label,
                 (x1 + 18, y_pos),
                 self.FONT,
-                0.46,
+                0.48,
                 self.COLOR_TEXT_MUTED,
                 1,
                 cv2.LINE_AA,
@@ -775,11 +775,11 @@ class Visualizer:
             cv2.putText(
                 canvas,
                 val,
-                (x1 + 250, y_pos),
+                (x1 + 270, y_pos),
                 self.FONT,
-                0.48,
+                0.50,
                 self.COLOR_TEXT_MAIN,
-                2,
+                1,
                 cv2.LINE_AA,
             )
 
@@ -793,8 +793,8 @@ class Visualizer:
         x2: int,
         y2: int,
     ):
-        base_y = y1 + 38
-        spacing = 24
+        base_y = y1 + 42
+        spacing = 26
 
         lines = [
             "[AUDIT] SYS_CORE: RUNTIME ONLINE",
@@ -814,7 +814,7 @@ class Visualizer:
                 text,
                 (x1 + 14, cur_y),
                 self.FONT,
-                0.44,
+                0.46,
                 self.COLOR_TEXT_MAIN,
                 1,
                 cv2.LINE_AA,
@@ -856,7 +856,7 @@ class Visualizer:
 
     def _draw_hud(self, frame: np.ndarray, frame_number: int):
         hud = f"Frame: {frame_number} | FPS: {self._fps:.1f}"
-        hud_size, _ = cv2.getTextSize(hud, self.FONT, 0.6, 2)
+        hud_size, _ = cv2.getTextSize(hud, self.FONT, 0.62, 1)
         cv2.rectangle(
             frame,
             (8, 8),
@@ -869,9 +869,9 @@ class Visualizer:
             hud,
             (12, 12 + hud_size[1]),
             self.FONT,
-            0.6,
+            0.62,
             (255, 255, 255),
-            2,
+            1,
             cv2.LINE_AA,
         )
 

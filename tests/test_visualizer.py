@@ -155,10 +155,10 @@ class TestVisualizerTheme:
         vis = Visualizer()
         assert vis.COLOR_BG == (255, 255, 255)
         assert vis.COLOR_PANEL_BG == (255, 255, 255)
-        assert vis.COLOR_TEXT_MAIN == (15, 20, 28)
+        assert vis.COLOR_TEXT_MAIN == (0, 0, 0)
         assert vis.COLOR_LOGO_BLUE == (120, 55, 16)
-        assert vis.COLOR_LOGO_GREEN == (30, 165, 55)
-        assert vis.COLOR_ALERT == (20, 20, 225)
+        assert vis.COLOR_LOGO_GREEN == (25, 145, 45)
+        assert vis.COLOR_ALERT == (20, 20, 220)
 
     def test_dashboard_renders_white_background(self):
         vis = Visualizer()
