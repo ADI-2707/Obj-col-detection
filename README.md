@@ -9,13 +9,14 @@ Industrial computer-vision prototype for mill motion monitoring. Foundation for 
 - Tracks detected objects across frames using ByteTrack
 - Estimates image-plane velocity and direction per tracked object using exponential moving average smoothing
 - Draws bounding boxes, track IDs, motion trails, and velocity arrows
+- Renders a multi-panel industrial fullscreen dashboard with optical feed, telemetry, and collision radar
 - Logs per-frame tracking data to CSV
 
 ## What This Does NOT Do
 
 - Physical speed measurement: all velocities are in image-plane pixels per frame, not meters per second
 - Domain-specific detection: the pretrained COCO model does not reliably recognize steel coils, cranes, rollers, or other mill-specific equipment
-- Collision-risk analysis: this is planned for a future phase
+- Production collision-avoidance intervention: collision detection algorithms are currently in UI preview stage
 - GPU acceleration: this prototype is CPU-only by design
 
 ## Requirements
@@ -36,9 +37,44 @@ Industrial computer-vision prototype for mill motion monitoring. Foundation for 
 | torch | Neural network tensor inference backend | Auto-resolved by ultralytics |
 | pytest (dev) | Test runner for test suite execution | >= 8.0, < 9 |
 
-## Motion Estimation and Visual Telemetry
+## Industrial Fullscreen Dashboard Layout
 
-The system calculates and displays object movement across successive video frames in real time:
+The monitoring window automatically launches in borderless full-screen mode, styled as an industrial monitoring station with high-contrast slate surfaces, technical panel dividers, and zero visual clutter:
+
+```
++--------------------------------------------------------------------------------------------------+
+| MILL MOTION // INDUSTRIAL MACHINE MONITOR   STATUS: TRACKING ACTIVE   FPS: 24.2  FRAME: 000805   |
++-----------------------------------------------------------------+--------------------------------+
+| [ OPTICAL SENSOR FEED ]                                         | [ TARGET TELEMETRY ]           |
+|                                                                 |                                |
+|  - Camera Feed (Scaled aspect-ratio)                            |  - Target #01 // PERSON (91%)  |
+|  - Bounding Box & Persistent Track ID                           |    Velocity: 14.2 px/f (SE)    |
+|  - Centroid Reticles & Motion Trails                            |    Position: (340, 218) px     |
+|  - Directional Velocity Arrows                                  |    Bounds: 210 x 380 px        |
+|                                                                 |                                |
++-----------------------------------------------------------------+--------------------------------+
+| [ COLLISION ASSESSMENT & TRAJECTORY RADAR ]                                                      |
+|                                                                                                  |
+|  [ 2D TRAJECTORY RADAR ]     [ THREAT METRICS & IMPACT ]          [ SYSTEM EVENT AUDIT STREAM ]  |
+|   - Polar Scope (N/S/E/W)     - Alert Level: NOMINAL / HAZARD      - [AUDIT] Core Runtime Online |
+|   - Target Blips & Headings   - Collision Probability (%)          - [AUDIT] Tracking Sector OK  |
+|   - Spatial Separation Range  - Estimated Time-to-Impact (TTC)     - [AUDIT] Threat Matrix Armed |
+|                               - Separation Distance & Buffer       - [AUDIT] Logging to Disk     |
++--------------------------------------------------------------------------------------------------+
+```
+
+### 1. Panel Breakdown
+- **Top System Bar**: Displays system identification, tracking operational status, real-time FPS, sequential frame counter, and key controls.
+- **Top-Left (Optical Sensor Feed)**: Houses the live camera stream scaled with aspect-ratio preservation. Overlays high-contrast bounding boxes, persistent track IDs, motion trails, and directional velocity arrows.
+- **Top-Right (Target Telemetry Panel)**: Provides dedicated metric cards for each tracked object including class name, detection confidence percentage, instantaneous velocity (px/frame and px/s), compass heading, coordinate center, and dimensions.
+- **Bottom (Collision Assessment & Trajectory Radar)**:
+  - **Spatial Trajectory Radar**: 2D polar radar scope plotting active targets and their heading vectors relative to image-plane coordinates.
+  - **Threat Metrics & Impact Window**: Real-time collision probability gauge, proximity threat level indicator (NOMINAL, CAUTION, CRITICAL), estimated time-to-collision (TTC), closest target pair distance, and safety buffer zone status.
+  - **System Event Audit Stream**: Monospace audit log stream verifying sensor pipeline, tracking engine, and disk I/O health.
+
+### 2. Runtime Keyboard Controls
+- **`Q`** or **`ESC`**: Terminate tracking and flush CSV logs to disk.
+- **`F`**: Toggle dynamically between Fullscreen and Windowed mode.
 
 ### 1. Velocity and Direction Calculation
 - Centroid Tracking: On each frame, the center point (cx, cy) of each tracked object is computed from its bounding box.
@@ -178,6 +214,7 @@ python -m mill_motion --confidence 0.4
 | `--confidence` | `0.25` | Minimum detection confidence threshold |
 | `--output-dir` | `data/logs` | Directory for CSV log output |
 | `--no-display` | `false` | Disable visualization window |
+| `--windowed` | `false` | Launch in windowed mode instead of fullscreen |
 
 ## Running Tests
 
