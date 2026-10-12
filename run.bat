@@ -22,7 +22,8 @@ if not exist ".venv\Scripts\python.exe" (
     if not defined PY_CMD (
         py -3 -c "import sys; sys.exit(0 if sys.version_info >= (3, 11) else 1)" >nul 2>&1
         if not errorlevel 1 (
-            set "PY_CMD=py -3"
+            set "PY_CMD=py"
+            set "PY_ARGS=-3"
         )
     )
 
@@ -67,7 +68,7 @@ if not exist ".venv\Scripts\python.exe" (
     )
 
     echo [INFO] First-time setup: creating virtual environment...
-    %PY_CMD% -m venv .venv
+    "%PY_CMD%" %PY_ARGS% -m venv .venv
     if errorlevel 1 (
         echo [ERROR] Failed to create virtual environment.
         echo.
@@ -76,6 +77,7 @@ if not exist ".venv\Scripts\python.exe" (
     )
 
     echo [INFO] Installing required packages. This may take a few minutes...
+    ".venv\Scripts\python.exe" -m pip install --upgrade pip
     ".venv\Scripts\python.exe" -m pip install -r requirements.txt
     if errorlevel 1 (
         echo [ERROR] Failed to install dependencies from requirements.txt.
