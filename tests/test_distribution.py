@@ -1,5 +1,6 @@
 import re
 import subprocess
+import sys
 import zipfile
 from pathlib import Path
 
@@ -53,6 +54,9 @@ def test_run_bat_exists_and_contains_self_healing_check():
 
 
 def test_package_bat_execution_generates_valid_archive(tmp_path):
+    if sys.platform != "win32":
+        pytest.skip("Windows batch script execution requires win32")
+
     root = Path(__file__).resolve().parent.parent
     zip_path = root / "Obj-col-detection.zip"
     if zip_path.exists():
