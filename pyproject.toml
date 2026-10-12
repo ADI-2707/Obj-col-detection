@@ -4,14 +4,14 @@ build-backend = "setuptools.backends._legacy:_Backend"
 
 [project]
 name = "mill-motion"
-version = "1.1.0"
+version = "1.2.0"
 description = "Industrial computer-vision prototype for mill motion monitoring"
 requires-python = ">=3.11"
 license = {text = "MIT"}
 dependencies = [
     "ultralytics>=8.3,<9",
     "supervision>=0.25,<1",
-    "opencv-python-headless>=4.10,<5",
+    "opencv-python>=4.10,<5",
 ]
 
 [project.optional-dependencies]
