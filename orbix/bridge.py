@@ -151,27 +151,15 @@ class WebviewApp:
         if not Path(icon_path).exists():
             return
         try:
-            import clr
-            clr.AddReference("System.Drawing")
-            import System.Drawing
-            if hasattr(self._window, "native") and self._window.native is not None:
-                self._window.native.Icon = System.Drawing.Icon(icon_path)
-        except Exception:
-            pass
-        try:
             import ctypes
-            hwnd = None
-            if hasattr(self._window, "native") and hasattr(self._window.native, "Handle"):
-                hwnd = int(self._window.native.Handle.ToInt64())
-            if not hwnd:
-                hwnd = ctypes.windll.user32.FindWindowW(None, "ORBIX — HOT METAL SLAB THICKNESS VISION SYSTEM")
+            hwnd = ctypes.windll.user32.FindWindowW(None, "ORBIX — HOT METAL SLAB THICKNESS VISION SYSTEM")
             if hwnd:
                 hicon_sm = ctypes.windll.user32.LoadImageW(None, icon_path, 1, 16, 16, 0x00000010)
                 hicon_lg = ctypes.windll.user32.LoadImageW(None, icon_path, 1, 32, 32, 0x00000010)
                 if hicon_sm:
-                    ctypes.windll.user32.SendMessageW(hwnd, 0x0080, 0, hicon_sm)
+                    ctypes.windll.user32.PostMessageW(hwnd, 0x0080, 0, hicon_sm)
                 if hicon_lg:
-                    ctypes.windll.user32.SendMessageW(hwnd, 0x0080, 1, hicon_lg)
+                    ctypes.windll.user32.PostMessageW(hwnd, 0x0080, 1, hicon_lg)
         except Exception:
             pass
 
@@ -254,8 +242,6 @@ class WebviewApp:
             self._frame_count = frame_idx + 1
 
             frame_idx += 1
-            if frame_idx == 1:
-                self._apply_window_icon()
             elapsed = time.monotonic() - start_t
             sleep_time = max(0.01, (1.0 / 30.0) - elapsed)
             time.sleep(sleep_time)
