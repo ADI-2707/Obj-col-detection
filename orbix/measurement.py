@@ -23,6 +23,15 @@ class ThicknessMeasurement:
     bottom_edges: np.ndarray
     xs: np.ndarray
 
+    @property
+    def thickness_profile_mm(self) -> list[float]:
+        if len(self.top_edges) == 0:
+            return []
+        step = max(1, len(self.top_edges) // 100)
+        diff = self.bottom_edges[::step] - self.top_edges[::step]
+        ratio = self.thickness_mm / max(1e-3, self.thickness_px)
+        return [round(float(v * ratio), 1) for v in diff]
+
 
 class SlabMeasurementEngine:
     DEFAULT_CALIBRATION: float = 0.34757

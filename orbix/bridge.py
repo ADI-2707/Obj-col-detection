@@ -168,7 +168,7 @@ class WebviewApp:
                 "std_dev_mm": measurement.std_dev_mm,
                 "is_normal": measurement.is_normal,
                 "confidence_pct": measurement.confidence_pct,
-                "profile": measurement.thickness_profile_mm,
+                "profile": getattr(measurement, "thickness_profile_mm", []),
                 "fps": fps,
                 "processing_ms": proc_ms,
                 "calibration": self._engine.calibration,

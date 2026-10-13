@@ -39,3 +39,14 @@ def test_measurement_engine_x_cursor_alias():
     result = engine.measure(frame, x_cursor=250)
     assert result.x_cursor == 250
 
+
+def test_thickness_profile_mm_property():
+    engine = SlabMeasurementEngine()
+    frame = engine.generate_synthetic_slab_frame(width=400, height=300)
+    result = engine.measure(frame)
+    profile = result.thickness_profile_mm
+    assert isinstance(profile, list)
+    assert len(profile) > 0
+    assert all(isinstance(v, float) for v in profile)
+
+
