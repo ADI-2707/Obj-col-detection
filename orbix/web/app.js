@@ -408,6 +408,7 @@
     initMouseInspection();
     updateCaliperOverlay();
     renderProfileChart(null);
+    initKeyboardShortcuts();
     window.addEventListener("pywebviewready", startPolling);
     if (window.pywebview && window.pywebview.api) {
       startPolling();
@@ -415,4 +416,21 @@
       setTimeout(startPolling, 500);
     }
   });
+
+  function initKeyboardShortcuts() {
+    window.addEventListener("keydown", (e) => {
+      if (["INPUT", "SELECT", "TEXTAREA"].includes(e.target.tagName)) return;
+      if (e.key === "f" || e.key === "F" || e.key === "F11") {
+        e.preventDefault();
+        if (window.pywebview && window.pywebview.api && window.pywebview.api.toggle_fullscreen) {
+          window.pywebview.api.toggle_fullscreen();
+        }
+      } else if (e.key === "q" || e.key === "Q" || e.key === "Escape") {
+        e.preventDefault();
+        if (window.pywebview && window.pywebview.api && window.pywebview.api.close_window) {
+          window.pywebview.api.close_window();
+        }
+      }
+    });
+  }
 })();

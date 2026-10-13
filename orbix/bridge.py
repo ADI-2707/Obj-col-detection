@@ -9,6 +9,7 @@ import numpy as np
 
 from orbix.capture import FrameSource
 from orbix.config import Config
+from orbix.logger import CSVLogger
 from orbix.measurement import SlabMeasurementEngine, ThicknessMeasurement
 from orbix.paths import get_resource_path
 
@@ -54,6 +55,11 @@ class BridgeAPI:
             self._window.toggle_fullscreen()
         return {"status": "ok"}
 
+    def close_window(self) -> dict:
+        if self._window is not None:
+            self._window.destroy()
+        return {"status": "ok"}
+
     def set_cursor(self, x: int, y: int) -> dict:
         self.cursor_x = max(0, min(1920, int(x)))
         self.cursor_y = max(0, min(1080, int(y)))
@@ -84,10 +90,12 @@ class WebviewApp:
     def __init__(self, config: Config):
         self._config = config
         self._engine = SlabMeasurementEngine()
+        self._logger = CSVLogger(output_dir=config.output_dir)
         self.api = BridgeAPI(self._engine)
         self._stop_event = threading.Event()
         self._worker_thread = None
         self._window = None
+        self._frame_count = 0
 
     def run(self):
         import webview
@@ -95,6 +103,11 @@ class WebviewApp:
         index_path = get_resource_path("orbix/web/index.html")
         if not index_path.exists():
             index_path = Path(__file__).parent / "web" / "index.html"
+
+        print(f"[INFO] Source opened: {self._config.source}")
+        print(f"[INFO] Frame size: (1920, 1080)")
+        print(f"[INFO] CSV log: {self._logger.filepath}")
+        print("[INFO] Press 'q' or 'ESC' to quit, 'f' to toggle fullscreen")
 
         self._window = webview.create_window(
             title="ORBIX — HOT METAL SLAB THICKNESS VISION SYSTEM",
@@ -104,7 +117,7 @@ class WebviewApp:
             height=900,
             min_size=(1024, 680),
             resizable=True,
-            fullscreen=self._config.fullscreen,
+            fullscreen=False,
         )
         self.api._window = self._window
 
@@ -118,6 +131,9 @@ class WebviewApp:
             self._stop_event.set()
             if self._worker_thread and self._worker_thread.is_alive():
                 self._worker_thread.join(timeout=1.0)
+            self._logger.close()
+            print(f"[INFO] Processed {self._frame_count} frames")
+            print(f"[INFO] Log saved to {self._logger.filepath}")
 
     def _telemetry_worker(self):
         source = None
@@ -127,6 +143,7 @@ class WebviewApp:
         except Exception:
             source = None
 
+        self._logger.open()
         frame_idx = 0
         last_time = time.monotonic()
         fps = 15.0
@@ -182,6 +199,19 @@ class WebviewApp:
                     self._window.evaluate_js(js_code)
                 except Exception:
                     pass
+
+            self._logger.log_frame(
+                frame_number=frame_idx,
+                tracker_ids=[],
+                class_ids=[],
+                confidences=[],
+                bboxes=[],
+                motion_states={},
+            )
+            if frame_idx % 30 == 0:
+                status_text = "NORMAL" if measurement.is_normal else "OUT OF SPEC"
+                print(f"[INFO] Frame: {frame_idx:05d} | FPS: {fps:.1f} | Thick: {measurement.thickness_mm:.1f} mm | Status: {status_text}")
+            self._frame_count = frame_idx + 1
 
             frame_idx += 1
             elapsed = time.monotonic() - start_t

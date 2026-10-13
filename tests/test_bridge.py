@@ -84,6 +84,14 @@ class TestBridgeAPI:
         assert res["status"] == "ok"
         mock_win.toggle_fullscreen.assert_called_once()
 
+    def test_close_window_delegates_to_window(self):
+        api = BridgeAPI()
+        mock_win = MagicMock()
+        api._window = mock_win
+        res = api.close_window()
+        assert res["status"] == "ok"
+        mock_win.destroy.assert_called_once()
+
     def test_operation_actions(self):
         api = BridgeAPI()
         assert api.start_measurement()["status"] == "ok"
