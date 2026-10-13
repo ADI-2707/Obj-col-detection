@@ -25,7 +25,11 @@ def get_user_data_dir(app_name: str = "Orbix") -> Path:
         else:
             base_dir = Path.home() / "AppData" / "Local"
     else:
-        base_dir = Path.home() / ".local" / "share"
+        xdg_data = os.environ.get("XDG_DATA_HOME")
+        if xdg_data:
+            base_dir = Path(xdg_data)
+        else:
+            base_dir = Path.home() / ".local" / "share"
 
     data_dir = base_dir / app_name
     data_dir.mkdir(parents=True, exist_ok=True)

@@ -41,9 +41,24 @@ def test_get_resource_path_frozen_mock(monkeypatch, tmp_path):
 
 def test_get_user_data_dir(tmp_path, monkeypatch):
     monkeypatch.setenv("LOCALAPPDATA", str(tmp_path))
+    monkeypatch.setenv("XDG_DATA_HOME", str(tmp_path))
     user_dir = get_user_data_dir("OrbixTest")
     assert user_dir.exists()
     assert user_dir == tmp_path / "OrbixTest"
+
+
+def test_get_user_data_dir_windows_branch(tmp_path, monkeypatch):
+    monkeypatch.setattr(sys, "platform", "win32")
+    monkeypatch.setenv("LOCALAPPDATA", str(tmp_path))
+    user_dir = get_user_data_dir("OrbixWin")
+    assert user_dir == tmp_path / "OrbixWin"
+
+
+def test_get_user_data_dir_linux_branch(tmp_path, monkeypatch):
+    monkeypatch.setattr(sys, "platform", "linux")
+    monkeypatch.setenv("XDG_DATA_HOME", str(tmp_path))
+    user_dir = get_user_data_dir("OrbixLinux")
+    assert user_dir == tmp_path / "OrbixLinux"
 
 
 def test_get_default_log_dir_in_development():
@@ -55,6 +70,7 @@ def test_get_default_log_dir_when_frozen(monkeypatch, tmp_path):
     monkeypatch.setattr(sys, "frozen", True, raising=False)
     monkeypatch.setattr(sys, "_MEIPASS", str(tmp_path), raising=False)
     monkeypatch.setenv("LOCALAPPDATA", str(tmp_path))
+    monkeypatch.setenv("XDG_DATA_HOME", str(tmp_path))
     log_dir = get_default_log_dir()
     assert log_dir.parent == tmp_path / "Orbix"
     assert log_dir.name == "logs"
