@@ -60,6 +60,28 @@ def bump_version(bump_type: str = "patch", repo_root: Path | None = None) -> str
         )
         pyproject_file.write_text(new_pyproject_content, encoding="utf-8")
 
+    iss_file = repo_root / "installer" / "OrbixSetup.iss"
+    if iss_file.exists():
+        iss_content = iss_file.read_text(encoding="utf-8")
+        new_iss_content = re.sub(
+            r'(#define\s+MyAppVersion\s+["\'])[^"\']+(["\'])',
+            rf"\g<1>{new_version}\g<2>",
+            iss_content,
+            count=1,
+        )
+        iss_file.write_text(new_iss_content, encoding="utf-8")
+
+    manifest_file = repo_root / "packaging" / "app_manifest.xml"
+    if manifest_file.exists():
+        manifest_content = manifest_file.read_text(encoding="utf-8")
+        new_manifest_content = re.sub(
+            r'(version\s*=\s*["\'])\d+\.\d+\.\d+(\.\d+)?(["\'])',
+            rf"\g<1>{new_version}.0\g<3>",
+            manifest_content,
+            count=1,
+        )
+        manifest_file.write_text(new_manifest_content, encoding="utf-8")
+
     return new_version
 
 

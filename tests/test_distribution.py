@@ -87,3 +87,46 @@ def test_package_bat_execution_generates_valid_archive(tmp_path):
     finally:
         if zip_path.exists():
             zip_path.unlink()
+
+
+def test_installer_iss_version_matches_orbix_version():
+    root = Path(__file__).resolve().parent.parent
+    iss_file = root / "installer" / "OrbixSetup.iss"
+    assert iss_file.exists()
+    content = iss_file.read_text(encoding="utf-8")
+    import orbix
+    match = re.search(r'#define\s+MyAppVersion\s+"([^"]+)"', content)
+    assert match is not None
+    assert match.group(1) == orbix.__version__
+
+
+def test_packaging_spec_configuration():
+    root = Path(__file__).resolve().parent.parent
+    spec_file = root / "packaging" / "orbix.spec"
+    assert spec_file.exists()
+    content = spec_file.read_text(encoding="utf-8")
+    assert "yolov8n.pt" in content
+    assert "orbix.ico" in content
+    assert "app_manifest.xml" in content
+    assert "ultralytics" in content
+
+
+def test_app_manifest_is_valid_xml_with_dpi_awareness():
+    import xml.etree.ElementTree as ET
+    root = Path(__file__).resolve().parent.parent
+    manifest_file = root / "packaging" / "app_manifest.xml"
+    assert manifest_file.exists()
+    tree = ET.parse(manifest_file)
+    assert "assembly" in tree.getroot().tag
+    content = manifest_file.read_text(encoding="utf-8")
+    assert "PerMonitorV2" in content
+
+
+def test_build_scripts_exist_and_contain_error_checks():
+    root = Path(__file__).resolve().parent.parent
+    build_exe = root / "scripts" / "build_exe.bat"
+    build_installer = root / "scripts" / "build_installer.bat"
+    assert build_exe.exists()
+    assert build_installer.exists()
+    assert "exit /b 1" in build_exe.read_text(encoding="utf-8")
+    assert "exit /b 1" in build_installer.read_text(encoding="utf-8")

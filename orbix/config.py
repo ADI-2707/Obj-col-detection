@@ -1,6 +1,8 @@
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from orbix.paths import get_default_log_dir
+
 
 @dataclass(frozen=True)
 class Config:
@@ -11,7 +13,7 @@ class Config:
     ema_alpha: float = 0.4
     trail_length: int = 30
     stale_track_frames: int = 60
-    output_dir: Path = field(default_factory=lambda: Path("data/logs"))
+    output_dir: Path = field(default_factory=get_default_log_dir)
     display: bool = True
     fullscreen: bool = True
 

@@ -4,6 +4,8 @@ import numpy as np
 import supervision as sv
 from ultralytics import YOLO
 
+from orbix.paths import get_resource_path
+
 
 class DetectorError(Exception):
     pass
@@ -17,6 +19,11 @@ class Detector:
                 f"Invalid model path '{model_path}'. "
                 f"Expected a .pt, .onnx, or similar model file."
             )
+
+        if not resolved.exists():
+            bundled = get_resource_path(model_path)
+            if bundled.exists():
+                resolved = bundled
 
         try:
             self._model = YOLO(str(resolved))

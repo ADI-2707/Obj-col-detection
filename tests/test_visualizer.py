@@ -270,3 +270,19 @@ class TestVisualizerHeadingHelper:
         assert _heading_to_compass(360.0) == "N"
         assert _heading_to_compass(-90.0) == "W"
 
+
+class TestVisualizerLogos:
+    def test_logos_loaded(self):
+        vis = Visualizer()
+        assert vis._systrol_logo is not None
+        assert vis._orbix_logo is not None
+        assert vis._systrol_logo.shape[2] == 4
+        assert vis._orbix_logo.shape[2] == 4
+
+    def test_overlay_icon_bounds(self):
+        vis = Visualizer()
+        canvas = np.zeros((100, 100, 3), dtype=np.uint8)
+        icon = np.full((10, 10, 4), 255, dtype=np.uint8)
+        vis._overlay_icon(canvas, icon, 10, 10, 20)
+        assert canvas[15, 15, 0] == 255
+
