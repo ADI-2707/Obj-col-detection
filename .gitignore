@@ -31,4 +31,6 @@ data/logs/*.csv
 
 *.log
 
-assets/
+assets/*
+!assets/*.ico
+!assets/*.png

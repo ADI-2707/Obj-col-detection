@@ -6,6 +6,7 @@ repo_root = Path.cwd()
 datas = [
     (str(repo_root / "yolov8n.pt"), "."),
     (str(repo_root / "packaging" / "icons" / "orbix.ico"), "packaging/icons"),
+    (str(repo_root / "assets"), "assets"),
 ]
 
 datas += collect_data_files("ultralytics")

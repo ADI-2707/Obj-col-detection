@@ -53,6 +53,37 @@ class Visualizer:
     def __init__(self):
         self._prev_time = time.monotonic()
         self._fps = 0.0
+        self._systrol_logo = self._load_logo("assets/systrol_ico_logo.ico")
+        self._orbix_logo = self._load_logo("assets/orbix_ico_logo.ico")
+
+    def _load_logo(self, relative_path: str) -> np.ndarray | None:
+        try:
+            from PIL import Image
+            from orbix.paths import get_resource_path
+            path = get_resource_path(relative_path)
+            if not path.exists():
+                return None
+            pil_img = Image.open(path).convert("RGBA")
+            return np.array(pil_img)
+        except Exception:
+            return None
+
+    def _overlay_icon(self, canvas: np.ndarray, icon: np.ndarray | None, x: int, y: int, size: int):
+        if icon is None:
+            return
+        h, w = canvas.shape[:2]
+        if x < 0 or y < 0 or x + size > w or y + size > h:
+            return
+        resized = cv2.resize(icon, (size, size), interpolation=cv2.INTER_AREA)
+        if resized.shape[2] == 4:
+            b, g, r, a = cv2.split(resized)
+            overlay = cv2.merge([b, g, r])
+            alpha = (a.astype(float) / 255.0)[:, :, np.newaxis]
+            roi = canvas[y : y + size, x : x + size].astype(float)
+            blended = (overlay.astype(float) * alpha) + (roi * (1.0 - alpha))
+            canvas[y : y + size, x : x + size] = np.clip(blended, 0, 255).astype(np.uint8)
+        else:
+            canvas[y : y + size, x : x + size] = resized
 
     def annotate(
         self,
@@ -173,6 +204,18 @@ class Visualizer:
             y2=bottom_panel_y + bottom_panel_h,
         )
 
+        cv2.putText(
+            canvas,
+            "powered by",
+            (16, canvas_height - 4),
+            self.FONT,
+            0.38,
+            self.COLOR_TEXT_MUTED,
+            1,
+            cv2.LINE_AA,
+        )
+        self._overlay_icon(canvas, self._systrol_logo, 92, canvas_height - 18, 14)
+
         ver_text = f"v{__version__}"
         ver_size, _ = cv2.getTextSize(ver_text, self.FONT, 0.40, 1)
         cv2.putText(
@@ -233,10 +276,13 @@ class Visualizer:
         cv2.rectangle(canvas, (12, 10), (width - 12, 46), self.COLOR_HEADER_BG, cv2.FILLED)
         cv2.rectangle(canvas, (12, 10), (width - 12, 46), self.COLOR_BORDER, 2)
 
+        self._overlay_icon(canvas, self._orbix_logo, 20, 16, 24)
+
+        title_text = f"ORBIX v{__version__}"
         cv2.putText(
             canvas,
-            f"ORBIX v{__version__} // INDUSTRIAL MONITOR",
-            (24, 33),
+            title_text,
+            (52, 33),
             self.FONT,
             0.58,
             self.COLOR_LOGO_BLUE,
@@ -244,11 +290,29 @@ class Visualizer:
             cv2.LINE_AA,
         )
 
+        title_size, _ = cv2.getTextSize(title_text, self.FONT, 0.58, 1)
+        powered_x = 52 + title_size[0] + 16
+        cv2.putText(
+            canvas,
+            "powered by",
+            (powered_x, 33),
+            self.FONT,
+            0.42,
+            self.COLOR_TEXT_MUTED,
+            1,
+            cv2.LINE_AA,
+        )
+
+        powered_size, _ = cv2.getTextSize("powered by", self.FONT, 0.42, 1)
+        logo_x = powered_x + powered_size[0] + 8
+        self._overlay_icon(canvas, self._systrol_logo, logo_x, 16, 24)
+
+        status_x = max(logo_x + 36, 460)
         status_text = "STATUS: TRACKING ACTIVE"
         cv2.putText(
             canvas,
             status_text,
-            (530, 33),
+            (status_x, 33),
             self.FONT,
             0.55,
             self.COLOR_LOGO_GREEN,
@@ -897,6 +961,19 @@ class Visualizer:
             1,
             cv2.LINE_AA,
         )
+
+        h, w = frame.shape[:2]
+        cv2.putText(
+            frame,
+            "powered by",
+            (w - 145, h - 12),
+            self.FONT,
+            0.42,
+            (220, 220, 220),
+            1,
+            cv2.LINE_AA,
+        )
+        self._overlay_icon(frame, self._systrol_logo, w - 44, h - 26, 20)
 
     def _update_fps(self):
         now = time.monotonic()

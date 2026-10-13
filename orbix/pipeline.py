@@ -51,6 +51,20 @@ class Pipeline:
 
         if self._visualizer is not None:
             cv2.namedWindow(self.WINDOW_NAME, cv2.WINDOW_NORMAL)
+            if sys.platform == "win32":
+                try:
+                    import ctypes
+                    from orbix.paths import get_resource_path
+                    icon_path = str(get_resource_path("assets/orbix_ico_logo.ico"))
+                    if Path(icon_path).exists():
+                        hwnd = ctypes.windll.user32.FindWindowW(None, self.WINDOW_NAME)
+                        if hwnd:
+                            hicon = ctypes.windll.user32.LoadImageW(None, icon_path, 1, 0, 0, 0x00000010)
+                            if hicon:
+                                ctypes.windll.user32.SendMessageW(hwnd, 0x0080, 0, hicon)
+                                ctypes.windll.user32.SendMessageW(hwnd, 0x0080, 1, hicon)
+                except Exception:
+                    pass
             if self._is_fullscreen:
                 cv2.setWindowProperty(
                     self.WINDOW_NAME, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN
