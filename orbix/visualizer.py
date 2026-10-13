@@ -100,6 +100,41 @@ class Visualizer:
         else:
             canvas[y : y + size, x : x + size] = resized
 
+    def handle_mouse_event(self, event: int, x: int, y: int) -> str | None:
+        if 350 <= x <= 1570 and 96 <= y <= 861:
+            rel_x = int((x - 350) / 1220 * 1920)
+            rel_y = int((y - 96) / 765 * 1080)
+            self.cursor_x = max(0, min(1920, rel_x))
+            self.cursor_y = max(0, min(1080, rel_y))
+
+        if event == cv2.EVENT_LBUTTONDOWN:
+            if 56 <= y <= 88:
+                cur_tx = 350
+                for mode in self.VIEW_MODES:
+                    sz, _ = cv2.getTextSize(mode, self.FONT, 0.38, 1)
+                    tw = sz[0] + 20
+                    if cur_tx <= x <= cur_tx + tw:
+                        self.active_view_mode = mode
+                        return f"view_mode_{mode}"
+                    cur_tx += tw + 4
+
+                util_x = 1570
+                utils = [("FULLSCREEN", 90), ("FREEZE", 66), ("EDGES", 60)]
+                for uname, uw in utils:
+                    ux = util_x - uw
+                    if ux <= x <= util_x:
+                        if uname == "FULLSCREEN":
+                            return "toggle_fullscreen"
+                        elif uname == "FREEZE":
+                            self.is_frozen = not self.is_frozen
+                            return "toggle_freeze"
+                        elif uname == "EDGES":
+                            self.show_edges = not self.show_edges
+                            return "toggle_edges"
+                    util_x = ux - 6
+
+        return None
+
     def annotate(
         self,
         frame: np.ndarray,
@@ -357,12 +392,18 @@ class Visualizer:
             cur_tx += tw + 4
 
         util_x = x2
-        utils = [("FULLSCREEN", 90), ("FREEZE", 66), ("EDGES", 60)]
-        for uname, uw in utils:
+        utils = [
+            ("FULLSCREEN", 90, False),
+            ("FREEZE", 66, self.is_frozen),
+            ("EDGES", 60, self.show_edges),
+        ]
+        for uname, uw, is_act in utils:
             ux = util_x - uw
-            cv2.rectangle(canvas, (ux, y1), (util_x, y1 + tab_h), (250, 248, 245), cv2.FILLED)
+            bg = self.COLOR_ACTIVE_TAB if is_act else (250, 248, 245)
+            fg = (255, 255, 255) if is_act else self.COLOR_TEXT_MUTED
+            cv2.rectangle(canvas, (ux, y1), (util_x, y1 + tab_h), bg, cv2.FILLED)
             cv2.rectangle(canvas, (ux, y1), (util_x, y1 + tab_h), self.COLOR_BORDER, 1)
-            cv2.putText(canvas, uname, (ux + 8, y1 + 21), self.FONT, 0.36, self.COLOR_TEXT_MUTED, 1, cv2.LINE_AA)
+            cv2.putText(canvas, uname, (ux + 8, y1 + 21), self.FONT, 0.36, fg, 1, cv2.LINE_AA)
             util_x = ux - 6
 
         prof_h = 175
