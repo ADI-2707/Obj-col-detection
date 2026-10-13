@@ -31,3 +31,11 @@ def test_measurement_engine_custom_calibration():
     frame = engine.generate_synthetic_slab_frame(width=400, height=300)
     result = engine.measure(frame)
     assert abs(result.thickness_mm - result.thickness_px * 0.5) < 1e-4
+
+
+def test_measurement_engine_x_cursor_alias():
+    engine = SlabMeasurementEngine()
+    frame = engine.generate_synthetic_slab_frame(width=400, height=300)
+    result = engine.measure(frame, x_cursor=250)
+    assert result.x_cursor == 250
+

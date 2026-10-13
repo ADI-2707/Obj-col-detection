@@ -147,7 +147,7 @@ class WebviewApp:
             if frame is None:
                 frame = self._engine.generate_synthetic_slab_frame(frame_idx)
 
-            measurement = self._engine.measure(frame, x_cursor=self.api.cursor_x)
+            measurement = self._engine.measure(frame, cursor_x=self.api.cursor_x)
             proc_ms = (time.monotonic() - start_t) * 1000.0
 
             rendered_frame = self._apply_view_mode(frame, self.api.active_view_mode, measurement)

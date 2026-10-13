@@ -75,7 +75,10 @@ class SlabMeasurementEngine:
         frame: np.ndarray,
         roi: Tuple[int, int, int, int] | None = None,
         cursor_x: int | None = None,
+        x_cursor: int | None = None,
     ) -> ThicknessMeasurement:
+        if cursor_x is None and x_cursor is not None:
+            cursor_x = x_cursor
         h, w = frame.shape[:2]
         if roi is None:
             rx, ry, rw, rh = 0, 0, w, h
