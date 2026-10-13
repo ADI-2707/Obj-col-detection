@@ -1,6 +1,6 @@
 import pytest
 
-from mill_motion.capture import FrameSource, FrameSourceError
+from orbix.capture import FrameSource, FrameSourceError
 
 
 class TestFrameSourceErrors:

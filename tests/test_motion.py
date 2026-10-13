@@ -1,6 +1,6 @@
 import math
 
-from mill_motion.motion import MotionEstimator, MotionState
+from orbix.motion import MotionEstimator, MotionState
 
 
 class TestMotionEstimatorStationary:

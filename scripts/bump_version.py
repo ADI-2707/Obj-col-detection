@@ -32,13 +32,13 @@ def bump_version(bump_type: str = "patch", repo_root: Path | None = None) -> str
     if repo_root is None:
         repo_root = Path(__file__).resolve().parent.parent
 
-    init_file = repo_root / "mill_motion" / "__init__.py"
+    init_file = repo_root / "orbix" / "__init__.py"
     pyproject_file = repo_root / "pyproject.toml"
 
     init_content = init_file.read_text(encoding="utf-8")
     match = re.search(r'__version__\s*=\s*["\']([^"\']+)["\']', init_content)
     if not match:
-        raise ValueError("Could not find __version__ in mill_motion/__init__.py")
+        raise ValueError("Could not find __version__ in orbix/__init__.py")
 
     current_version = match.group(1)
     new_version = compute_next_version(current_version, bump_type)
