@@ -117,6 +117,12 @@ class TestWebviewApp:
         app = WebviewApp(mock_config)
         app._apply_window_icon()
 
+    def test_on_closing_sets_stop_event(self, mock_config):
+        app = WebviewApp(mock_config)
+        assert not app._stop_event.is_set()
+        app._on_closing()
+        assert app._stop_event.is_set()
+
 
 class TestWebAssets:
     def test_html_contains_critical_elements(self):

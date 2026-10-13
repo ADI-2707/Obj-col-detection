@@ -129,6 +129,8 @@ class WebviewApp:
         )
         self.api._window = self._window
         self._window.events.shown += self._apply_window_icon
+        self._window.events.closing += self._on_closing
+        self._window.events.closed += self._on_closing
 
         self._stop_event.clear()
         self._worker_thread = threading.Thread(target=self._telemetry_worker, daemon=True)
@@ -162,6 +164,9 @@ class WebviewApp:
                     ctypes.windll.user32.PostMessageW(hwnd, 0x0080, 1, hicon_lg)
         except Exception:
             pass
+
+    def _on_closing(self, *args):
+        self._stop_event.set()
 
     def _telemetry_worker(self):
         source = None
@@ -219,14 +224,16 @@ class WebviewApp:
                 "calibration": self._engine.calibration,
             }
 
-            self.api.latest_payload = payload
+            if self._stop_event.is_set():
+                break
 
-            if self._window is not None:
+            if self._window is not None and not self._stop_event.is_set():
                 try:
                     js_code = f"if (window.updateTelemetry) {{ window.updateTelemetry({json.dumps(payload)}); }}"
                     self._window.evaluate_js(js_code)
                 except Exception:
-                    pass
+                    self._stop_event.set()
+                    break
 
             self._logger.log_frame(
                 frame_number=frame_idx,
