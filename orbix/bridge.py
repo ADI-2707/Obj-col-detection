@@ -1,5 +1,6 @@
 import base64
 import json
+import sys
 import threading
 import time
 from pathlib import Path
@@ -109,6 +110,13 @@ class WebviewApp:
         print(f"[INFO] CSV log: {self._logger.filepath}")
         print("[INFO] Press 'q' or 'ESC' to quit, 'f' to toggle fullscreen")
 
+        if sys.platform == "win32":
+            try:
+                import ctypes
+                ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("Systrol.Orbix.VisionSystem.1.5")
+            except Exception:
+                pass
+
         self._window = webview.create_window(
             title="ORBIX — HOT METAL SLAB THICKNESS VISION SYSTEM",
             url=str(index_path.resolve()),
@@ -120,6 +128,7 @@ class WebviewApp:
             fullscreen=False,
         )
         self.api._window = self._window
+        self._window.events.shown += self._apply_window_icon
 
         self._stop_event.clear()
         self._worker_thread = threading.Thread(target=self._telemetry_worker, daemon=True)
@@ -134,6 +143,37 @@ class WebviewApp:
             self._logger.close()
             print(f"[INFO] Processed {self._frame_count} frames")
             print(f"[INFO] Log saved to {self._logger.filepath}")
+
+    def _apply_window_icon(self, *args):
+        if sys.platform != "win32":
+            return
+        icon_path = str(get_resource_path("assets/orbix_ico_logo.ico"))
+        if not Path(icon_path).exists():
+            return
+        try:
+            import clr
+            clr.AddReference("System.Drawing")
+            import System.Drawing
+            if hasattr(self._window, "native") and self._window.native is not None:
+                self._window.native.Icon = System.Drawing.Icon(icon_path)
+        except Exception:
+            pass
+        try:
+            import ctypes
+            hwnd = None
+            if hasattr(self._window, "native") and hasattr(self._window.native, "Handle"):
+                hwnd = int(self._window.native.Handle.ToInt64())
+            if not hwnd:
+                hwnd = ctypes.windll.user32.FindWindowW(None, "ORBIX — HOT METAL SLAB THICKNESS VISION SYSTEM")
+            if hwnd:
+                hicon_sm = ctypes.windll.user32.LoadImageW(None, icon_path, 1, 16, 16, 0x00000010)
+                hicon_lg = ctypes.windll.user32.LoadImageW(None, icon_path, 1, 32, 32, 0x00000010)
+                if hicon_sm:
+                    ctypes.windll.user32.SendMessageW(hwnd, 0x0080, 0, hicon_sm)
+                if hicon_lg:
+                    ctypes.windll.user32.SendMessageW(hwnd, 0x0080, 1, hicon_lg)
+        except Exception:
+            pass
 
     def _telemetry_worker(self):
         source = None
@@ -214,6 +254,8 @@ class WebviewApp:
             self._frame_count = frame_idx + 1
 
             frame_idx += 1
+            if frame_idx == 1:
+                self._apply_window_icon()
             elapsed = time.monotonic() - start_t
             sleep_time = max(0.01, (1.0 / 30.0) - elapsed)
             time.sleep(sleep_time)

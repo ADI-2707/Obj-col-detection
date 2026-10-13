@@ -113,6 +113,10 @@ class TestWebviewApp:
             out = app._apply_view_mode(frame, mode, meas)
             assert out.shape == (100, 100, 3)
 
+    def test_apply_window_icon_does_not_crash(self, mock_config):
+        app = WebviewApp(mock_config)
+        app._apply_window_icon()
+
 
 class TestWebAssets:
     def test_html_contains_critical_elements(self):
