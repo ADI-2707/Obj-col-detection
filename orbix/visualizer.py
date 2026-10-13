@@ -4,8 +4,8 @@ import time
 import cv2
 import numpy as np
 
-from mill_motion import __version__
-from mill_motion.motion import MotionState
+from orbix import __version__
+from orbix.motion import MotionState
 
 
 def _heading_to_compass(deg: float) -> str:
