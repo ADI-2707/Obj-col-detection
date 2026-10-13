@@ -32,6 +32,10 @@ class BridgeAPI:
         self.cursor_x = 980
         self.cursor_y = 620
         self.window = None
+        self.latest_payload = None
+
+    def get_telemetry(self) -> dict | None:
+        return self.latest_payload
 
     def set_view_mode(self, mode: str) -> dict:
         self.active_view_mode = mode
@@ -169,6 +173,8 @@ class WebviewApp:
                 "processing_ms": proc_ms,
                 "calibration": self._engine.calibration,
             }
+
+            self.api.latest_payload = payload
 
             if self._window is not None:
                 try:

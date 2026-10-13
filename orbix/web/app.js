@@ -345,6 +345,21 @@
     renderProfileChart(payload);
   };
 
+  function startPolling() {
+    async function poll() {
+      if (window.pywebview && window.pywebview.api && window.pywebview.api.get_telemetry) {
+        try {
+          const data = await window.pywebview.api.get_telemetry();
+          if (data) {
+            window.updateTelemetry(data);
+          }
+        } catch (e) {}
+      }
+      setTimeout(poll, 30);
+    }
+    poll();
+  }
+
   document.addEventListener("DOMContentLoaded", () => {
     initClock();
     initLedBar();
@@ -352,5 +367,11 @@
     initMouseInspection();
     updateCaliperOverlay();
     renderProfileChart(null);
+    window.addEventListener("pywebviewready", startPolling);
+    if (window.pywebview && window.pywebview.api) {
+      startPolling();
+    } else {
+      setTimeout(startPolling, 500);
+    }
   });
 })();
