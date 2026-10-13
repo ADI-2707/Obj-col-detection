@@ -235,7 +235,7 @@ class Visualizer:
 
         cv2.putText(
             canvas,
-            f"MILL MOTION v{__version__} // INDUSTRIAL MONITOR",
+            f"ORBIX v{__version__} // INDUSTRIAL MONITOR",
             (24, 33),
             self.FONT,
             0.58,

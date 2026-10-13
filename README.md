@@ -43,7 +43,7 @@ The monitoring window automatically launches in borderless full-screen mode, sty
 
 ```
 +--------------------------------------------------------------------------------------------------+
-| MILL MOTION // INDUSTRIAL MACHINE MONITOR   STATUS: TRACKING ACTIVE   FPS: 24.2  FRAME: 000805   |
+| ORBIX // INDUSTRIAL MACHINE MONITOR         STATUS: TRACKING ACTIVE   FPS: 24.2  FRAME: 000805   |
 +-----------------------------------------------------------------+--------------------------------+
 | [ OPTICAL SENSOR FEED ]                                         | [ TARGET TELEMETRY ]           |
 |                                                                 |                                |
@@ -123,7 +123,7 @@ The run.bat script handles common runtime environments automatically:
 - Automatically verifies Python availability.
 - Creates an isolated virtual environment (.venv) inside the project folder.
 - Installs all dependencies from requirements.txt via pip.
-- Starts the camera application and opens the Mill Motion display window.
+- Starts the camera application and opens the Orbix display window.
 
 ### 2. Subsequent Launches
 - Detects the existing virtual environment.
@@ -163,7 +163,7 @@ The run.bat script handles common runtime environments automatically:
 - Detects end of stream, terminates the processing loop cleanly, flushes the CSV log to disk, and closes all open windows.
 
 ### 10. Stopping the Application
-- Press q inside the Mill Motion video window.
+- Press q inside the Orbix video window.
 - Or press Ctrl+C in the terminal.
 - The script flushes the log, displays the total processed frame count and CSV file path, and pauses before closing.
 
