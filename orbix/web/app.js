@@ -94,6 +94,47 @@
         }
       });
     }
+
+    initOperationButtons();
+  }
+
+  function initOperationButtons() {
+    const btnStart = document.getElementById("btn-start-meas");
+    if (btnStart) {
+      let measuring = true;
+      btnStart.addEventListener("click", () => {
+        measuring = !measuring;
+        btnStart.textContent = measuring ? "\u25b6 START MEASUREMENT" : "\u25a0 STOP MEASUREMENT";
+        btnStart.className = measuring ? "btn btn-success btn-block" : "btn btn-outline btn-block";
+        if (window.pywebview && window.pywebview.api && window.pywebview.api.start_measurement) {
+          window.pywebview.api.start_measurement();
+        }
+      });
+    }
+
+    const btnCap = document.getElementById("btn-capture");
+    if (btnCap) {
+      btnCap.addEventListener("click", () => {
+        const origText = btnCap.textContent;
+        btnCap.textContent = "\u2714 CAPTURED!";
+        setTimeout(() => { btnCap.textContent = origText; }, 1000);
+        if (window.pywebview && window.pywebview.api && window.pywebview.api.capture_image) {
+          window.pywebview.api.capture_image();
+        }
+      });
+    }
+
+    const btnRep = document.getElementById("btn-report");
+    if (btnRep) {
+      btnRep.addEventListener("click", () => {
+        const origText = btnRep.textContent;
+        btnRep.textContent = "\u2714 EXPORTED!";
+        setTimeout(() => { btnRep.textContent = origText; }, 1000);
+        if (window.pywebview && window.pywebview.api && window.pywebview.api.generate_report) {
+          window.pywebview.api.generate_report();
+        }
+      });
+    }
   }
 
   function initMouseInspection() {
