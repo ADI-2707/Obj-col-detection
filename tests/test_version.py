@@ -55,6 +55,16 @@ class TestBumpVersionExecution:
         init_file = pkg_dir / "__init__.py"
         pyproject_file = tmp_path / "pyproject.toml"
 
+        installer_dir = tmp_path / "installer"
+        installer_dir.mkdir()
+        iss_file = installer_dir / "OrbixSetup.iss"
+        iss_file.write_text('#define MyAppVersion "1.0.0"\n', encoding="utf-8")
+
+        packaging_dir = tmp_path / "packaging"
+        packaging_dir.mkdir()
+        manifest_file = packaging_dir / "app_manifest.xml"
+        manifest_file.write_text('<assemblyIdentity version="1.0.0.0" />\n', encoding="utf-8")
+
         init_file.write_text('__version__ = "1.0.0"\n', encoding="utf-8")
         pyproject_file.write_text(
             '[project]\nname = "orbix"\nversion = "1.0.0"\n',
@@ -65,8 +75,12 @@ class TestBumpVersionExecution:
         assert new_ver == "1.0.1"
         assert '__version__ = "1.0.1"' in init_file.read_text(encoding="utf-8")
         assert 'version = "1.0.1"' in pyproject_file.read_text(encoding="utf-8")
+        assert '#define MyAppVersion "1.0.1"' in iss_file.read_text(encoding="utf-8")
+        assert 'version="1.0.1.0"' in manifest_file.read_text(encoding="utf-8")
 
         new_minor = bump_version("minor", repo_root=tmp_path)
         assert new_minor == "1.1.0"
         assert '__version__ = "1.1.0"' in init_file.read_text(encoding="utf-8")
         assert 'version = "1.1.0"' in pyproject_file.read_text(encoding="utf-8")
+        assert '#define MyAppVersion "1.1.0"' in iss_file.read_text(encoding="utf-8")
+        assert 'version="1.1.0.0"' in manifest_file.read_text(encoding="utf-8")
