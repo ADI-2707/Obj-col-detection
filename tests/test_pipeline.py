@@ -130,3 +130,25 @@ class TestPipelineFullscreenToggle:
         assert pipeline._is_fullscreen is False
         pipeline._toggle_fullscreen()
         assert pipeline._is_fullscreen is True
+
+
+class TestPipelineMouseCallback:
+    @patch("orbix.pipeline.Detector")
+    def test_on_mouse_forwards_to_visualizer(self, mock_detector_cls, headless_config):
+        mock_detector_cls.return_value = MagicMock()
+        pipeline = Pipeline(headless_config)
+        pipeline._visualizer = MagicMock()
+        pipeline._visualizer.handle_mouse_event.return_value = None
+        pipeline._on_mouse(0, 100, 200, 0, None)
+        pipeline._visualizer.handle_mouse_event.assert_called_once_with(0, 100, 200)
+
+    @patch("orbix.pipeline.cv2.setWindowProperty")
+    @patch("orbix.pipeline.Detector")
+    def test_on_mouse_fullscreen_action(self, mock_detector_cls, mock_set_prop, headless_config):
+        mock_detector_cls.return_value = MagicMock()
+        pipeline = Pipeline(headless_config)
+        pipeline._visualizer = MagicMock()
+        pipeline._visualizer.handle_mouse_event.return_value = "toggle_fullscreen"
+        assert pipeline._is_fullscreen is True
+        pipeline._on_mouse(0, 100, 200, 0, None)
+        assert pipeline._is_fullscreen is False
