@@ -7,6 +7,7 @@ datas = [
     (str(repo_root / "yolov8n.pt"), "."),
     (str(repo_root / "packaging" / "icons" / "orbix.ico"), "packaging/icons"),
     (str(repo_root / "assets"), "assets"),
+    (str(repo_root / "orbix" / "web"), "orbix/web"),
 ]
 
 datas += collect_data_files("ultralytics")
@@ -18,6 +19,7 @@ hiddenimports = [
     "cv2",
     "PIL",
     "numpy",
+    "webview",
     "orbix",
     "orbix.paths",
     "orbix.config",
@@ -27,6 +29,8 @@ hiddenimports = [
     "orbix.motion",
     "orbix.tracker",
     "orbix.visualizer",
+    "orbix.measurement",
+    "orbix.bridge",
     "orbix.pipeline",
 ]
 

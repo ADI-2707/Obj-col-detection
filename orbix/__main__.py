@@ -72,6 +72,15 @@ def main(argv: list[str] | None = None):
         print(f"[ERROR] Invalid configuration: {exc}", file=sys.stderr)
         sys.exit(1)
 
+    if config.display:
+        try:
+            from orbix.bridge import WebviewApp
+            app = WebviewApp(config)
+            app.run()
+            return
+        except Exception:
+            pass
+
     pipeline = Pipeline(config)
     pipeline.run()
 

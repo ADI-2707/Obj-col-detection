@@ -1,4 +1,5 @@
 import sys
+from pathlib import Path
 
 import cv2
 import numpy as np
@@ -8,6 +9,7 @@ from orbix.config import Config
 from orbix.detector import Detector
 from orbix.logger import CSVLogger
 from orbix.motion import MotionEstimator
+from orbix.paths import get_resource_path
 from orbix.tracker import ObjectTracker
 from orbix.visualizer import Visualizer
 
@@ -51,10 +53,10 @@ class Pipeline:
 
         if self._visualizer is not None:
             cv2.namedWindow(self.WINDOW_NAME, cv2.WINDOW_NORMAL)
+            cv2.setMouseCallback(self.WINDOW_NAME, self._on_mouse)
             if sys.platform == "win32":
                 try:
                     import ctypes
-                    from orbix.paths import get_resource_path
                     icon_path = str(get_resource_path("assets/orbix_ico_logo.ico"))
                     if Path(icon_path).exists():
                         hwnd = ctypes.windll.user32.FindWindowW(None, self.WINDOW_NAME)
@@ -119,6 +121,14 @@ class Pipeline:
                         break
                     elif key == ord("f"):
                         self._toggle_fullscreen()
+                    elif key == ord("e"):
+                        self._visualizer.show_edges = not self._visualizer.show_edges
+                    elif key == ord(" "):
+                        self._visualizer.is_frozen = not self._visualizer.is_frozen
+                    elif ord("1") <= key <= ord("6"):
+                        mode_idx = key - ord("1")
+                        if mode_idx < len(self._visualizer.VIEW_MODES):
+                            self._visualizer.active_view_mode = self._visualizer.VIEW_MODES[mode_idx]
 
                 frame_number += 1
 
@@ -128,6 +138,12 @@ class Pipeline:
             self._cleanup()
             print(f"[INFO] Processed {frame_number} frames")
             print(f"[INFO] Log saved to {self._logger.filepath}")
+
+    def _on_mouse(self, event, x, y, flags, param):
+        if self._visualizer is not None:
+            action = self._visualizer.handle_mouse_event(event, x, y)
+            if action == "toggle_fullscreen":
+                self._toggle_fullscreen()
 
     def _toggle_fullscreen(self):
         self._is_fullscreen = not self._is_fullscreen

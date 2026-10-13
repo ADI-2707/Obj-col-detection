@@ -1,3 +1,4 @@
+import cv2
 import numpy as np
 
 from orbix.motion import MotionState
@@ -285,4 +286,45 @@ class TestVisualizerLogos:
         icon = np.full((10, 10, 4), 255, dtype=np.uint8)
         vis._overlay_icon(canvas, icon, 10, 10, 20)
         assert canvas[15, 15, 0] == 255
+
+
+class TestVisualizerInteractions:
+    def test_handle_mouse_move_updates_cursor(self):
+        vis = Visualizer()
+        vis.handle_mouse_event(cv2.EVENT_MOUSEMOVE, 960, 480)
+        assert vis.cursor_x > 0
+        assert vis.cursor_y > 0
+
+    def test_handle_mouse_click_tab(self):
+        vis = Visualizer()
+        res = vis.handle_mouse_event(cv2.EVENT_LBUTTONDOWN, 360, 70)
+        assert res == "view_mode_ORIGINAL"
+        assert vis.active_view_mode == "ORIGINAL"
+
+    def test_handle_mouse_click_edges(self):
+        vis = Visualizer()
+        assert vis.show_edges is True
+        res = vis.handle_mouse_event(cv2.EVENT_LBUTTONDOWN, 1370, 70)
+        assert res == "toggle_edges"
+        assert vis.show_edges is False
+
+    def test_handle_mouse_click_freeze(self):
+        vis = Visualizer()
+        assert vis.is_frozen is False
+        res = vis.handle_mouse_event(cv2.EVENT_LBUTTONDOWN, 1440, 70)
+        assert res == "toggle_freeze"
+        assert vis.is_frozen is True
+
+    def test_handle_mouse_click_fullscreen(self):
+        vis = Visualizer()
+        res = vis.handle_mouse_event(cv2.EVENT_LBUTTONDOWN, 1525, 70)
+        assert res == "toggle_fullscreen"
+
+    def test_render_view_modes(self):
+        vis = Visualizer()
+        frame = np.full((100, 100, 3), 128, dtype=np.uint8)
+        for mode in vis.VIEW_MODES:
+            rendered = vis._render_view_mode(frame, mode)
+            assert rendered.shape == (100, 100, 3)
+
 
