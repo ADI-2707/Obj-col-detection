@@ -41,7 +41,7 @@ def test_package_bat_exists_and_contains_exclusions():
     assert ".venv" in content
     assert ".git" in content
     assert "__pycache__" in content
-    assert "Obj-col-detection.zip" in content
+    assert "Orbix.zip" in content
 
 
 def test_run_bat_exists_and_contains_self_healing_check():
@@ -58,7 +58,7 @@ def test_package_bat_execution_generates_valid_archive(tmp_path):
         pytest.skip("Windows batch script execution requires win32")
 
     root = Path(__file__).resolve().parent.parent
-    zip_path = root / "Obj-col-detection.zip"
+    zip_path = root / "Orbix.zip"
     if zip_path.exists():
         zip_path.unlink()
 
@@ -80,7 +80,7 @@ def test_package_bat_execution_generates_valid_archive(tmp_path):
             assert any(name.endswith("requirements.txt") for name in namelist)
             assert any(name.endswith("run.bat") for name in namelist)
             assert any(name.endswith("package.bat") for name in namelist)
-            assert any(name.endswith("mill_motion/__main__.py") or name.endswith("mill_motion\\__main__.py") for name in namelist)
+            assert any(name.endswith("orbix/__main__.py") or name.endswith("orbix\\__main__.py") for name in namelist)
             assert not any(".venv" in name for name in namelist)
             assert not any(".git/" in name or ".git\\" in name for name in namelist)
             assert not any("__pycache__" in name for name in namelist)

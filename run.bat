@@ -89,7 +89,7 @@ if not exist ".venv\Scripts\python.exe" (
     echo.
 )
 
-".venv\Scripts\python.exe" -m mill_motion %*
+".venv\Scripts\python.exe" -m orbix %*
 echo.
 pause
 endlocal

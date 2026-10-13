@@ -3,17 +3,17 @@ import sys
 import cv2
 import numpy as np
 
-from mill_motion.capture import FrameSource, FrameSourceError
-from mill_motion.config import Config
-from mill_motion.detector import Detector
-from mill_motion.logger import CSVLogger
-from mill_motion.motion import MotionEstimator
-from mill_motion.tracker import ObjectTracker
-from mill_motion.visualizer import Visualizer
+from orbix.capture import FrameSource, FrameSourceError
+from orbix.config import Config
+from orbix.detector import Detector
+from orbix.logger import CSVLogger
+from orbix.motion import MotionEstimator
+from orbix.tracker import ObjectTracker
+from orbix.visualizer import Visualizer
 
 
 class Pipeline:
-    WINDOW_NAME = "Mill Motion"
+    WINDOW_NAME = "Orbix"
 
     def __init__(self, config: Config):
         self._config = config

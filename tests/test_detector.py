@@ -1,6 +1,6 @@
 import pytest
 
-from mill_motion.detector import Detector, DetectorError
+from orbix.detector import Detector, DetectorError
 
 
 class TestDetectorInit:

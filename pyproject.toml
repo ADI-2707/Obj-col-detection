@@ -3,9 +3,9 @@ requires = ["setuptools>=75.0", "wheel"]
 build-backend = "setuptools.backends._legacy:_Backend"
 
 [project]
-name = "mill-motion"
+name = "orbix"
 version = "1.3.0"
-description = "Industrial computer-vision prototype for mill motion monitoring"
+description = "Intelligent Measurement for Modern Mills"
 requires-python = ">=3.11"
 license = {text = "MIT"}
 dependencies = [
@@ -20,10 +20,10 @@ dev = [
 ]
 
 [project.scripts]
-mill-motion = "mill_motion.__main__:main"
+orbix = "orbix.__main__:main"
 
 [tool.setuptools.packages.find]
-include = ["mill_motion*"]
+include = ["orbix*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

@@ -2,14 +2,14 @@ import argparse
 import sys
 from pathlib import Path
 
-from mill_motion.config import Config
-from mill_motion.pipeline import Pipeline
+from orbix.config import Config
+from orbix.pipeline import Pipeline
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        prog="mill-motion",
-        description="Mill Motion Phase 1: object detection, tracking, and image-plane motion estimation",
+        prog="orbix",
+        description="Orbix: Intelligent Measurement for Modern Mills",
     )
 
     parser.add_argument(

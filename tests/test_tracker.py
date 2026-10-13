@@ -1,7 +1,7 @@
 import numpy as np
 import supervision as sv
 
-from mill_motion.tracker import ObjectTracker
+from orbix.tracker import ObjectTracker
 
 
 class TestObjectTrackerInit:

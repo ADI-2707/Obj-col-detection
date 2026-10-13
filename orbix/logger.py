@@ -2,7 +2,7 @@ import csv
 from datetime import datetime, timezone
 from pathlib import Path
 
-from mill_motion.motion import MotionState
+from orbix.motion import MotionState
 
 
 class CSVLogger:

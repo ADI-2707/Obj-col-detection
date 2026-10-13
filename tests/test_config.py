@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from mill_motion.config import Config
+from orbix.config import Config
 
 
 class TestConfigDefaults:

@@ -1,7 +1,7 @@
 import numpy as np
 
-from mill_motion.motion import MotionState
-from mill_motion.visualizer import Visualizer
+from orbix.motion import MotionState
+from orbix.visualizer import Visualizer
 
 
 def _blank_frame(width=640, height=480):
@@ -257,7 +257,7 @@ class TestVisualizerCollisionAlerts:
 
 class TestVisualizerHeadingHelper:
     def test_all_eight_compass_directions(self):
-        from mill_motion.visualizer import _heading_to_compass
+        from orbix.visualizer import _heading_to_compass
 
         assert _heading_to_compass(0.0) == "N"
         assert _heading_to_compass(45.0) == "NE"
