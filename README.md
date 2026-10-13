@@ -1,6 +1,6 @@
-# Mill Motion Phase 1
+# Orbix — Intelligent Measurement for Modern Mills
 
-Industrial computer-vision prototype for mill motion monitoring. Foundation for a future collision-risk monitoring system.
+Industrial computer-vision prototype for mill motion monitoring and hot metal thickness vision. Foundation for modern mill measurement systems.
 
 ## What This Does
 
@@ -188,25 +188,25 @@ pip install -e ".[dev]"
 Default webcam:
 
 ```
-python -m mill_motion --source 0
+python -m orbix --source 0
 ```
 
 Using a video file:
 
 ```
-python -m mill_motion --source "path/to/video.mp4"
+python -m orbix --source "path/to/video.mp4"
 ```
 
 Headless mode (no display window, logs to CSV only):
 
 ```
-python -m mill_motion --no-display
+python -m orbix --no-display
 ```
 
 Custom confidence threshold:
 
 ```
-python -m mill_motion --confidence 0.4
+python -m orbix --confidence 0.4
 ```
 
 ### CLI Arguments
@@ -231,7 +231,7 @@ python -m pytest tests/ -v
 ## Project Structure
 
 ```
-mill_motion/
+orbix/
     __init__.py        Package version
     __main__.py        CLI entry point
     config.py          Centralized configuration
@@ -267,7 +267,7 @@ When a pull request is successfully merged into `main`, the automated workflow (
 - **Minor (`1.X.0`)**: Triggered when the PR title or labels contain `feat` or `minor`.
 - **Patch (`1.0.X`)**: Default increment for maintenance and fixes.
 
-The workflow updates `mill_motion/__init__.py` and `pyproject.toml`, commits the update, pushes a Git tag (e.g., `v1.0.1`), and the new version is rendered dynamically in the dashboard interface.
+The workflow updates `orbix/__init__.py` and `pyproject.toml`, commits the update, pushes a Git tag (e.g., `v1.0.1`), and the new version is rendered dynamically in the dashboard interface.
 
 ## Limitations
 
