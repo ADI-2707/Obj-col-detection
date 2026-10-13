@@ -31,7 +31,7 @@ class BridgeAPI:
         self.is_measuring = True
         self.cursor_x = 980
         self.cursor_y = 620
-        self.window = None
+        self._window = None
         self.latest_payload = None
 
     def get_telemetry(self) -> dict | None:
@@ -50,8 +50,8 @@ class BridgeAPI:
         return {"status": "ok", "is_frozen": self.is_frozen}
 
     def toggle_fullscreen(self) -> dict:
-        if self.window is not None:
-            self.window.toggle_fullscreen()
+        if self._window is not None:
+            self._window.toggle_fullscreen()
         return {"status": "ok"}
 
     def set_cursor(self, x: int, y: int) -> dict:
@@ -106,7 +106,7 @@ class WebviewApp:
             resizable=True,
             fullscreen=self._config.fullscreen,
         )
-        self.api.window = self._window
+        self.api._window = self._window
 
         self._stop_event.clear()
         self._worker_thread = threading.Thread(target=self._telemetry_worker, daemon=True)

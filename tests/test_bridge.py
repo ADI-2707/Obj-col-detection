@@ -79,7 +79,7 @@ class TestBridgeAPI:
     def test_toggle_fullscreen_delegates_to_window(self):
         api = BridgeAPI()
         mock_win = MagicMock()
-        api.window = mock_win
+        api._window = mock_win
         res = api.toggle_fullscreen()
         assert res["status"] == "ok"
         mock_win.toggle_fullscreen.assert_called_once()
