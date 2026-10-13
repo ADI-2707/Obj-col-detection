@@ -14,6 +14,8 @@ from orbix.paths import get_resource_path
 
 
 def encode_frame_to_b64(frame: np.ndarray, quality: int = 75) -> str:
+    if frame is None or frame.size == 0 or frame.shape[0] == 0 or frame.shape[1] == 0:
+        return ""
     success, buffer = cv2.imencode(".jpg", frame, [int(cv2.IMWRITE_JPEG_QUALITY), quality])
     if not success:
         return ""
