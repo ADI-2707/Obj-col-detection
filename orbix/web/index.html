@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Orbix - Hot Metal Slab Thickness Vision System</title>
+  <link rel="icon" type="image/png" href="orbix_logo.png">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app" class="app-layout">
+    <header class="top-bar">
+      <div class="header-left">
+        <img src="orbix_logo.png" alt="Orbix" class="header-logo">
+        <div class="header-titles">
+          <h1 class="header-title">ORBIX &mdash; HOT METAL SLAB THICKNESS VISION SYSTEM <span class="version-badge">v1.5.0</span></h1>
+          <div class="header-sub">
+            <span>Hot-metal edge detection &bull; Pixel-to-mm calibration &bull; Live thickness profile</span>
+            <span class="powered-badge">powered by <img src="systrol_logo.png" alt="Systrol" class="systrol-icon"></span>
+          </div>
+        </div>
+      </div>
+      <div class="header-right">
+        <div class="pill-badge pill-video" id="badge-video">&bull; VIDEO PLAYING</div>
+        <div class="pill-badge pill-status" id="badge-status">&bull; NORMAL</div>
+        <div class="pill-badge pill-rec" id="badge-rec">RECORDING OFF</div>
+        <div class="digital-clock" id="digital-clock">00:00:00</div>
+        <button class="icon-btn" id="btn-settings" title="Settings">&#9881;</button>
+        <button class="icon-btn" id="btn-help" title="Help">?</button>
+      </div>
+    </header>
+
+    <div class="main-body">
+      <aside class="sidebar-left">
+        <section class="card">
+          <div class="card-header">
+            <span class="card-title">&#128247; IMAGE SOURCE</span>
+            <button class="card-tool-btn" id="btn-source-config">&#9881;</button>
+          </div>
+          <div class="card-content">
+            <label class="field-label" for="rtsp-input">RTSP URL / CAMERA IP</label>
+            <input type="text" id="rtsp-input" class="text-input" value="192.168.1.250">
+            <button class="btn btn-primary btn-block" id="btn-connect">CONNECT CAMERA</button>
+            <div class="btn-grid-2">
+              <button class="btn btn-outline" id="btn-open-image">&#128444; OPEN IMAGE</button>
+              <button class="btn btn-outline" id="btn-open-video">&#127916; OPEN VIDEO</button>
+            </div>
+            <div class="btn-grid-2">
+              <button class="btn btn-outline-alt" id="btn-sample-image">&#128444; SAMPLE IMAGE</button>
+              <button class="btn btn-outline-alt" id="btn-sample-video">&#127916; SAMPLE VIDEO</button>
+            </div>
+            <div class="source-status-text" id="source-status-label">
+              <span class="dot-green">&bull;</span> VIDEO PLAYING &bull; Playing<br>
+              <span class="text-muted" id="source-filename">CAM01_2026-10-09_10-07-30.mp4</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="card-header">
+            <span class="card-title">&#9974; REGION OF INTEREST</span>
+          </div>
+          <div class="card-content">
+            <div class="btn-grid-2">
+              <button class="btn btn-outline" id="btn-select-roi">&#128269; SELECT ROI</button>
+              <button class="btn btn-success" id="btn-confirm-roi">&#10004; CONFIRM ROI</button>
+            </div>
+            <div class="btn-grid-3">
+              <button class="btn btn-mini" id="btn-roi-add">+ ADD</button>
+              <button class="btn btn-mini" id="btn-roi-del">&#128465; DELETE</button>
+              <button class="btn btn-mini" id="btn-roi-full">&#9974; FULL</button>
+            </div>
+            <div class="roi-chip" id="roi-chip-label">ROI 1: 1549 &times; 870 @ (150, 39)</div>
+            <div class="coord-grid">
+              <div class="coord-item">
+                <span class="coord-key">X</span>
+                <span class="coord-val" id="roi-x-val">150 px</span>
+              </div>
+              <div class="coord-item">
+                <span class="coord-key">Y</span>
+                <span class="coord-val" id="roi-y-val">39 px</span>
+              </div>
+              <div class="coord-item">
+                <span class="coord-key">WIDTH</span>
+                <span class="coord-val" id="roi-w-val">1549 px</span>
+              </div>
+              <div class="coord-item">
+                <span class="coord-key">HEIGHT</span>
+                <span class="coord-val" id="roi-h-val">870 px</span>
+              </div>
+            </div>
+            <div class="coord-area">
+              <span class="coord-key">AREA</span>
+              <span class="coord-val-area" id="roi-area-val">1,347,630 px&sup2;</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="card-header">
+            <span class="card-title">&#9881; THRESHOLD &amp; DETECTION</span>
+          </div>
+          <div class="card-content">
+            <label class="field-label" for="select-colour-space">COLOUR SPACE</label>
+            <select id="select-colour-space" class="select-input">
+              <option value="grayscale">Grayscale intensity</option>
+              <option value="hsv">HSV Luminance</option>
+              <option value="lab">Lab Lightness</option>
+            </select>
+
+            <label class="field-label" for="select-thresh-mode">THRESHOLD MODE</label>
+            <select id="select-thresh-mode" class="select-input">
+              <option value="otsu">Otsu (automatic)</option>
+              <option value="adaptive">Adaptive Gaussian</option>
+              <option value="manual">Manual Slider</option>
+            </select>
+
+            <div class="blur-meta">
+              <span class="field-label">BLUR</span>
+              <span class="field-label">KERNEL</span>
+            </div>
+            <div class="blur-values">
+              <span class="blur-name">Gaussian Blur</span>
+              <span class="kernel-name">k=5</span>
+            </div>
+          </div>
+        </section>
+      </aside>
+
+      <main class="center-viewport">
+        <div class="viewport-toolbar">
+          <div class="view-mode-tabs" id="view-mode-tabs">
+            <button class="mode-tab active" data-mode="ORIGINAL">ORIGINAL</button>
+            <button class="mode-tab" data-mode="GRAY">GRAY</button>
+            <button class="mode-tab" data-mode="THRESHOLD">THRESHOLD</button>
+            <button class="mode-tab" data-mode="DETECTION">DETECTION</button>
+            <button class="mode-tab" data-mode="THERMAL">THERMAL</button>
+            <button class="mode-tab" data-mode="MEASUREMENT">MEASUREMENT</button>
+          </div>
+          <div class="viewport-actions">
+            <button class="tool-btn active" id="btn-toggle-edges">EDGES</button>
+            <button class="tool-btn" id="btn-toggle-freeze">FREEZE</button>
+            <button class="tool-btn" id="btn-toggle-fullscreen">FULLSCREEN</button>
+          </div>
+        </div>
+
+        <div class="video-container" id="video-wrapper">
+          <img id="video-stream" class="video-feed" src="orbix_logo.png" alt="Live Feed">
+          <svg id="caliper-overlay" class="caliper-svg"></svg>
+          <div id="caliper-tooltip" class="floating-tooltip">
+            <div class="tt-row"><span class="tt-label">X:</span> <span id="tt-x">980</span> px &nbsp; <span class="tt-label">Y:</span> <span id="tt-y">721</span> px</div>
+            <div class="tt-row"><span class="tt-label">Top:</span> <span id="tt-top">541.1</span> px &nbsp; <span class="tt-label">Bottom:</span> <span id="tt-bot">853.5</span> px</div>
+            <div class="tt-row"><span class="tt-label">Thickness:</span> <span id="tt-px">312.4</span> px</div>
+            <div class="tt-row tt-highlight"><span class="tt-label">Thickness:</span> <span id="tt-mm">108.6</span> mm</div>
+          </div>
+          <div class="watermark-brand">Ecoloop</div>
+          <div class="watermark-powered">powered by <img src="systrol_logo.png" alt="Systrol" class="watermark-logo"></div>
+        </div>
+
+        <div class="profile-card">
+          <div class="profile-header">
+            <div class="profile-tabs">
+              <span class="prof-tab active">THICKNESS PROFILE</span>
+              <span class="prof-tab">MEASUREMENT POINTS</span>
+            </div>
+            <div class="profile-metrics-summary" id="profile-summary">
+              MIN: <span id="prof-min">106.6</span> &bull; MAX: <span id="prof-max">111.1</span> &bull; AVG: <span id="prof-avg">109.0</span> &bull; &sigma;: <span id="prof-std">0.80</span> &bull; CUR: <span id="prof-cur">108.6 mm</span>
+            </div>
+            <div class="profile-legend">
+              <span class="legend-item"><span class="leg-line line-thick"></span> Thickness</span>
+              <span class="legend-item"><span class="leg-line line-target"></span> Target</span>
+              <span class="legend-item"><span class="leg-line line-limit"></span> Limits</span>
+              <span class="legend-item"><span class="leg-dot"></span> Points</span>
+            </div>
+          </div>
+          <div class="chart-wrapper">
+            <canvas id="profile-chart" class="profile-canvas" width="1200" height="150"></canvas>
+          </div>
+        </div>
+      </main>
+
+      <aside class="sidebar-right">
+        <section class="card card-thickness">
+          <div class="card-header">
+            <span class="card-title">&#128207; THICKNESS</span>
+            <span class="card-sub-info" id="cursor-pos-label">CURSOR X: 980 px</span>
+          </div>
+          <div class="thickness-hero">
+            <span class="thickness-big" id="readout-mm">108.6</span>
+            <span class="thickness-unit">mm</span>
+          </div>
+          <div class="thickness-px-sub" id="readout-px">312.4 px</div>
+
+          <div class="stats-table">
+            <div class="stat-row">
+              <span class="stat-name">MINIMUM</span>
+              <span class="stat-val" id="stat-min">106.6 mm</span>
+            </div>
+            <div class="stat-row">
+              <span class="stat-name">MAXIMUM</span>
+              <span class="stat-val" id="stat-max">111.1 mm</span>
+            </div>
+            <div class="stat-row">
+              <span class="stat-name">AVERAGE</span>
+              <span class="stat-val" id="stat-avg">109.0 mm</span>
+            </div>
+            <div class="stat-row">
+              <span class="stat-name">STD DEV</span>
+              <span class="stat-val" id="stat-std">0.80 mm</span>
+            </div>
+          </div>
+
+          <div class="status-banner banner-normal" id="spec-status-banner">
+            &bull; NORMAL
+          </div>
+
+          <div class="gauge-label">
+            <span>DETECTION CONFIDENCE</span>
+            <span class="gauge-pct" id="conf-pct">100% GOOD</span>
+          </div>
+          <div class="led-bar" id="led-confidence-bar"></div>
+
+          <div class="limits-grid">
+            <div class="limit-item">
+              <span class="limit-lbl">TARGET</span>
+              <span class="limit-val" id="lim-target">108.6</span>
+            </div>
+            <div class="limit-item">
+              <span class="limit-lbl">LOWER</span>
+              <span class="limit-val" id="lim-lower">80.0</span>
+            </div>
+            <div class="limit-item">
+              <span class="limit-lbl">UPPER</span>
+              <span class="limit-val" id="lim-upper">145.0</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="card-header">
+            <span class="card-title">&#128295; CALIBRATION</span>
+          </div>
+          <div class="card-content">
+            <div class="calib-val" id="calib-mm-px">0.34757 mm/px</div>
+            <div class="calib-derived" id="calib-px-mm">= 2.87712 px/mm (derived)</div>
+            <div class="calib-meta">Known object (2-point) &bull; <span id="calib-date">10-10-2026 10:23:55</span></div>
+            <button class="btn btn-primary btn-block" id="btn-calibrate">CALIBRATE</button>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="card-header">
+            <span class="card-title">&#9658; OPERATION</span>
+          </div>
+          <div class="card-content operation-btns">
+            <button class="btn btn-success btn-block" id="btn-start-meas">&#9658; START MEASUREMENT</button>
+            <button class="btn btn-primary btn-block" id="btn-capture">&#128247; CAPTURE IMAGE</button>
+            <button class="btn btn-outline btn-block" id="btn-report">&#128196; GENERATE REPORT</button>
+          </div>
+        </section>
+      </aside>
+    </div>
+
+    <footer class="bottom-status-bar">
+      <div class="status-left">
+        <span>FPS <strong id="status-fps">14.5</strong> / 3.9</span>
+        <span class="sep">|</span>
+        <span>RESOLUTION <strong id="status-res">1920&times;1080</strong></span>
+        <span class="sep">|</span>
+        <span>PROCESSING <strong id="status-proc">250 ms</strong></span>
+        <span class="sep">|</span>
+        <span>THRESHOLD <strong id="status-thresh">OTSU 113</strong></span>
+        <span class="sep">|</span>
+        <span>CALIBRATION <strong id="status-calib">0.34757 mm/px</strong></span>
+      </div>
+      <div class="status-right" id="status-source-name">
+        Playing CAM01_2026-10-09_10-07-30.mp4
+      </div>
+    </footer>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
