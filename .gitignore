@@ -34,3 +34,5 @@ data/logs/*.csv
 assets/*
 !assets/*.ico
 !assets/*.png
+
+docs/
