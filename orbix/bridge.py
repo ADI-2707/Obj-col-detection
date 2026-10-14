@@ -29,6 +29,26 @@ def encode_frame_to_b64(frame: np.ndarray, quality: int = 75) -> str:
     return base64.b64encode(buffer).decode("ascii")
 
 
+def letterbox_frame(frame: np.ndarray, target_w: int = 1920, target_h: int = 1080) -> np.ndarray:
+    if frame is None or frame.size == 0:
+        return frame
+    h, w = frame.shape[:2]
+    if (w, h) == (target_w, target_h):
+        return frame
+    scale = min(target_w / w, target_h / h)
+    nw = max(1, int(round(w * scale)))
+    nh = max(1, int(round(h * scale)))
+    resized = cv2.resize(frame, (nw, nh), interpolation=cv2.INTER_LINEAR)
+    if frame.ndim == 3:
+        canvas = np.zeros((target_h, target_w, frame.shape[2]), dtype=frame.dtype)
+    else:
+        canvas = np.zeros((target_h, target_w), dtype=frame.dtype)
+    pad_x = (target_w - nw) // 2
+    pad_y = (target_h - nh) // 2
+    canvas[pad_y : pad_y + nh, pad_x : pad_x + nw] = resized
+    return canvas
+
+
 class BridgeAPI:
     def __init__(self, target: Any = None):
         if hasattr(target, "_engine"):
@@ -410,7 +430,7 @@ class WebviewApp:
             if frame is None:
                 frame = self._engine.generate_synthetic_slab_frame(1920, 1080, frame_idx)
             elif frame.shape[:2] != (1080, 1920):
-                frame = cv2.resize(frame, (1920, 1080))
+                frame = letterbox_frame(frame, 1920, 1080)
 
             measurement = self._engine.measure(
                 frame,

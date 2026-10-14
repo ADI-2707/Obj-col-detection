@@ -413,3 +413,36 @@ class TestWebAssets:
         assert res["path"] == str(pdf_path)
 
 
+class TestLetterboxFrame:
+    def test_letterbox_same_size_returns_same(self):
+        from orbix.bridge import letterbox_frame
+        frame = np.ones((1080, 1920, 3), dtype=np.uint8) * 128
+        out = letterbox_frame(frame, 1920, 1080)
+        assert out.shape == (1080, 1920, 3)
+        assert np.array_equal(out, frame)
+
+    def test_letterbox_4_to_3_preserves_aspect_ratio(self):
+        from orbix.bridge import letterbox_frame
+        frame = np.ones((480, 640, 3), dtype=np.uint8) * 200
+        out = letterbox_frame(frame, 1920, 1080)
+        assert out.shape == (1080, 1920, 3)
+        assert np.all(out[:, :240] == 0)
+        assert np.all(out[:, 1680:] == 0)
+        assert np.all(out[:, 240:1680] == 200)
+
+    def test_letterbox_grayscale(self):
+        from orbix.bridge import letterbox_frame
+        frame = np.ones((480, 640), dtype=np.uint8) * 255
+        out = letterbox_frame(frame, 1920, 1080)
+        assert out.shape == (1080, 1920)
+        assert np.all(out[:, :240] == 0)
+        assert np.all(out[:, 240:1680] == 255)
+
+    def test_letterbox_none_or_empty(self):
+        from orbix.bridge import letterbox_frame
+        assert letterbox_frame(None) is None
+        empty = np.array([])
+        assert letterbox_frame(empty).size == 0
+
+
+
