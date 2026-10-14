@@ -1797,5 +1797,111 @@ input:checked + .slider:before {
   }
 }
 
+.scada-modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(4px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.scada-modal-window {
+  width: 600px;
+  max-width: 90vw;
+  max-height: 85vh;
+  background: var(--bg-card);
+  border: 1px solid var(--border-focus);
+  border-radius: 4px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8), 0 0 15px var(--cyan-glow);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: modalFadeIn 0.15s ease-out;
+}
+
+@keyframes modalFadeIn {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.scada-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  background: var(--bg-topbar);
+  border-bottom: 1px solid var(--border-card);
+}
+
+.scada-modal-title {
+  font-family: var(--font-main);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: var(--cyan-accent);
+}
+
+.scada-modal-close {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 4px;
+}
+
+.scada-modal-close:hover {
+  color: var(--red-alert);
+}
+
+.scada-modal-body {
+  padding: 16px;
+  overflow-y: auto;
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--text-main);
+}
+
+.scada-modal-body h4 {
+  color: var(--cyan-accent);
+  margin: 12px 0 4px 0;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.scada-modal-body h4:first-child {
+  margin-top: 0;
+}
+
+.scada-modal-body p {
+  margin: 0 0 8px 0;
+  color: var(--text-muted);
+}
+
+.scada-modal-body ul {
+  margin: 0 0 8px 16px;
+  padding: 0;
+  color: var(--text-muted);
+}
+
+.scada-modal-body li {
+  margin-bottom: 4px;
+}
+
+.scada-modal-footer {
+  padding: 10px 14px;
+  background: var(--bg-topbar);
+  border-top: 1px solid var(--border-card);
+  display: flex;
+  justify-content: flex-end;
+}
+
 
 

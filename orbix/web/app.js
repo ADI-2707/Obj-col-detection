@@ -76,6 +76,7 @@
     if (itemHelp) {
       itemHelp.addEventListener("click", () => {
         dropdown.classList.remove("show");
+        showHelpModal();
       });
     }
 
@@ -83,8 +84,104 @@
     if (itemAbout) {
       itemAbout.addEventListener("click", () => {
         dropdown.classList.remove("show");
+        showAboutModal();
       });
     }
+  }
+
+  function showScadaModal(title, html) {
+    const backdrop = document.getElementById("scada-modal-backdrop");
+    const titleEl = document.getElementById("scada-modal-title");
+    const bodyEl = document.getElementById("scada-modal-body");
+    if (titleEl) titleEl.textContent = title;
+    if (bodyEl) bodyEl.innerHTML = html;
+    if (backdrop) backdrop.style.display = "flex";
+  }
+
+  function closeScadaModal() {
+    const backdrop = document.getElementById("scada-modal-backdrop");
+    if (backdrop) backdrop.style.display = "none";
+  }
+
+  function showHelpModal() {
+    showScadaModal("ORBIX \u2014 SYSTEM HELP & DOCUMENTATION", `
+      <h4>1. SYSTEM OVERVIEW</h4>
+      <p>The Orbix Hot Metal Slab Thickness Vision System performs non-contact real-time optical thickness gauging of red-hot cast steel slabs at 1920\u00d71080 resolution.</p>
+      <h4>2. EDGE DETECTION &amp; COLOR SPACES</h4>
+      <p>The vision engine computes vertical Sobel intensity gradients combined with Otsu, Adaptive Gaussian, or Manual thresholding to lock onto boundary edges.</p>
+      <ul>
+        <li><strong>Grayscale:</strong> Standard luminance intensity calculation.</li>
+        <li><strong>HSV (V):</strong> High dynamic range value channel for glowing hot steel.</li>
+        <li><strong>CIELAB (L):</strong> Perceptually uniform lightness channel.</li>
+      </ul>
+      <h4>3. CALIBRATION PROCEDURE</h4>
+      <p>Click <strong>CALIBRATE</strong> on the right panel, then click Point 1 (top edge) and Point 2 (bottom edge) on the live video. Enter the known reference distance in millimeters to synchronize scale.</p>
+      <h4>4. REGION OF INTEREST (ROI)</h4>
+      <p>Click <strong>SELECT ROI</strong> and drag across the slab area to constrain edge tracking and improve noise immunity.</p>
+      <h4>5. KEYBOARD SHORTCUTS</h4>
+      <ul>
+        <li><strong>ESC:</strong> Cancel ROI selection, Calibration mode, or close modal dialogs.</li>
+        <li><strong>F11:</strong> Toggle Fullscreen display mode.</li>
+      </ul>
+    `);
+  }
+
+  function showAboutModal() {
+    showScadaModal("ABOUT \u2014 ORBIX VISION SYSTEM", `
+      <h4>ORBIX HOT METAL SLAB THICKNESS VISION SYSTEM</h4>
+      <p><strong>Version:</strong> 1.5.0 Production Build</p>
+      <p><strong>Architecture:</strong> Hybrid Python 3.14 Vision Core + Accelerated Webview SCADA</p>
+      <p><strong>Mill Subsystem:</strong> Continuous Casting / Roughing Mill In-line Gauging</p>
+      <h4>SPECIFICATIONS</h4>
+      <ul>
+        <li><strong>Resolution:</strong> 1920 \u00d7 1080 @ 30 FPS Industrial GigE / RTSP</li>
+        <li><strong>Accuracy:</strong> \u00b10.2 mm calibrated measurement tolerance</li>
+        <li><strong>Measurement Rate:</strong> Sub-15 ms edge processing pipeline</li>
+        <li><strong>Sensor Interface:</strong> RTSP / GigE Vision / Direct V4L2-DirectShow</li>
+      </ul>
+      <p style="margin-top:14px; border-top:1px solid var(--border-sub); padding-top:8px; font-size:10px; color:var(--text-muted);">
+        \u00a9 2026 Systrol Industrial Automation. All rights reserved.
+      </p>
+    `);
+  }
+
+  function showSourceConfigModal() {
+    showScadaModal("SOURCE CONFIGURATION", `
+      <h4>CAMERA STREAM &amp; SOURCE PRESETS</h4>
+      <p>Configure the optical sensor ingestion parameters:</p>
+      <ul>
+        <li><strong>RTSP Stream:</strong> <code>rtsp://192.168.1.250:554/live/ch0</code></li>
+        <li><strong>Local Webcam / USB Sensor:</strong> <code>0</code> or <code>1</code></li>
+        <li><strong>Recorded Test Reel:</strong> Sample MP4 slab rolling archive</li>
+      </ul>
+      <p>Enter connection string in the Image Source input box and click <strong>CONNECT CAMERA</strong>.</p>
+    `);
+  }
+
+  function initModalSystem() {
+    const backdrop = document.getElementById("scada-modal-backdrop");
+    const closeBtn = document.getElementById("scada-modal-close");
+    const okBtn = document.getElementById("scada-modal-ok");
+    const win = document.getElementById("scada-modal-window");
+
+    if (closeBtn) closeBtn.addEventListener("click", closeScadaModal);
+    if (okBtn) okBtn.addEventListener("click", closeScadaModal);
+
+    if (backdrop && win) {
+      backdrop.addEventListener("click", (e) => {
+        if (!win.contains(e.target)) closeScadaModal();
+      });
+    }
+
+    const btnHelp = document.getElementById("btn-help");
+    if (btnHelp) btnHelp.addEventListener("click", showHelpModal);
+
+    const btnSourceCfg = document.getElementById("btn-source-config");
+    if (btnSourceCfg) btnSourceCfg.addEventListener("click", showSourceConfigModal);
+
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") closeScadaModal();
+    });
   }
 
 
@@ -1024,6 +1121,7 @@
     initClock();
     initThemeSystem();
     initSettingsDropdown();
+    initModalSystem();
     initLedBar();
     initTabs();
     initRoiControls();

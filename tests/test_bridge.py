@@ -324,3 +324,17 @@ class TestWebAssets:
         assert "renderPointsTable" in content
         assert "points-table-body" in content
 
+    def test_html_contains_modal_dialog(self):
+        html_path = Path("orbix/web/index.html")
+        content = html_path.read_text(encoding="utf-8")
+        assert "scada-modal-backdrop" in content
+        assert "scada-modal-window" in content
+        assert "scada-modal-title" in content
+
+    def test_js_contains_modal_system(self):
+        js_path = Path("orbix/web/app.js")
+        content = js_path.read_text(encoding="utf-8")
+        assert "showScadaModal" in content
+        assert "showHelpModal" in content
+        assert "showAboutModal" in content
+
