@@ -207,6 +207,14 @@ class TestBridgeAPI:
         assert res_b["status"] == "ok"
         assert api.engine.blur_ksize == 7
 
+    def test_set_calibration(self):
+        api = BridgeAPI()
+        res = api.set_calibration(0.412)
+        assert res["status"] == "ok"
+        assert abs(api.engine.calibration - 0.412) < 1e-5
+        res_err = api.set_calibration(-1.0)
+        assert res_err["status"] == "error"
+
 
 class TestWebviewApp:
     def test_initialization(self, mock_config):

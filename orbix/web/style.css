@@ -733,7 +733,8 @@ html, body {
   justify-content: center;
 }
 
-.video-container.selecting-roi {
+.video-container.selecting-roi,
+.video-container.calibrating-mode {
   cursor: crosshair;
 }
 
@@ -742,6 +743,13 @@ html, body {
   color: var(--cyan-accent);
   border-color: var(--cyan-accent);
   box-shadow: 0 0 8px var(--cyan-glow);
+}
+
+.btn.active-calibrating {
+  background: #3e2800;
+  color: var(--amber-warn);
+  border-color: var(--amber-warn);
+  box-shadow: 0 0 8px rgba(255, 183, 3, 0.4);
 }
 
 .video-feed {

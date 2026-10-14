@@ -9,6 +9,8 @@
   let isSelectingRoi = false;
   let roiDragStart = null;
   let tempRoi = null;
+  let isCalibrating = false;
+  let calibPoints = [];
 
   function initClock() {
     const clockEl = document.getElementById("digital-clock");
@@ -428,6 +430,44 @@
     }
   }
 
+  function initCalibrationControls() {
+    const btnCalib = document.getElementById("btn-calibrate");
+    const wrapper = document.getElementById("video-wrapper");
+
+    function resetCalibrationState() {
+      isCalibrating = false;
+      calibPoints = [];
+      if (btnCalib) {
+        btnCalib.textContent = "CALIBRATE";
+        btnCalib.classList.remove("active-calibrating");
+      }
+      if (wrapper) wrapper.classList.remove("calibrating-mode");
+      updateCaliperOverlay();
+    }
+
+    if (btnCalib) {
+      btnCalib.addEventListener("click", () => {
+        if (isCalibrating) {
+          resetCalibrationState();
+        } else {
+          isCalibrating = true;
+          calibPoints = [];
+          btnCalib.textContent = "POINT 1: CLICK TOP";
+          btnCalib.classList.add("active-calibrating");
+          if (wrapper) wrapper.classList.add("calibrating-mode");
+          const tooltip = document.getElementById("caliper-tooltip");
+          if (tooltip) tooltip.style.display = "none";
+        }
+      });
+    }
+
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && isCalibrating) {
+        resetCalibrationState();
+      }
+    });
+  }
+
   function initMouseInspection() {
     const wrapper = document.getElementById("video-wrapper");
     const tooltip = document.getElementById("caliper-tooltip");
@@ -439,6 +479,54 @@
       const rect = wrapper.getBoundingClientRect();
       roiDragStart = { x: e.clientX - rect.left, y: e.clientY - rect.top };
       tempRoi = null;
+    });
+
+    wrapper.addEventListener("click", (e) => {
+      if (!isCalibrating) return;
+      const rect = wrapper.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      const fx = Math.round((x / rect.width) * 1920);
+      const fy = Math.round((y / rect.height) * 1080);
+
+      calibPoints.push({ x: fx, y: fy });
+
+      const btnCalib = document.getElementById("btn-calibrate");
+      if (calibPoints.length === 1) {
+        if (btnCalib) btnCalib.textContent = "POINT 2: CLICK BOTTOM";
+        updateCaliperOverlay();
+      } else if (calibPoints.length >= 2) {
+        const pt1 = calibPoints[0];
+        const pt2 = calibPoints[1];
+        const distPx = Math.hypot(pt2.x - pt1.x, pt2.y - pt1.y);
+        const input = window.prompt("Enter known reference distance in millimeters (mm):", "174.0");
+        if (input !== null) {
+          const knownMm = parseFloat(input);
+          if (knownMm > 0 && distPx > 0) {
+            const newScale = knownMm / distPx;
+            if (window.pywebview && window.pywebview.api && window.pywebview.api.set_calibration) {
+              window.pywebview.api.set_calibration(newScale);
+            }
+            const elVal = document.getElementById("calib-mm-px");
+            const elDer = document.getElementById("calib-px-mm");
+            const elDate = document.getElementById("calib-date");
+            if (elVal) elVal.textContent = `${newScale.toFixed(5)} mm/px`;
+            if (elDer) elDer.textContent = `= ${(1 / newScale).toFixed(5)} px/mm (derived)`;
+            if (elDate) {
+              const d = new Date();
+              elDate.textContent = `${String(d.getDate()).padStart(2, "0")}-${String(d.getMonth() + 1).padStart(2, "0")}-${d.getFullYear()} ${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}:${String(d.getSeconds()).padStart(2, "0")}`;
+            }
+          }
+        }
+        isCalibrating = false;
+        calibPoints = [];
+        if (btnCalib) {
+          btnCalib.textContent = "CALIBRATE";
+          btnCalib.classList.remove("active-calibrating");
+        }
+        if (wrapper) wrapper.classList.remove("calibrating-mode");
+        updateCaliperOverlay();
+      }
     });
 
     wrapper.addEventListener("mousemove", (e) => {
@@ -545,6 +633,19 @@
       <circle cx="${cx}" cy="${topY}" r="4.5" fill="#00e5ff" stroke="#000000" stroke-width="1.5"/>
       <circle cx="${cx}" cy="${botY}" r="4.5" fill="#00e5ff" stroke="#000000" stroke-width="1.5"/>
     `;
+
+    if (isCalibrating && calibPoints.length > 0) {
+      calibPoints.forEach((pt, idx) => {
+        const sx = (pt.x / 1920) * w;
+        const sy = (pt.y / 1080) * h;
+        svg.innerHTML += `
+          <circle cx="${sx}" cy="${sy}" r="6" fill="#ffb703" stroke="#000000" stroke-width="2"/>
+          <line x1="${sx - 12}" y1="${sy}" x2="${sx + 12}" y2="${sy}" stroke="#ffb703" stroke-width="1.5"/>
+          <line x1="${sx}" y1="${sy - 12}" x2="${sx}" y2="${sy + 12}" stroke="#ffb703" stroke-width="1.5"/>
+          <text x="${sx + 10}" y="${sy - 8}" fill="#ffb703" font-size="11" font-weight="bold">PT ${idx + 1}</text>
+        `;
+      });
+    }
 
     const topLabel = document.getElementById("label-top-edge");
     const botLabel = document.getElementById("label-bot-edge");
@@ -830,6 +931,15 @@
       }
     }
 
+    const elVal = document.getElementById("calib-mm-px");
+    const elDer = document.getElementById("calib-px-mm");
+    if (elVal && !isCalibrating && payload.calibration) {
+      elVal.textContent = `${payload.calibration.toFixed(5)} mm/px`;
+    }
+    if (elDer && !isCalibrating && payload.calibration > 0) {
+      elDer.textContent = `= ${(1 / payload.calibration).toFixed(5)} px/mm (derived)`;
+    }
+
     updateCaliperOverlay();
     renderProfileChart(payload);
   };
@@ -842,6 +952,7 @@
     initTabs();
     initRoiControls();
     initDetectionControls();
+    initCalibrationControls();
     initMouseInspection();
     updateRoiDisplay(activeRoi);
     renderProfileChart(null);

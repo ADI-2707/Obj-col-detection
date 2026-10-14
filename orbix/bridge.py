@@ -111,6 +111,13 @@ class BridgeAPI:
         self.engine.blur_ksize = max(1, int(ksize))
         return {"status": "ok", "blur": self.engine.blur_ksize}
 
+    def set_calibration(self, mm_per_px: float) -> dict:
+        val = float(mm_per_px)
+        if val > 0:
+            self.engine.calibration = val
+            return {"status": "ok", "calibration": self.engine.calibration}
+        return {"status": "error", "message": "Invalid scale"}
+
     def start_measurement(self) -> dict:
         self.is_measuring = not self.is_measuring
         return {"status": "ok", "is_measuring": self.is_measuring}
