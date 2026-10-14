@@ -733,6 +733,17 @@ html, body {
   justify-content: center;
 }
 
+.video-container.selecting-roi {
+  cursor: crosshair;
+}
+
+.btn.active-selecting {
+  background: #003652;
+  color: var(--cyan-accent);
+  border-color: var(--cyan-accent);
+  box-shadow: 0 0 8px var(--cyan-glow);
+}
+
 .video-feed {
   width: 100%;
   height: 100%;

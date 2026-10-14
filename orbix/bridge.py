@@ -370,6 +370,7 @@ class WebviewApp:
                 "cursor_x": self.api.cursor_x,
                 "cursor_y": self.api.cursor_y,
                 "source_name": self.api.source_label,
+                "roi": list(self.api.roi),
             }
 
             if self._stop_event.is_set():

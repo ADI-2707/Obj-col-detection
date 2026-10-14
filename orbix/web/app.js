@@ -5,6 +5,10 @@
   let cursorXRatio = 0.47;
   let cursorYRatio = 0.55;
   let lastTelemetry = null;
+  let activeRoi = { x: 150, y: 39, w: 1549, h: 870 };
+  let isSelectingRoi = false;
+  let roiDragStart = null;
+  let tempRoi = null;
 
   function initClock() {
     const clockEl = document.getElementById("digital-clock");
@@ -309,20 +313,139 @@
     }
   }
 
+  function updateRoiDisplay(roi) {
+    if (!roi) return;
+    const elX = document.getElementById("roi-x-val");
+    const elY = document.getElementById("roi-y-val");
+    const elW = document.getElementById("roi-w-val");
+    const elH = document.getElementById("roi-h-val");
+    const elArea = document.getElementById("roi-area-val");
+    const elChip = document.getElementById("roi-chip-label");
+
+    if (elX) elX.textContent = `${roi.x} px`;
+    if (elY) elY.textContent = `${roi.y} px`;
+    if (elW) elW.textContent = `${roi.w} px`;
+    if (elH) elH.textContent = `${roi.h} px`;
+    if (elArea) elArea.innerHTML = `${(roi.w * roi.h).toLocaleString()} px&sup2;`;
+    if (elChip) elChip.innerHTML = `ROI 1: ${roi.w} &times; ${roi.h} @ (${roi.x}, ${roi.y})`;
+  }
+
+  function initRoiControls() {
+    const btnSelect = document.getElementById("btn-select-roi");
+    const btnConfirm = document.getElementById("btn-confirm-roi");
+    const btnFull = document.getElementById("btn-roi-full");
+    const btnDel = document.getElementById("btn-roi-del");
+    const btnAdd = document.getElementById("btn-roi-add");
+    const wrapper = document.getElementById("video-wrapper");
+
+    if (btnSelect) {
+      btnSelect.addEventListener("click", () => {
+        isSelectingRoi = !isSelectingRoi;
+        btnSelect.classList.toggle("active-selecting", isSelectingRoi);
+        if (wrapper) wrapper.classList.toggle("selecting-roi", isSelectingRoi);
+        if (isSelectingRoi) {
+          const tooltip = document.getElementById("caliper-tooltip");
+          if (tooltip) tooltip.style.display = "none";
+        }
+      });
+    }
+
+    if (btnConfirm) {
+      btnConfirm.addEventListener("click", () => {
+        isSelectingRoi = false;
+        if (btnSelect) btnSelect.classList.remove("active-selecting");
+        if (wrapper) wrapper.classList.remove("selecting-roi");
+        if (tempRoi) {
+          activeRoi = { ...tempRoi };
+          tempRoi = null;
+        }
+        updateRoiDisplay(activeRoi);
+        updateCaliperOverlay();
+        if (window.pywebview && window.pywebview.api && window.pywebview.api.set_roi) {
+          window.pywebview.api.set_roi(activeRoi.x, activeRoi.y, activeRoi.w, activeRoi.h);
+        }
+        const orig = btnConfirm.innerHTML;
+        btnConfirm.innerHTML = "&#10004; CONFIRMED!";
+        setTimeout(() => { btnConfirm.innerHTML = orig; }, 1200);
+      });
+    }
+
+    if (btnFull) {
+      btnFull.addEventListener("click", () => {
+        activeRoi = { x: 0, y: 0, w: 1920, h: 1080 };
+        tempRoi = null;
+        updateRoiDisplay(activeRoi);
+        updateCaliperOverlay();
+        if (window.pywebview && window.pywebview.api && window.pywebview.api.set_roi) {
+          window.pywebview.api.set_roi(0, 0, 1920, 1080);
+        }
+      });
+    }
+
+    if (btnDel) {
+      btnDel.addEventListener("click", () => {
+        activeRoi = { x: 0, y: 0, w: 1920, h: 1080 };
+        tempRoi = null;
+        updateRoiDisplay(activeRoi);
+        updateCaliperOverlay();
+        if (window.pywebview && window.pywebview.api && window.pywebview.api.set_roi) {
+          window.pywebview.api.set_roi(0, 0, 1920, 1080);
+        }
+      });
+    }
+
+    if (btnAdd) {
+      btnAdd.addEventListener("click", () => {
+        activeRoi = { x: 240, y: 135, w: 1440, h: 810 };
+        tempRoi = null;
+        updateRoiDisplay(activeRoi);
+        updateCaliperOverlay();
+        if (window.pywebview && window.pywebview.api && window.pywebview.api.set_roi) {
+          window.pywebview.api.set_roi(activeRoi.x, activeRoi.y, activeRoi.w, activeRoi.h);
+        }
+      });
+    }
+  }
+
   function initMouseInspection() {
     const wrapper = document.getElementById("video-wrapper");
     const tooltip = document.getElementById("caliper-tooltip");
 
     if (!wrapper) return;
 
+    wrapper.addEventListener("mousedown", (e) => {
+      if (!isSelectingRoi) return;
+      const rect = wrapper.getBoundingClientRect();
+      roiDragStart = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+      tempRoi = null;
+    });
+
     wrapper.addEventListener("mousemove", (e) => {
       const rect = wrapper.getBoundingClientRect();
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
+
+      if (isSelectingRoi && roiDragStart) {
+        const rx = Math.min(roiDragStart.x, x);
+        const ry = Math.min(roiDragStart.y, y);
+        const rw = Math.max(10, Math.abs(x - roiDragStart.x));
+        const rh = Math.max(10, Math.abs(y - roiDragStart.y));
+
+        const frameX = Math.round(Math.max(0, Math.min(1910, (rx / rect.width) * 1920)));
+        const frameY = Math.round(Math.max(0, Math.min(1070, (ry / rect.height) * 1080)));
+        const frameW = Math.round(Math.max(10, Math.min(1920 - frameX, (rw / rect.width) * 1920)));
+        const frameH = Math.round(Math.max(10, Math.min(1080 - frameY, (rh / rect.height) * 1080)));
+
+        tempRoi = { x: frameX, y: frameY, w: frameW, h: frameH };
+        updateRoiDisplay(tempRoi);
+        updateCaliperOverlay();
+        return;
+      }
+
       cursorXRatio = Math.max(0, Math.min(1, x / rect.width));
       cursorYRatio = Math.max(0, Math.min(1, y / rect.height));
 
-      if (tooltip) {
+      if (tooltip && !isSelectingRoi) {
         tooltip.style.display = "block";
         const maxTipX = rect.width - 230;
         const tipX = Math.min(maxTipX, Math.max(10, x + 16));
@@ -344,6 +467,21 @@
       }
     });
 
+    window.addEventListener("mouseup", () => {
+      if (isSelectingRoi && roiDragStart) {
+        if (tempRoi) {
+          activeRoi = { ...tempRoi };
+          tempRoi = null;
+        }
+        roiDragStart = null;
+        updateRoiDisplay(activeRoi);
+        updateCaliperOverlay();
+        if (window.pywebview && window.pywebview.api && window.pywebview.api.set_roi) {
+          window.pywebview.api.set_roi(activeRoi.x, activeRoi.y, activeRoi.w, activeRoi.h);
+        }
+      }
+    });
+
     wrapper.addEventListener("mouseleave", () => {
       if (tooltip) tooltip.style.display = "none";
     });
@@ -358,6 +496,12 @@
     const h = wrapper.clientHeight;
     const cx = cursorXRatio * w;
 
+    const r = tempRoi || activeRoi;
+    const rx = (r.x / 1920) * w;
+    const ry = (r.y / 1080) * h;
+    const rw = (r.w / 1920) * w;
+    const rh = (r.h / 1080) * h;
+
     let topRatio = 0.33;
     let botRatio = 0.78;
 
@@ -370,8 +514,12 @@
     const botY = botRatio * h;
 
     svg.innerHTML = `
-      <rect x="${w * 0.08}" y="${h * 0.04}" width="${w * 0.81}" height="${h * 0.81}" fill="none" stroke="#00e5ff" stroke-width="1.2" stroke-dasharray="6 4" opacity="0.8"/>
-      <line x1="${cx}" y1="${h * 0.04}" x2="${cx}" y2="${h * 0.85}" stroke="#555555" stroke-width="1" stroke-dasharray="3 3"/>
+      <rect x="${rx}" y="${ry}" width="${rw}" height="${rh}" fill="rgba(0, 229, 255, 0.04)" stroke="#00e5ff" stroke-width="1.4" stroke-dasharray="6 4" opacity="0.85"/>
+      <rect x="${rx - 3}" y="${ry - 3}" width="6" height="6" fill="#00e5ff"/>
+      <rect x="${rx + rw - 3}" y="${ry - 3}" width="6" height="6" fill="#00e5ff"/>
+      <rect x="${rx - 3}" y="${ry + rh - 3}" width="6" height="6" fill="#00e5ff"/>
+      <rect x="${rx + rw - 3}" y="${ry + rh - 3}" width="6" height="6" fill="#00e5ff"/>
+      <line x1="${cx}" y1="${ry}" x2="${cx}" y2="${ry + rh}" stroke="#555555" stroke-width="1" stroke-dasharray="3 3"/>
       <line x1="${cx}" y1="${topY}" x2="${cx}" y2="${botY}" stroke="#ffb703" stroke-width="2.5"/>
       <circle cx="${cx}" cy="${topY}" r="4.5" fill="#00e5ff" stroke="#000000" stroke-width="1.5"/>
       <circle cx="${cx}" cy="${botY}" r="4.5" fill="#00e5ff" stroke="#000000" stroke-width="1.5"/>
@@ -380,11 +528,11 @@
     const topLabel = document.getElementById("label-top-edge");
     const botLabel = document.getElementById("label-bot-edge");
     if (topLabel) {
-      topLabel.style.left = `${w * 0.12}px`;
+      topLabel.style.left = `${Math.max(8, rx + 16)}px`;
       topLabel.style.top = `${Math.max(8, topY - 14)}px`;
     }
     if (botLabel) {
-      botLabel.style.left = `${w * 0.12}px`;
+      botLabel.style.left = `${Math.max(8, rx + 16)}px`;
       botLabel.style.top = `${Math.min(h - 22, botY + 4)}px`;
     }
   }
@@ -633,6 +781,13 @@
       updateSourceDisplay(payload.source_name);
     }
 
+    if (payload.roi && !isSelectingRoi && !roiDragStart) {
+      if (activeRoi.x !== payload.roi[0] || activeRoi.y !== payload.roi[1] || activeRoi.w !== payload.roi[2] || activeRoi.h !== payload.roi[3]) {
+        activeRoi = { x: payload.roi[0], y: payload.roi[1], w: payload.roi[2], h: payload.roi[3] };
+        updateRoiDisplay(activeRoi);
+      }
+    }
+
     updateCaliperOverlay();
     renderProfileChart(payload);
   };
@@ -643,7 +798,9 @@
     initSettingsDropdown();
     initLedBar();
     initTabs();
+    initRoiControls();
     initMouseInspection();
+    updateRoiDisplay(activeRoi);
     renderProfileChart(null);
   });
 })();
