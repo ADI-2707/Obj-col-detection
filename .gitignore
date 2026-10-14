@@ -18,7 +18,9 @@ env/
 *.engine
 *.torchscript
 
-data/logs/*.csv
+data/logs/*
+data/reports/*
+data/captures/*
 
 .idea/
 .vscode/

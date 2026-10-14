@@ -401,9 +401,12 @@
 
     const isLight = document.documentElement.getAttribute("data-theme") === "light";
     const bgFill = isLight ? "#ffffff" : "#020202";
-    const gridStroke = isLight ? "#e2e8f0" : "#161616";
-    const textFill = isLight ? "#64748b" : "#555555";
-    const curveStroke = isLight ? "#0098db" : "#00e5ff";
+    const gridStroke = isLight ? "#cbd5e1" : "#1e1e1e";
+    const textFill = isLight ? "#0f172a" : "#94a3b8";
+    const curveStroke = isLight ? "#0284c7" : "#00e5ff";
+    const targetStroke = isLight ? "#16a34a" : "#00e676";
+    const limitStroke = isLight ? "#dc2626" : "#ff334b";
+    const scrubberStroke = isLight ? "#0f172a" : "#ffffff";
 
     ctx.fillStyle = bgFill;
     ctx.fillRect(0, 0, w, h);
@@ -425,9 +428,9 @@
       ctx.stroke();
 
       ctx.fillStyle = textFill;
-      ctx.font = "9px 'Segoe UI Mono', monospace";
+      ctx.font = "bold 10px 'Segoe UI Mono', monospace";
       const val = Math.round(300 - (300 / 5) * i);
-      ctx.fillText(String(val), 8, y + 3);
+      ctx.fillText(String(val), 8, y + 4);
     }
 
     for (let i = 0; i <= 6; i++) {
@@ -438,15 +441,14 @@
       ctx.stroke();
 
       ctx.fillStyle = textFill;
-      ctx.font = "9px 'Segoe UI Mono', monospace";
+      ctx.font = "bold 10px 'Segoe UI Mono', monospace";
       const dist = Math.round(i * 100);
-      ctx.fillText(String(dist), x - 8, h - 8);
+      ctx.fillText(String(dist), x - 8, h - 6);
     }
 
-
     const targetY = padTop + plotH * (1.0 - 174.0 / 300.0);
-    ctx.strokeStyle = "#00e676";
-    ctx.lineWidth = 1;
+    ctx.strokeStyle = targetStroke;
+    ctx.lineWidth = 1.2;
     ctx.beginPath();
     ctx.moveTo(padLeft, targetY);
     ctx.lineTo(w - padRight, targetY);
@@ -454,8 +456,8 @@
 
     const lowerY = padTop + plotH * (1.0 - 10.0 / 300.0);
     const upperY = padTop + plotH * (1.0 - 300.0 / 300.0);
-    ctx.strokeStyle = "#ff334b";
-    ctx.lineWidth = 1;
+    ctx.strokeStyle = limitStroke;
+    ctx.lineWidth = 1.2;
     ctx.setLineDash([4, 4]);
     ctx.beginPath();
     ctx.moveTo(padLeft, lowerY);
@@ -481,7 +483,7 @@
       }
       ctx.stroke();
     } else {
-      ctx.strokeStyle = "#00e5ff";
+      ctx.strokeStyle = curveStroke;
       ctx.lineWidth = 2;
       ctx.beginPath();
       ctx.moveTo(padLeft, targetY);
@@ -490,7 +492,7 @@
     }
 
     const scrubberX = padLeft + plotW * cursorXRatio;
-    ctx.strokeStyle = "#ffffff";
+    ctx.strokeStyle = scrubberStroke;
     ctx.lineWidth = 1;
     ctx.setLineDash([3, 3]);
     ctx.beginPath();
@@ -501,11 +503,11 @@
 
     let curThick = (data && data.thickness_mm) ? data.thickness_mm : 174.2;
     const scrubberY = padTop + plotH * (1.0 - Math.min(300, curThick) / 300.0);
-    ctx.fillStyle = "#ffffff";
+    ctx.fillStyle = scrubberStroke;
     ctx.beginPath();
     ctx.arc(scrubberX, scrubberY, 4, 0, Math.PI * 2);
     ctx.fill();
-    ctx.strokeStyle = "#00e5ff";
+    ctx.strokeStyle = curveStroke;
     ctx.lineWidth = 1.5;
     ctx.stroke();
   }
