@@ -306,7 +306,9 @@ class WebviewApp:
             self._new_source = new_source
 
     def run(self):
+        import logging
         import webview
+        logging.getLogger("pywebview").setLevel(logging.CRITICAL)
 
         index_path = get_resource_path("orbix/web/index.html")
         if not index_path.exists():
@@ -369,6 +371,8 @@ class WebviewApp:
     def _on_closing(self, *args):
         self._stop_event.set()
         self._window = None
+        if self.api is not None:
+            self.api._window = None
         with self._recording_lock:
             if self._video_writer is not None:
                 try:

@@ -444,5 +444,71 @@ class TestLetterboxFrame:
         empty = np.array([])
         assert letterbox_frame(empty).size == 0
 
+    def test_letterbox_ultrawide_21_to_9_letterboxes_top_bottom(self):
+        from orbix.bridge import letterbox_frame
+        frame = np.ones((1080, 2560, 3), dtype=np.uint8) * 180
+        out = letterbox_frame(frame, 1920, 1080)
+        assert out.shape == (1080, 1920, 3)
+        assert np.all(out[:135, :] == 0)
+        assert np.all(out[945:, :] == 0)
+        assert np.all(out[135:945, :] == 180)
+
+    def test_letterbox_portrait_9_to_16_pillarboxes_left_right(self):
+        from orbix.bridge import letterbox_frame
+        frame = np.ones((1920, 1080, 3), dtype=np.uint8) * 220
+        out = letterbox_frame(frame, 1920, 1080)
+        assert out.shape == (1080, 1920, 3)
+        assert np.all(out[:, :656] == 0)
+        assert np.all(out[:, 1264:] == 0)
+        assert np.all(out[:, 656:1264] == 220)
+
+
+class TestBridgeShutdownAndRecording:
+    def test_on_closing_clears_window_and_sets_stop_event(self, mock_config):
+        app = WebviewApp(mock_config)
+        app._window = object()
+        app.api._window = app._window
+        app._on_closing()
+        assert app._stop_event.is_set() is True
+        assert app._window is None
+        assert app.api._window is None
+
+    def test_toggle_recording_lifecycle(self, mock_config):
+        app = WebviewApp(mock_config)
+        res_start = app.toggle_recording()
+        assert res_start["status"] == "ok"
+        assert res_start["recording"] is True
+        assert app.api.is_recording is True
+        assert app._video_writer is not None
+        rec_path = Path(res_start["path"])
+        assert rec_path.parent.name == "recordings"
+
+        res_stop = app.toggle_recording()
+        assert res_stop["status"] == "ok"
+        assert res_stop["recording"] is False
+        assert app.api.is_recording is False
+        assert app._video_writer is None
+        if rec_path.exists():
+            rec_path.unlink()
+
+
+class TestUIElementsContract:
+    def test_html_contains_hud_toolbar_and_symmetrical_watermarks(self):
+        html_path = Path("orbix/web/index.html")
+        content = html_path.read_text(encoding="utf-8")
+        assert "video-hud-overlay" in content
+        assert "hud-status-text" in content
+        assert "hud-fps-text" in content
+        assert "hud-mode-text" in content
+        assert "hud-thick-text" in content
+        assert "watermark-brand" in content
+        assert "watermark-brand-logo" in content
+        assert "watermark-brand-text" in content
+        assert "watermark-powered" in content
+        assert "watermark-logo" in content
+        assert "orbix_logo.png" in content
+        assert "systrol_logo.png" in content
+
+
 
 
