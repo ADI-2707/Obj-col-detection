@@ -47,7 +47,16 @@ class BridgeAPI:
         self.cursor_y = 620
         self._window = None
         self.roi = (150, 39, 1549, 870)
-        self.source_label = "CAM01_2026-10-09_10-06-01.mp4"
+        if hasattr(target, "_config") and hasattr(target._config, "source"):
+            src = target._config.source
+            if isinstance(src, int):
+                self.source_label = f"Camera {src}"
+            elif src:
+                self.source_label = Path(str(src)).name
+            else:
+                self.source_label = "CAM01_2026-10-09_10-06-01.mp4"
+        else:
+            self.source_label = "CAM01_2026-10-09_10-06-01.mp4"
         self.is_recording = False
         self.current_recording_path = None
 
@@ -389,6 +398,8 @@ class WebviewApp:
 
             if frame is None:
                 frame = self._engine.generate_synthetic_slab_frame(1920, 1080, frame_idx)
+            elif frame.shape[:2] != (1080, 1920):
+                frame = cv2.resize(frame, (1920, 1080))
 
             measurement = self._engine.measure(
                 frame,
@@ -458,8 +469,7 @@ class WebviewApp:
                     js_code = f"if (window.updateTelemetry) {{ window.updateTelemetry({json.dumps(payload)}); }}"
                     self._window.evaluate_js(js_code)
                 except Exception:
-                    self._stop_event.set()
-                    break
+                    pass
 
             frame_idx += 1
             elapsed = time.monotonic() - start_t

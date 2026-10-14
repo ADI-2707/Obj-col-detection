@@ -14,6 +14,13 @@ class FrameSource:
     def open(self):
         if isinstance(self._source, int):
             self._capture = cv2.VideoCapture(self._source, cv2.CAP_DSHOW)
+            if not self._capture.isOpened():
+                self._capture = cv2.VideoCapture(self._source, cv2.CAP_MSMF)
+            if not self._capture.isOpened():
+                self._capture = cv2.VideoCapture(self._source)
+            if self._capture.isOpened():
+                for _ in range(3):
+                    self._capture.read()
         else:
             self._capture = cv2.VideoCapture(self._source)
 
@@ -35,7 +42,13 @@ class FrameSource:
             )
 
         success, frame = self._capture.read()
-        if not success:
+        if not success and isinstance(self._source, int):
+            for _ in range(2):
+                success, frame = self._capture.read()
+                if success:
+                    break
+
+        if not success or frame is None:
             raise StopIteration
 
         return frame

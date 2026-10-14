@@ -1044,15 +1044,6 @@
     const statStd = document.getElementById("stat-std");
     if (statStd) statStd.textContent = `${payload.std_dev_mm.toFixed(2)} mm`;
 
-    const hudFps = document.getElementById("hud-fps-text");
-    if (hudFps) hudFps.textContent = `FPS ${payload.fps.toFixed(1)} in / ${(payload.processing_ms / 100).toFixed(1)} proc \u2022 1920\u00d71080`;
-
-    const hudMode = document.getElementById("hud-mode-text");
-    if (hudMode) hudMode.textContent = `VIEW ${activeMode} \u2022 THRESHOLD OTSU ${payload.otsu_threshold}`;
-
-    const hudThick = document.getElementById("hud-thick-text");
-    if (hudThick) hudThick.textContent = `THICKNESS ${payload.thickness_mm.toFixed(1)} mm`;
-
     const ttX = document.getElementById("tt-x");
     const ttY = document.getElementById("tt-y");
     const ttTop = document.getElementById("tt-top");

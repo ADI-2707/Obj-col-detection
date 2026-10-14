@@ -37,3 +37,23 @@ class TestFrameSourceProperties:
     def test_frame_size_before_open_returns_zero(self):
         source = FrameSource(0)
         assert source.frame_size == (0, 0)
+
+    def test_camera_fallback_attempts(self, monkeypatch):
+        import cv2
+        calls = []
+
+        class MockCapture:
+            def isOpened(self):
+                return False
+            def release(self):
+                pass
+
+        def mock_videocapture(idx, *args):
+            calls.append((idx, args))
+            return MockCapture()
+
+        monkeypatch.setattr(cv2, "VideoCapture", mock_videocapture)
+        source = FrameSource(0)
+        with pytest.raises(FrameSourceError):
+            source.open()
+        assert len(calls) == 3
