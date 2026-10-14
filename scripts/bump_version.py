@@ -82,6 +82,31 @@ def bump_version(bump_type: str = "patch", repo_root: Path | None = None) -> str
         )
         manifest_file.write_text(new_manifest_content, encoding="utf-8")
 
+    index_html = repo_root / "orbix" / "web" / "index.html"
+    if index_html.exists():
+        html_content = index_html.read_text(encoding="utf-8")
+        html_content = re.sub(
+            r'(<span[^>]*id="app-version-badge"[^>]*>v)[^<]+(</span>)',
+            rf"\g<1>{new_version}\g<2>",
+            html_content,
+        )
+        html_content = re.sub(
+            r'(<span[^>]*id="app-version-subtext"[^>]*>v)[^<]+(</span>)',
+            rf"\g<1>{new_version}\g<2>",
+            html_content,
+        )
+        index_html.write_text(html_content, encoding="utf-8")
+
+    app_js = repo_root / "orbix" / "web" / "app.js"
+    if app_js.exists():
+        app_js_content = app_js.read_text(encoding="utf-8")
+        app_js_content = re.sub(
+            r'(let currentAppVersion = ")[^"]+(";)',
+            rf"\g<1>{new_version}\g<2>",
+            app_js_content,
+        )
+        app_js.write_text(app_js_content, encoding="utf-8")
+
     return new_version
 
 

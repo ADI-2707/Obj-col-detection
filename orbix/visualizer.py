@@ -497,7 +497,7 @@ class Visualizer:
         cv2.putText(canvas, f"Thickness: {measurement.thickness_px:.1f} px", (tt_x + 8, tt_y + 48), self.FONT, 0.38, (255, 255, 255), 1, cv2.LINE_AA)
         cv2.putText(canvas, f"Thickness: {measurement.thickness_mm:.1f} mm", (tt_x + 8, tt_y + 63), self.FONT, 0.44, self.COLOR_CALIPER, 1, cv2.LINE_AA)
 
-        cv2.putText(canvas, "Ecoloop", (vx + 28, vy + vh - 24), self.FONT, 0.70, (200, 200, 200), 1, cv2.LINE_AA)
+        cv2.putText(canvas, "Orbix", (vx + 28, vy + vh - 24), self.FONT, 0.70, (200, 200, 200), 1, cv2.LINE_AA)
 
     def _draw_thickness_profile(
         self,
