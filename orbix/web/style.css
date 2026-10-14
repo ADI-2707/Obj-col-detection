@@ -1239,3 +1239,40 @@ input:checked + .slider:before {
 .slider.round:before {
   border-radius: 50%;
 }
+
+.sidebar-branding {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 8px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-card);
+  border-radius: 4px;
+}
+
+.branding-caption {
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  color: var(--text-muted);
+}
+
+.branding-logo {
+  max-width: 130px;
+  max-height: 44px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+}
+
+[data-theme="dark"] .branding-logo {
+  filter: drop-shadow(0 0 1px rgba(255, 255, 255, 0.7));
+}
+
+[data-theme="light"] .branding-logo {
+  filter: none;
+}
+
