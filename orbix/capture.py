@@ -19,6 +19,11 @@ class FrameSource:
             if not self._capture.isOpened():
                 self._capture = cv2.VideoCapture(self._source)
             if self._capture.isOpened():
+                try:
+                    self._capture.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
+                    self._capture.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
+                except Exception:
+                    pass
                 for _ in range(3):
                     self._capture.read()
         else:

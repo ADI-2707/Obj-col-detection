@@ -57,3 +57,26 @@ class TestFrameSourceProperties:
         with pytest.raises(FrameSourceError):
             source.open()
         assert len(calls) == 3
+
+    def test_camera_negotiates_1080p_resolution(self, monkeypatch):
+        import cv2
+        set_calls = []
+
+        class MockOpenedCapture:
+            def isOpened(self):
+                return True
+            def set(self, prop, val):
+                set_calls.append((prop, val))
+                return True
+            def read(self):
+                import numpy as np
+                return True, np.zeros((480, 640, 3), dtype=np.uint8)
+            def release(self):
+                pass
+
+        monkeypatch.setattr(cv2, "VideoCapture", lambda *args, **kwargs: MockOpenedCapture())
+        source = FrameSource(0)
+        source.open()
+        assert (cv2.CAP_PROP_FRAME_WIDTH, 1920) in set_calls
+        assert (cv2.CAP_PROP_FRAME_HEIGHT, 1080) in set_calls
+        source.release()
