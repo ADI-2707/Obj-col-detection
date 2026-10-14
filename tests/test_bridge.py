@@ -135,12 +135,12 @@ class TestWebAssets:
         assert "profile-chart" in content
         assert "readout-mm" in content
 
-    def test_css_contains_white_theme(self):
+    def test_css_contains_black_scada_theme(self):
         css_path = Path("orbix/web/style.css")
         assert css_path.exists()
         content = css_path.read_text(encoding="utf-8")
-        assert "--bg-main: #ffffff;" in content
-        assert "--blue-primary:" in content
+        assert "--bg-main: #000000;" in content
+        assert "--cyan-accent:" in content
 
     def test_js_defines_telemetry_handler(self):
         js_path = Path("orbix/web/app.js")

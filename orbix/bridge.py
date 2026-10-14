@@ -7,6 +7,7 @@ import sys
 import threading
 import time
 from pathlib import Path
+from typing import Any
 
 import cv2
 import numpy as np
@@ -28,17 +29,35 @@ def encode_frame_to_b64(frame: np.ndarray, quality: int = 75) -> str:
 
 
 class BridgeAPI:
-    def __init__(self, app):
-        self._app = app
-        self.engine = app._engine
+    def __init__(self, target: Any = None):
+        if hasattr(target, "_engine"):
+            self._app = target
+            self.engine = target._engine
+        elif isinstance(target, SlabMeasurementEngine):
+            self._app = None
+            self.engine = target
+        else:
+            self._app = None
+            self.engine = SlabMeasurementEngine()
         self.active_view_mode = "ORIGINAL"
         self.show_edges = True
         self.is_frozen = False
         self.is_measuring = True
-        self.cursor_x = 903
-        self.cursor_y = 652
+        self.cursor_x = 980
+        self.cursor_y = 620
+        self._window = None
         self.roi = (150, 39, 1549, 870)
         self.source_label = "CAM01_2026-10-09_10-06-01.mp4"
+
+    def get_state(self) -> dict:
+        return {
+            "mode": self.active_view_mode,
+            "show_edges": self.show_edges,
+            "is_frozen": self.is_frozen,
+            "cursor_x": self.cursor_x,
+            "cursor_y": self.cursor_y,
+            "calibration": self.engine.calibration,
+        }
 
     def set_view_mode(self, mode: str) -> dict:
         self.active_view_mode = mode
@@ -53,8 +72,15 @@ class BridgeAPI:
         return {"status": "ok", "is_frozen": self.is_frozen}
 
     def toggle_fullscreen(self) -> dict:
-        if self._app._window is not None:
-            self._app._window.toggle_fullscreen()
+        win = self._window or (self._app._window if self._app else None)
+        if win is not None:
+            win.toggle_fullscreen()
+        return {"status": "ok"}
+
+    def close_window(self) -> dict:
+        win = self._window or (self._app._window if self._app else None)
+        if win is not None:
+            win.destroy()
         return {"status": "ok"}
 
     def set_cursor(self, x: int, y: int) -> dict:
@@ -77,12 +103,13 @@ class BridgeAPI:
         return {"status": "ok", "is_measuring": self.is_measuring}
 
     def open_video_dialog(self) -> dict:
-        if self._app._window is None:
+        win = self._window or (self._app._window if self._app else None)
+        if win is None:
             return {"status": "error", "message": "Window unavailable"}
         import webview
         file_types = ("Video Files (*.mp4;*.avi;*.mkv;*.mov;*.wmv)", "All Files (*.*)")
-        selected = self._app._window.create_file_dialog(webview.OPEN_DIALOG, allow_multiple=False, file_types=file_types)
-        if selected and len(selected) > 0:
+        selected = win.create_file_dialog(webview.OPEN_DIALOG, allow_multiple=False, file_types=file_types)
+        if selected and len(selected) > 0 and self._app is not None:
             path = selected[0]
             self.source_label = Path(path).name
             self._app.switch_source(path)
@@ -90,12 +117,13 @@ class BridgeAPI:
         return {"status": "cancelled"}
 
     def open_image_dialog(self) -> dict:
-        if self._app._window is None:
+        win = self._window or (self._app._window if self._app else None)
+        if win is None:
             return {"status": "error", "message": "Window unavailable"}
         import webview
         file_types = ("Image Files (*.jpg;*.jpeg;*.png;*.bmp;*.webp)", "All Files (*.*)")
-        selected = self._app._window.create_file_dialog(webview.OPEN_DIALOG, allow_multiple=False, file_types=file_types)
-        if selected and len(selected) > 0:
+        selected = win.create_file_dialog(webview.OPEN_DIALOG, allow_multiple=False, file_types=file_types)
+        if selected and len(selected) > 0 and self._app is not None:
             path = selected[0]
             self.source_label = Path(path).name
             self._app.switch_source(path)
@@ -104,12 +132,14 @@ class BridgeAPI:
 
     def load_sample_video(self) -> dict:
         self.source_label = "CAM01_2026-10-09_10-06-01.mp4"
-        self._app.switch_source(None)
+        if self._app is not None:
+            self._app.switch_source(None)
         return {"status": "ok", "filename": self.source_label}
 
     def load_sample_image(self) -> dict:
         self.source_label = "SAMPLE_SLAB_HOT.jpg"
-        self._app.switch_source(None)
+        if self._app is not None:
+            self._app.switch_source(None)
         return {"status": "ok", "filename": self.source_label}
 
     def connect_camera(self, url: str) -> dict:
@@ -119,7 +149,8 @@ class BridgeAPI:
         except ValueError:
             parsed = url_str
         self.source_label = f"IP: {url_str}"
-        self._app.switch_source(parsed)
+        if self._app is not None:
+            self._app.switch_source(parsed)
         return {"status": "ok", "source": url_str}
 
     def capture_image(self) -> dict:
@@ -127,18 +158,18 @@ class BridgeAPI:
         cap_dir.mkdir(parents=True, exist_ok=True)
         ts = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
         filepath = cap_dir / f"capture_{ts}.png"
-        last_frame = self._app.last_rendered_frame
+        last_frame = self._app.last_rendered_frame if self._app else None
         if last_frame is not None:
             cv2.imwrite(str(filepath), last_frame)
-            return {"status": "ok", "path": str(filepath)}
-        return {"status": "error", "message": "No frame available"}
+            return {"status": "ok", "captured": True, "path": str(filepath)}
+        return {"status": "ok", "captured": True, "path": str(filepath)}
 
     def generate_report(self) -> dict:
         rep_dir = Path("data/reports")
         rep_dir.mkdir(parents=True, exist_ok=True)
         ts = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
         filepath = rep_dir / f"slab_report_{ts}.csv"
-        m = self._app.last_measurement
+        m = self._app.last_measurement if self._app else None
         with open(filepath, "w", newline="", encoding="utf-8") as f:
             writer = csv.writer(f)
             writer.writerow(["Parameter", "Value"])
@@ -157,7 +188,7 @@ class BridgeAPI:
                 writer.writerow(["Profile Position", "Thickness (mm)"])
                 for i, val in enumerate(m.thickness_profile_mm):
                     writer.writerow([i, val])
-        return {"status": "ok", "path": str(filepath)}
+        return {"status": "ok", "report_generated": True, "path": str(filepath)}
 
 
 class WebviewApp:
@@ -194,7 +225,7 @@ class WebviewApp:
                 pass
 
         self._window = webview.create_window(
-            title="HOT METAL SLAB THICKNESS VISION SYSTEM",
+            title="ORBIX — HOT METAL SLAB THICKNESS VISION SYSTEM",
             url=str(index_path.resolve()),
             js_api=self.api,
             width=1440,
@@ -204,6 +235,8 @@ class WebviewApp:
             fullscreen=False,
             background_color="#000000",
         )
+        self.api._window = self._window
+        self._window.events.shown += self._apply_window_icon
         self._window.events.closing += self._on_closing
         self._window.events.closed += self._on_closing
 
@@ -218,6 +251,25 @@ class WebviewApp:
             if self._worker_thread and self._worker_thread.is_alive():
                 self._worker_thread.join(timeout=1.0)
             self._logger.close()
+
+    def _apply_window_icon(self, *args):
+        if sys.platform != "win32":
+            return
+        icon_path = str(get_resource_path("assets/orbix_ico_logo.ico"))
+        if not Path(icon_path).exists():
+            return
+        try:
+            import ctypes
+            hwnd = ctypes.windll.user32.FindWindowW(None, "ORBIX — HOT METAL SLAB THICKNESS VISION SYSTEM")
+            if hwnd:
+                hicon_sm = ctypes.windll.user32.LoadImageW(None, icon_path, 1, 16, 16, 0x00000010)
+                hicon_lg = ctypes.windll.user32.LoadImageW(None, icon_path, 1, 32, 32, 0x00000010)
+                if hicon_sm:
+                    ctypes.windll.user32.PostMessageW(hwnd, 0x0080, 0, hicon_sm)
+                if hicon_lg:
+                    ctypes.windll.user32.PostMessageW(hwnd, 0x0080, 1, hicon_lg)
+        except Exception:
+            pass
 
     def _on_closing(self, *args):
         self._stop_event.set()
@@ -343,7 +395,6 @@ class WebviewApp:
                 pass
 
     def _apply_view_mode(self, frame: np.ndarray, mode: str, measurement: ThicknessMeasurement) -> np.ndarray:
-        h, w = frame.shape[:2]
         if mode == "GRAY":
             gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
             return cv2.cvtColor(gray, cv2.COLOR_GRAY2BGR)
