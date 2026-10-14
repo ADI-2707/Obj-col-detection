@@ -19,6 +19,12 @@ class ThicknessMeasurement:
     std_dev_mm: float
     confidence_pct: float
     is_normal: bool
+    is_valid: bool
+    status_text: str
+    warning_text: str
+    otsu_threshold: int
+    avg_top_y: float
+    avg_bottom_y: float
     top_edges: np.ndarray
     bottom_edges: np.ndarray
     xs: np.ndarray
@@ -27,7 +33,7 @@ class ThicknessMeasurement:
     def thickness_profile_mm(self) -> list[float]:
         if len(self.top_edges) == 0:
             return []
-        step = max(1, len(self.top_edges) // 100)
+        step = max(1, len(self.top_edges) // 120)
         diff = self.bottom_edges[::step] - self.top_edges[::step]
         ratio = self.thickness_mm / max(1e-3, self.thickness_px)
         return [round(float(v * ratio), 1) for v in diff]
@@ -38,45 +44,44 @@ class SlabMeasurementEngine:
 
     def __init__(self, calibration_mm_per_px: float = DEFAULT_CALIBRATION):
         self.calibration = calibration_mm_per_px
-        self.target_thickness_mm = 108.0
+        self.target_thickness_mm = 174.0
         self.lower_limit_mm = 10.0
-        self.upper_limit_mm = 150.0
+        self.upper_limit_mm = 300.0
 
     def generate_synthetic_slab_frame(
-        self, width: int = 1280, height: int = 720, frame_number: int = 0
+        self, width: int = 1920, height: int = 1080, frame_number: int = 0
     ) -> np.ndarray:
         frame = np.zeros((height, width, 3), dtype=np.uint8)
-        frame[:, :] = (18, 12, 10)
+        frame[:, :] = (12, 10, 8)
 
-        top_y = int(height * 0.45 + 2 * math.sin(frame_number * 0.05))
-        bottom_y = int(height * 0.72 + 2 * math.cos(frame_number * 0.04))
+        base_top = int(height * 0.32 + 1.5 * math.sin(frame_number * 0.04))
+        base_bot = int(height * 0.78 + 1.5 * math.cos(frame_number * 0.03))
 
-        for y in range(top_y, bottom_y):
-            rel = (y - top_y) / max(1, bottom_y - top_y)
+        slab_mask = np.zeros((height, width), dtype=np.float32)
+
+        for y in range(base_top, base_bot):
+            rel = (y - base_top) / max(1, base_bot - base_top)
             heat = math.sin(rel * math.pi)
-            r = int(min(255, 230 + 25 * heat))
-            g = int(min(255, 120 + 70 * heat))
-            b = int(min(255, 20 + 30 * heat))
-            frame[y, 100 : width - 100] = (b, g, r)
+            heat_val = 0.65 + 0.35 * heat
+            slab_mask[y, :] = heat_val
 
-        for y in range(max(0, top_y - 25), top_y):
-            fade = (y - (top_y - 25)) / 25.0
-            frame[y, 100 : width - 100] = (
-                int(10 + 20 * fade),
-                int(15 + 40 * fade),
-                int(30 + 100 * fade),
-            )
+        for y in range(max(0, base_top - 30), base_top):
+            fade = (y - (base_top - 30)) / 30.0
+            slab_mask[y, :] = fade * 0.35
 
-        for y in range(bottom_y, min(height, bottom_y + 25)):
-            fade = 1.0 - (y - bottom_y) / 25.0
-            frame[y, 100 : width - 100] = (
-                int(10 + 20 * fade),
-                int(15 + 40 * fade),
-                int(30 + 100 * fade),
-            )
+        for y in range(base_bot, min(height, base_bot + 30)):
+            fade = 1.0 - (y - base_bot) / 30.0
+            slab_mask[y, :] = fade * 0.35
 
-        noise = np.random.randint(0, 10, (height, width, 3), dtype=np.uint8)
-        frame = cv2.add(frame, noise)
+        texture = np.random.normal(0, 0.06, (height, width)).astype(np.float32)
+        slab_mask = np.clip(slab_mask + texture, 0.0, 1.0)
+
+        r = np.clip(slab_mask * 255.0, 0, 255).astype(np.uint8)
+        g = np.clip((slab_mask ** 1.8) * 230.0, 0, 255).astype(np.uint8)
+        b = np.clip((slab_mask ** 3.5) * 120.0, 0, 255).astype(np.uint8)
+
+        slab_bgr = cv2.merge([b, g, r])
+        frame = cv2.addWeighted(frame, 0.15, slab_bgr, 0.85, 0)
         return frame
 
     def measure(
@@ -102,32 +107,36 @@ class SlabMeasurementEngine:
         gray = cv2.cvtColor(roi_frame, cv2.COLOR_BGR2GRAY)
         blurred = cv2.GaussianBlur(gray, (5, 5), 0)
 
-        _, thresh = cv2.threshold(blurred, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+        otsu_val, thresh = cv2.threshold(blurred, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+        otsu_val_int = int(round(otsu_val))
 
         col_count = rw
         xs = np.arange(rx, rx + rw)
-        top_edges = np.full(col_count, ry + rh * 0.45, dtype=np.float32)
-        bottom_edges = np.full(col_count, ry + rh * 0.72, dtype=np.float32)
+        top_edges = np.full(col_count, ry + rh * 0.33, dtype=np.float32)
+        bottom_edges = np.full(col_count, ry + rh * 0.78, dtype=np.float32)
 
         sobel_y = cv2.Sobel(blurred, cv2.CV_32F, 0, 1, ksize=3)
 
+        detected_count = 0
         step = max(1, col_count // 320)
         for c in range(0, col_count, step):
             col_grad = sobel_y[:, c]
             min_idx = int(np.argmin(col_grad))
             max_idx = int(np.argmax(col_grad))
 
-            if max_idx < min_idx and min_idx - max_idx > rh * 0.15:
+            if max_idx < min_idx and (min_idx - max_idx) > rh * 0.15:
                 top_edges[c : c + step] = ry + max_idx
                 bottom_edges[c : c + step] = ry + min_idx
+                detected_count += 1
             else:
                 col_thresh = thresh[:, c]
                 nz = np.where(col_thresh > 0)[0]
-                if len(nz) > 5:
+                if len(nz) > 10 and (nz[-1] - nz[0]) > rh * 0.15:
                     top_edges[c : c + step] = ry + nz[0]
                     bottom_edges[c : c + step] = ry + nz[-1]
+                    detected_count += 1
 
-        kernel_size = 11
+        kernel_size = 9
         if len(top_edges) >= kernel_size:
             pad = kernel_size // 2
             top_padded = np.pad(top_edges, pad, mode="edge")
@@ -143,6 +152,13 @@ class SlabMeasurementEngine:
         avg_mm = float(np.mean(thicknesses_mm))
         std_dev_mm = float(np.std(thicknesses_mm))
 
+        total_steps = max(1, col_count // step)
+        detection_ratio = detected_count / total_steps
+        raw_conf = (detection_ratio * 70.0) + max(0.0, 30.0 - std_dev_mm * 5.0)
+        confidence_pct = float(max(0.0, min(100.0, raw_conf)))
+
+        is_valid = confidence_pct >= 40.0 and avg_mm > 20.0
+
         if cursor_x is None or cursor_x < rx or cursor_x >= rx + rw:
             active_x = rx + rw // 2
         else:
@@ -154,8 +170,20 @@ class SlabMeasurementEngine:
         cur_px = float(thicknesses_px[col_idx])
         cur_mm = float(thicknesses_mm[col_idx])
 
-        is_normal = self.lower_limit_mm <= cur_mm <= self.upper_limit_mm
-        confidence_pct = max(75.0, min(99.0, 100.0 - (std_dev_mm * 4.0)))
+        is_normal = is_valid and (self.lower_limit_mm <= cur_mm <= self.upper_limit_mm)
+
+        if not is_valid:
+            status_text = "LOW CONFIDENCE"
+            warning_text = "Detected boundaries are weak - check threshold settings"
+        elif is_normal:
+            status_text = "NORMAL"
+            warning_text = ""
+        else:
+            status_text = "OUT OF SPEC"
+            warning_text = "Thickness outside target tolerance"
+
+        avg_top_y = float(np.mean(top_edges))
+        avg_bottom_y = float(np.mean(bottom_edges))
 
         return ThicknessMeasurement(
             x_cursor=active_x,
@@ -169,6 +197,12 @@ class SlabMeasurementEngine:
             std_dev_mm=std_dev_mm,
             confidence_pct=confidence_pct,
             is_normal=is_normal,
+            is_valid=is_valid,
+            status_text=status_text,
+            warning_text=warning_text,
+            otsu_threshold=otsu_val_int,
+            avg_top_y=avg_top_y,
+            avg_bottom_y=avg_bottom_y,
             top_edges=top_edges,
             bottom_edges=bottom_edges,
             xs=xs,
