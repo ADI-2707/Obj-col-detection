@@ -908,26 +908,54 @@
     });
   }
 
+  function getVideoRenderRect(wrapper) {
+    const w = wrapper.clientWidth;
+    const h = wrapper.clientHeight;
+    const targetAspect = 1920 / 1080;
+    const currentAspect = w / (h || 1);
+    let rw, rh, ox, oy;
+    if (currentAspect > targetAspect) {
+      rh = h;
+      rw = h * targetAspect;
+      ox = (w - rw) / 2;
+      oy = 0;
+    } else {
+      rw = w;
+      rh = w / targetAspect;
+      ox = 0;
+      oy = (h - rh) / 2;
+    }
+    return { w, h, rw, rh, ox, oy };
+  }
+
   function initMouseInspection() {
     const wrapper = document.getElementById("video-wrapper");
     const tooltip = document.getElementById("caliper-tooltip");
 
     if (!wrapper) return;
 
+    window.addEventListener("resize", () => {
+      updateCaliperOverlay();
+    });
+
     wrapper.addEventListener("mousedown", (e) => {
       if (!isSelectingRoi) return;
       const rect = wrapper.getBoundingClientRect();
-      roiDragStart = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+      const vRect = getVideoRenderRect(wrapper);
+      const rawX = Math.max(0, Math.min(vRect.rw, e.clientX - rect.left - vRect.ox));
+      const rawY = Math.max(0, Math.min(vRect.rh, e.clientY - rect.top - vRect.oy));
+      roiDragStart = { x: rawX, y: rawY };
       tempRoi = null;
     });
 
     wrapper.addEventListener("click", (e) => {
       if (!isCalibrating) return;
       const rect = wrapper.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-      const fx = Math.round((x / rect.width) * 1920);
-      const fy = Math.round((y / rect.height) * 1080);
+      const vRect = getVideoRenderRect(wrapper);
+      const rawX = Math.max(0, Math.min(vRect.rw, e.clientX - rect.left - vRect.ox));
+      const rawY = Math.max(0, Math.min(vRect.rh, e.clientY - rect.top - vRect.oy));
+      const fx = Math.round((rawX / vRect.rw) * 1920);
+      const fy = Math.round((rawY / vRect.rh) * 1080);
 
       calibPoints.push({ x: fx, y: fy });
 
@@ -971,19 +999,22 @@
 
     wrapper.addEventListener("mousemove", (e) => {
       const rect = wrapper.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
+      const vRect = getVideoRenderRect(wrapper);
+      const rawX = e.clientX - rect.left - vRect.ox;
+      const rawY = e.clientY - rect.top - vRect.oy;
+      const clampedX = Math.max(0, Math.min(vRect.rw, rawX));
+      const clampedY = Math.max(0, Math.min(vRect.rh, rawY));
 
       if (isSelectingRoi && roiDragStart) {
-        const rx = Math.min(roiDragStart.x, x);
-        const ry = Math.min(roiDragStart.y, y);
-        const rw = Math.max(10, Math.abs(x - roiDragStart.x));
-        const rh = Math.max(10, Math.abs(y - roiDragStart.y));
+        const rx = Math.min(roiDragStart.x, clampedX);
+        const ry = Math.min(roiDragStart.y, clampedY);
+        const rw = Math.max(10, Math.abs(clampedX - roiDragStart.x));
+        const rh = Math.max(10, Math.abs(clampedY - roiDragStart.y));
 
-        const frameX = Math.round(Math.max(0, Math.min(1910, (rx / rect.width) * 1920)));
-        const frameY = Math.round(Math.max(0, Math.min(1070, (ry / rect.height) * 1080)));
-        const frameW = Math.round(Math.max(10, Math.min(1920 - frameX, (rw / rect.width) * 1920)));
-        const frameH = Math.round(Math.max(10, Math.min(1080 - frameY, (rh / rect.height) * 1080)));
+        const frameX = Math.round(Math.max(0, Math.min(1910, (rx / vRect.rw) * 1920)));
+        const frameY = Math.round(Math.max(0, Math.min(1070, (ry / vRect.rh) * 1080)));
+        const frameW = Math.round(Math.max(10, Math.min(1920 - frameX, (rw / vRect.rw) * 1920)));
+        const frameH = Math.round(Math.max(10, Math.min(1080 - frameY, (rh / vRect.rh) * 1080)));
 
         tempRoi = { x: frameX, y: frameY, w: frameW, h: frameH };
         updateRoiDisplay(tempRoi);
@@ -991,14 +1022,14 @@
         return;
       }
 
-      cursorXRatio = Math.max(0, Math.min(1, x / rect.width));
-      cursorYRatio = Math.max(0, Math.min(1, y / rect.height));
+      cursorXRatio = Math.max(0, Math.min(1, clampedX / (vRect.rw || 1)));
+      cursorYRatio = Math.max(0, Math.min(1, clampedY / (vRect.rh || 1)));
 
       if (tooltip && !isSelectingRoi) {
         tooltip.style.display = "block";
         const maxTipX = rect.width - 230;
-        const tipX = Math.min(maxTipX, Math.max(10, x + 16));
-        const tipY = Math.min(rect.height - 90, Math.max(20, y - 20));
+        const tipX = Math.min(maxTipX, Math.max(10, e.clientX - rect.left + 16));
+        const tipY = Math.min(rect.height - 90, Math.max(20, e.clientY - rect.top - 20));
         tooltip.style.left = `${tipX}px`;
         tooltip.style.top = `${tipY}px`;
       }
@@ -1041,15 +1072,14 @@
     const wrapper = document.getElementById("video-wrapper");
     if (!svg || !wrapper) return;
 
-    const w = wrapper.clientWidth;
-    const h = wrapper.clientHeight;
-    const cx = cursorXRatio * w;
+    const vRect = getVideoRenderRect(wrapper);
+    const cx = vRect.ox + cursorXRatio * vRect.rw;
 
     const r = tempRoi || activeRoi;
-    const rx = (r.x / 1920) * w;
-    const ry = (r.y / 1080) * h;
-    const rw = (r.w / 1920) * w;
-    const rh = (r.h / 1080) * h;
+    const rx = vRect.ox + (r.x / 1920) * vRect.rw;
+    const ry = vRect.oy + (r.y / 1080) * vRect.rh;
+    const rw = (r.w / 1920) * vRect.rw;
+    const rh = (r.h / 1080) * vRect.rh;
 
     let topRatio = 0.33;
     let botRatio = 0.78;
@@ -1059,8 +1089,8 @@
       botRatio = Math.max(0, Math.min(1, lastTelemetry.bottom_y / 1080));
     }
 
-    const topY = topRatio * h;
-    const botY = botRatio * h;
+    const topY = vRect.oy + topRatio * vRect.rh;
+    const botY = vRect.oy + botRatio * vRect.rh;
 
     let roiHtml = "";
     if (showRoiBox && (r.w < 1910 || r.h < 1070 || isSelectingRoi || roiDragStart)) {
@@ -1101,8 +1131,8 @@
 
     if (isCalibrating && calibPoints.length > 0) {
       calibPoints.forEach((pt, idx) => {
-        const sx = (pt.x / 1920) * w;
-        const sy = (pt.y / 1080) * h;
+        const sx = vRect.ox + (pt.x / 1920) * vRect.rw;
+        const sy = vRect.oy + (pt.y / 1080) * vRect.rh;
         svg.innerHTML += `
           <circle cx="${sx}" cy="${sy}" r="6" fill="#ffb703" stroke="#000000" stroke-width="2"/>
           <line x1="${sx - 12}" y1="${sy}" x2="${sx + 12}" y2="${sy}" stroke="#ffb703" stroke-width="1.5"/>
@@ -1127,7 +1157,7 @@
       if (showEdges && !isCalibrating && !isSelectingRoi) {
         botLabel.style.display = "block";
         botLabel.style.left = `${Math.max(8, rx + 16)}px`;
-        botLabel.style.top = `${Math.min(h - 22, botY + 4)}px`;
+        botLabel.style.top = `${Math.min(vRect.h - 22, botY + 4)}px`;
       } else {
         botLabel.style.display = "none";
       }
