@@ -1,4 +1,4 @@
-# Orbix — Intelligent Measurement for Modern Mills
+# Vision — Smart Material Management System
 
 Industrial computer-vision prototype for mill motion monitoring and hot metal thickness vision. Foundation for modern mill measurement systems.
 

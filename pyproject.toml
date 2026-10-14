@@ -5,7 +5,7 @@ build-backend = "setuptools.backends._legacy:_Backend"
 [project]
 name = "orbix"
 version = "1.7.0"
-description = "Intelligent Measurement for Modern Mills"
+description = "Vision: Smart Material Management System"
 requires-python = ">=3.11"
 license = {text = "MIT"}
 dependencies = [
@@ -23,6 +23,7 @@ dev = [
 
 [project.scripts]
 orbix = "orbix.__main__:main"
+vision = "orbix.__main__:main"
 
 [tool.setuptools.packages.find]
 include = ["orbix*"]

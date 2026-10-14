@@ -6,6 +6,7 @@ repo_root = Path.cwd()
 datas = [
     (str(repo_root / "yolov8n.pt"), "."),
     (str(repo_root / "packaging" / "icons" / "orbix.ico"), "packaging/icons"),
+    (str(repo_root / "packaging" / "icons" / "vision.ico"), "packaging/icons"),
     (str(repo_root / "assets"), "assets"),
     (str(repo_root / "orbix" / "web"), "orbix/web"),
 ]
@@ -76,7 +77,7 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon=str(repo_root / "packaging" / "icons" / "orbix.ico"),
+    icon=str(repo_root / "packaging" / "icons" / "vision.ico") if (repo_root / "packaging" / "icons" / "vision.ico").exists() else str(repo_root / "packaging" / "icons" / "orbix.ico"),
     manifest=str(repo_root / "packaging" / "app_manifest.xml"),
 )
 

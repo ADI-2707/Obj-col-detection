@@ -122,7 +122,7 @@
     const manualHtml = `
       <div class="manual-container">
         <div>
-          <div class="manual-title">ORBIX VISION SYSTEM \u2014 FEATURES &amp; OPERATION MANUAL</div>
+          <div class="manual-title">VISION \u2014 SMART MATERIAL MANAGEMENT SYSTEM &bull; OPERATION MANUAL</div>
           <div class="manual-subtitle">
             Systrol Industrial Vision Software Suite &bull; Optical Hot Metal Slab Thickness Gauging &bull; Version ${currentAppVersion} Production Build
           </div>
@@ -405,12 +405,12 @@
       </div>
     `;
 
-    showScadaModal("ORBIX \u2014 SYSTEM FEATURES & OPERATOR MANUAL", manualHtml, true, true);
+    showScadaModal("VISION \u2014 SYSTEM FEATURES & OPERATOR MANUAL", manualHtml, true, true);
   }
 
   function showAboutModal() {
-    showScadaModal("ABOUT \u2014 ORBIX VISION SYSTEM", `
-      <h4>ORBIX HOT METAL SLAB THICKNESS VISION SYSTEM</h4>
+    showScadaModal("ABOUT \u2014 VISION", `
+      <h4>VISION &mdash; SMART MATERIAL MANAGEMENT SYSTEM</h4>
       <p><strong>Version:</strong> ${currentAppVersion} Production Build</p>
       <p><strong>Architecture:</strong> Hybrid Python 3.14 Vision Core + Accelerated Webview SCADA</p>
       <p><strong>Mill Subsystem:</strong> Continuous Casting / Roughing Mill In-line Gauging</p>

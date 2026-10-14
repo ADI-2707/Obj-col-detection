@@ -317,12 +317,12 @@ class WebviewApp:
         if sys.platform == "win32":
             try:
                 import ctypes
-                ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(f"Systrol.Orbix.VisionSystem.{__version__}")
+                ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(f"Systrol.Vision.MaterialManagement.{__version__}")
             except Exception:
                 pass
 
         self._window = webview.create_window(
-            title="ORBIX — HOT METAL SLAB THICKNESS VISION SYSTEM",
+            title="Vision — Smart Material Management System",
             url=str(index_path.resolve()),
             js_api=self.api,
             width=1440,
@@ -352,12 +352,12 @@ class WebviewApp:
     def _apply_window_icon(self, *args):
         if sys.platform != "win32":
             return
-        icon_path = str(get_resource_path("assets/orbix_ico_logo.ico"))
+        icon_path = str(get_resource_path("assets/Vision_logo.ico")) if get_resource_path("assets/Vision_logo.ico").exists() else str(get_resource_path("assets/orbix_ico_logo.ico"))
         if not Path(icon_path).exists():
             return
         try:
             import ctypes
-            hwnd = ctypes.windll.user32.FindWindowW(None, "ORBIX — HOT METAL SLAB THICKNESS VISION SYSTEM")
+            hwnd = ctypes.windll.user32.FindWindowW(None, "Vision — Smart Material Management System")
             if hwnd:
                 hicon_sm = ctypes.windll.user32.LoadImageW(None, icon_path, 1, 16, 16, 0x00000010)
                 hicon_lg = ctypes.windll.user32.LoadImageW(None, icon_path, 1, 32, 32, 0x00000010)

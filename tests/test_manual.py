@@ -4,7 +4,7 @@ from orbix.manual import generate_features_manual_pdf, get_manual_pdf_path
 
 def test_get_manual_pdf_path():
     path = get_manual_pdf_path()
-    assert path.name == "Orbix_Features_and_Operation_Manual.pdf"
+    assert path.name == "Vision_Features_and_Operation_Manual.pdf"
 
 
 def test_generate_features_manual_pdf_creates_file(tmp_path):

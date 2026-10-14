@@ -17,7 +17,7 @@ def get_resource_path(relative_path: str | Path = "") -> Path:
     return base_path
 
 
-def get_user_data_dir(app_name: str = "Orbix") -> Path:
+def get_user_data_dir(app_name: str = "Vision") -> Path:
     if sys.platform == "win32":
         local_app_data = os.environ.get("LOCALAPPDATA")
         if local_app_data:

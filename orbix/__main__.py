@@ -9,7 +9,7 @@ from orbix.pipeline import Pipeline
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         prog="orbix",
-        description="Orbix: Intelligent Measurement for Modern Mills",
+        description="Vision: Smart Material Management System",
     )
 
     parser.add_argument(

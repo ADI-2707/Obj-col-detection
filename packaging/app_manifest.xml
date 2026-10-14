@@ -3,10 +3,10 @@
   <assemblyIdentity
     version="1.7.0.0"
     processorArchitecture="*"
-    name="Orbix.Vision.App"
+    name="Vision.App"
     type="win32"
   />
-  <description>Orbix — Intelligent Measurement for Modern Mills</description>
+  <description>Vision — Smart Material Management System</description>
   <trustInfo xmlns="urn:schemas-microsoft-com:asm.v3">
     <security>
       <requestedPrivileges>

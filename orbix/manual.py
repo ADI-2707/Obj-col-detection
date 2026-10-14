@@ -22,7 +22,7 @@ from orbix.paths import get_resource_path
 def get_manual_pdf_path() -> Path:
     target_dir = Path("data/docs")
     target_dir.mkdir(parents=True, exist_ok=True)
-    return target_dir / "Orbix_Features_and_Operation_Manual.pdf"
+    return target_dir / "Vision_Features_and_Operation_Manual.pdf"
 
 
 def draw_page_watermark_and_chrome(canvas, doc, logo_path: Path):
@@ -53,7 +53,7 @@ def draw_page_watermark_and_chrome(canvas, doc, logo_path: Path):
 
     canvas.setFont("Helvetica-Bold", 7.5)
     canvas.setFillColor(HexColor("#475569"))
-    canvas.drawString(36, h - 30, "ORBIX HOT METAL SLAB VISION SYSTEM — OPERATOR & FEATURE MANUAL")
+    canvas.drawString(36, h - 30, "VISION — SMART MATERIAL MANAGEMENT SYSTEM — OPERATOR & FEATURE MANUAL")
     canvas.drawRightString(w - 36, h - 30, "SYSTROL AUTOMATION")
 
     canvas.setFont("Helvetica", 7.5)
@@ -167,7 +167,7 @@ def generate_features_manual_pdf(output_path: Path | None = None) -> Path:
 
     story = []
 
-    story.append(Paragraph("ORBIX VISION SYSTEM — FEATURES &amp; OPERATION MANUAL", style_title))
+    story.append(Paragraph("VISION &mdash; SMART MATERIAL MANAGEMENT SYSTEM &bull; OPERATION MANUAL", style_title))
     story.append(Spacer(1, 2 * mm))
     story.append(
         Paragraph(
@@ -179,8 +179,8 @@ def generate_features_manual_pdf(output_path: Path | None = None) -> Path:
     story.append(HRFlowable(width="100%", thickness=1.5, color=c_blue, spaceAfter=8))
 
     intro_p1 = (
-        "This manual details all operating features, controls, and calibration routines of the Orbix "
-        "Vision System. Each feature is mapped directly to its respective physical area on the user interface: "
+        "This manual details all operating features, controls, and calibration routines of the Vision "
+        "Smart Material Management System. Each feature is mapped directly to its respective physical area on the user interface: "
         "<b>Top Bar</b>, <b>Left Sidebar</b>, <b>Center Viewport</b>, <b>Right Sidebar</b>, and <b>Bottom Profile Bar</b>. "
         "Use this reference to locate the required buttons, headings, and controls across the SCADA environment."
     )

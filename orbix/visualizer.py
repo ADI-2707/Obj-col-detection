@@ -69,7 +69,11 @@ class Visualizer:
         self.cursor_y = 622
         self.measurement_engine = SlabMeasurementEngine()
         self._systrol_logo = self._load_logo("assets/systrol_ico_logo.ico")
-        self._orbix_logo = self._load_logo("assets/orbix_ico_logo.ico")
+        logo = self._load_logo("assets/Vision_logo.ico")
+        if logo is None:
+            logo = self._load_logo("assets/orbix_ico_logo.ico")
+        self._orbix_logo = logo
+        self._vision_logo = logo
 
     def _load_logo(self, relative_path: str) -> np.ndarray | None:
         try:
@@ -234,7 +238,7 @@ class Visualizer:
 
         self._overlay_icon(canvas, self._orbix_logo, 14, 12, 24)
 
-        title = f"ORBIX \u2014 HOT METAL SLAB THICKNESS VISION SYSTEM  v{__version__}"
+        title = f"VISION \u2014 SMART MATERIAL MANAGEMENT SYSTEM  v{__version__}"
         cv2.putText(canvas, title, (44, 25), self.FONT, 0.52, self.COLOR_TEXT_MAIN, 1, cv2.LINE_AA)
 
         subtitle = "Hot-metal edge detection \u00b7 Pixel-to-mm calibration \u00b7 Live thickness profile"
@@ -497,7 +501,7 @@ class Visualizer:
         cv2.putText(canvas, f"Thickness: {measurement.thickness_px:.1f} px", (tt_x + 8, tt_y + 48), self.FONT, 0.38, (255, 255, 255), 1, cv2.LINE_AA)
         cv2.putText(canvas, f"Thickness: {measurement.thickness_mm:.1f} mm", (tt_x + 8, tt_y + 63), self.FONT, 0.44, self.COLOR_CALIPER, 1, cv2.LINE_AA)
 
-        cv2.putText(canvas, "Orbix", (vx + 28, vy + vh - 24), self.FONT, 0.70, (200, 200, 200), 1, cv2.LINE_AA)
+        cv2.putText(canvas, "Vision", (vx + 28, vy + vh - 24), self.FONT, 0.70, (200, 200, 200), 1, cv2.LINE_AA)
 
     def _draw_thickness_profile(
         self,

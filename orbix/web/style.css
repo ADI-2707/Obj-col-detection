@@ -102,10 +102,13 @@ html, body {
 }
 
 .header-logo {
-  height: 24px;
+  height: 28px;
   width: auto;
   object-fit: contain;
-  filter: drop-shadow(0 0 6px var(--cyan-glow));
+  background: #ffffff;
+  padding: 2px 6px;
+  border-radius: 4px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
 }
 
 .header-titles {
@@ -929,20 +932,18 @@ html, body {
 }
 
 .watermark-brand-logo {
-  height: 20px;
-  width: 20px;
-  opacity: 0.85;
+  height: 22px;
+  width: auto;
+  background: #ffffff;
+  padding: 2px 6px;
+  border-radius: 3px;
   display: block;
   object-fit: contain;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
 }
 
 .watermark-brand-text {
-  font-family: var(--font-main);
-  font-size: 14px;
-  font-weight: 700;
-  color: rgba(255, 255, 255, 0.85);
-  letter-spacing: 0.5px;
-  line-height: 1;
+  display: none;
 }
 
 .watermark-powered {

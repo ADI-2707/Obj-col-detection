@@ -285,7 +285,7 @@ class TestWebAssets:
         html_path = Path("orbix/web/index.html")
         assert html_path.exists()
         content = html_path.read_text(encoding="utf-8")
-        assert "ORBIX" in content
+        assert "VISION" in content
         assert "systrol_logo.png" in content
         assert "caliper-overlay" in content
         assert "profile-chart" in content
@@ -506,7 +506,7 @@ class TestUIElementsContract:
         assert "watermark-brand-text" in content
         assert "watermark-powered" in content
         assert "watermark-logo" in content
-        assert "orbix_logo.png" in content
+        assert "Vision_logo.png" in content
         assert "systrol_logo.png" in content
 
 

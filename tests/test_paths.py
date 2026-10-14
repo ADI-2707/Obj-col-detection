@@ -72,7 +72,7 @@ def test_get_default_log_dir_when_frozen(monkeypatch, tmp_path):
     monkeypatch.setenv("LOCALAPPDATA", str(tmp_path))
     monkeypatch.setenv("XDG_DATA_HOME", str(tmp_path))
     log_dir = get_default_log_dir()
-    assert log_dir.parent == tmp_path / "Orbix"
+    assert log_dir.parent == tmp_path / "Vision"
     assert log_dir.name == "logs"
 
 
