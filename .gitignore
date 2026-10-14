@@ -19,9 +19,18 @@ env/
 *.torchscript
 
 data/logs/*
+!data/logs/.gitkeep
 data/reports/*
 data/captures/*
 data/recordings/*
+data/docs/*
+
+*.csv
+*.avi
+*.mp4
+*.mkv
+*.mov
+*.pdf
 
 .idea/
 .vscode/
