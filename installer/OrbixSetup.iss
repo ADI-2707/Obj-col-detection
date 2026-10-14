@@ -1,7 +1,7 @@
 #define MyAppName "Vision"
 #define MyAppVersion "1.7.0"
 #define MyAppPublisher "Systrol Vision"
-#define MyAppURL "https://github.com/ADI-2707/Orbix"
+#define MyAppURL "https://github.com/ADI-2707/Vision"
 #define MyAppExeName "Vision.exe"
 
 [Setup]
