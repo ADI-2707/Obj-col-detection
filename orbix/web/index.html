@@ -190,27 +190,6 @@
           <div class="watermark-brand">Ecoloop</div>
           <div class="watermark-powered">powered by <img src="systrol_logo.png" alt="Systrol" class="watermark-logo"></div>
         </div>
-
-        <div class="profile-card">
-          <div class="profile-header">
-            <div class="profile-tabs">
-              <span class="prof-tab active">THICKNESS PROFILE</span>
-              <span class="prof-tab">MEASUREMENT POINTS</span>
-            </div>
-            <div class="profile-metrics-summary" id="profile-summary">
-              MIN: <span id="prof-min">173.5</span> &bull; MAX: <span id="prof-max">174.2</span> &bull; AVG: <span id="prof-avg">173.9</span> &bull; &sigma;: <span id="prof-std">0.19</span> &bull; CUR: <span id="prof-cur">174.2 mm</span>
-            </div>
-            <div class="profile-legend">
-              <span class="legend-item"><span class="leg-line line-thick"></span> Thickness</span>
-              <span class="legend-item"><span class="leg-line line-target"></span> Target</span>
-              <span class="legend-item"><span class="leg-line line-limit"></span> Limits</span>
-              <span class="legend-item"><span class="leg-dot"></span> Points</span>
-            </div>
-          </div>
-          <div class="chart-wrapper">
-            <canvas id="profile-chart" class="profile-canvas" width="1200" height="150"></canvas>
-          </div>
-        </div>
       </main>
 
       <aside class="sidebar-right">
@@ -293,12 +272,35 @@
             <button class="btn btn-outline btn-block" id="btn-report">&#128196; GENERATE REPORT</button>
           </div>
         </section>
+      </aside>
 
-        <div class="sidebar-branding">
-          <span class="branding-caption">POWERED BY</span>
+      <div class="profile-card">
+        <div class="profile-header">
+          <div class="profile-tabs">
+            <span class="prof-tab active">THICKNESS PROFILE</span>
+            <span class="prof-tab">MEASUREMENT POINTS</span>
+          </div>
+          <div class="profile-metrics-summary" id="profile-summary">
+            MIN: <span id="prof-min">173.5</span> &bull; MAX: <span id="prof-max">174.2</span> &bull; AVG: <span id="prof-avg">173.9</span> &bull; &sigma;: <span id="prof-std">0.19</span> &bull; CUR: <span id="prof-cur">174.2 mm</span>
+          </div>
+          <div class="profile-legend">
+            <span class="legend-item"><span class="leg-line line-thick"></span> Thickness</span>
+            <span class="legend-item"><span class="leg-line line-target"></span> Target</span>
+            <span class="legend-item"><span class="leg-line line-limit"></span> Limits</span>
+            <span class="legend-item"><span class="leg-dot"></span> Points</span>
+          </div>
+        </div>
+        <div class="chart-wrapper">
+          <canvas id="profile-chart" class="profile-canvas" width="1200" height="150"></canvas>
+        </div>
+      </div>
+
+      <div class="bottom-right-branding">
+        <span class="branding-caption">POWERED BY</span>
+        <div class="branding-logo-box">
           <img src="systrol_ico_logo.png" alt="sysTROL" class="branding-logo">
         </div>
-      </aside>
+      </div>
     </div>
 
     <footer class="bottom-status-bar">
