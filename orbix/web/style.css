@@ -240,15 +240,15 @@ html, body {
 }
 
 .sidebar-left .card:nth-child(1) {
-  flex: 1.2;
+  flex: 1.15;
 }
 
 .sidebar-left .card:nth-child(2) {
-  flex: 1.1;
+  flex: 1.05;
 }
 
 .sidebar-left .card:nth-child(3) {
-  flex: 1;
+  flex: 0.85;
 }
 
 .sidebar-left .card .card-content {
@@ -256,6 +256,20 @@ html, body {
   display: flex;
   flex-direction: column;
   min-height: 0;
+  gap: 6px;
+}
+
+.sidebar-left .text-input,
+.sidebar-left .select-input {
+  padding: 5px 6px;
+}
+
+.sidebar-left .btn {
+  padding: 5px 8px;
+}
+
+.sidebar-left #btn-connect {
+  padding: 6px 8px;
 }
 
 .sidebar-left .card:nth-child(1) .source-status-text {
@@ -298,11 +312,11 @@ html, body {
 }
 
 .sidebar-right .card:nth-child(1) {
-  flex: 1.35;
+  flex: 1.8;
 }
 
 .sidebar-right .card:nth-child(2) {
-  flex: 1;
+  flex: 0.8;
 }
 
 .sidebar-right .card:nth-child(3) {
@@ -502,7 +516,7 @@ html, body {
 }
 
 .btn-mini {
-  padding: 3px 6px;
+  padding: 4px 6px;
   font-size: 10px;
   font-weight: 700;
   background: var(--bg-card-sub);
@@ -532,11 +546,11 @@ html, body {
 .source-status-text {
   font-size: 9px;
   color: var(--text-muted);
-  padding: 4px 6px;
+  padding: 6px 8px;
   background: var(--bg-card-sub);
   border: 1px solid var(--border-card);
   border-radius: 3px;
-  line-height: 1.35;
+  line-height: 1.4;
   margin-top: 0;
 }
 
@@ -553,9 +567,9 @@ html, body {
   background: var(--bg-card-sub);
   border: 1px solid var(--border-sub);
   color: var(--cyan-accent);
-  padding: 3px 5px;
+  padding: 4px 6px;
   border-radius: 3px;
-  font-size: 9px;
+  font-size: 9.5px;
   font-family: var(--font-mono);
   font-weight: 600;
   text-align: center;
@@ -564,17 +578,17 @@ html, body {
 .coord-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 3px;
+  gap: 4px;
 }
 
 .coord-item {
   display: flex;
   justify-content: space-between;
   background: var(--bg-card-sub);
-  padding: 2px 5px;
+  padding: 4px 6px;
   border-radius: 2px;
   border: 1px solid var(--border-card);
-  font-size: 9px;
+  font-size: 9.5px;
   font-family: var(--font-mono);
 }
 
@@ -592,13 +606,12 @@ html, body {
   display: flex;
   justify-content: space-between;
   background: var(--bg-card-sub);
-  padding: 3px 5px;
+  padding: 5px 6px;
   border-radius: 2px;
   border: 1px solid var(--border-card);
-  font-size: 9px;
+  font-size: 9.5px;
   font-family: var(--font-mono);
 }
-
 
 .coord-val-area {
   color: var(--cyan-accent);
@@ -617,7 +630,7 @@ html, body {
   color: var(--text-main);
   font-family: var(--font-mono);
   background: var(--bg-card-sub);
-  padding: 3px 5px;
+  padding: 4px 6px;
   border-radius: 2px;
   border: 1px solid var(--border-card);
 }
@@ -1079,6 +1092,7 @@ html, body {
   font-weight: 700;
   color: var(--text-muted);
   margin-top: 3px;
+  flex-shrink: 0;
 }
 
 .gauge-pct {
@@ -1089,11 +1103,15 @@ html, body {
 .led-bar {
   display: flex;
   gap: 2px;
-  height: 9px;
+  height: 10px;
+  min-height: 10px;
+  flex-shrink: 0;
   background: var(--bg-card-sub);
-  padding: 1px;
+  padding: 2px;
   border: 1px solid var(--border-card);
   border-radius: 2px;
+  margin-top: 2px;
+  margin-bottom: 2px;
 }
 
 .led-seg {
@@ -1122,7 +1140,8 @@ html, body {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   gap: 4px;
-  margin-top: 3px;
+  margin-top: auto;
+  flex-shrink: 0;
 }
 
 .limit-item {
