@@ -919,19 +919,33 @@ html, body {
 .watermark-brand {
   position: absolute;
   bottom: 8px;
-  left: 12px;
-  font-size: 15px;
+  left: 14px;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  z-index: 4;
+}
+
+.watermark-brand-logo {
+  height: 18px;
+  width: 18px;
+  opacity: 0.45;
+  display: block;
+}
+
+.watermark-brand-text {
+  font-size: 13px;
   font-weight: 700;
   color: rgba(255, 255, 255, 0.45);
-  pointer-events: none;
-  letter-spacing: 0.5px;
-  z-index: 4;
+  letter-spacing: 0.6px;
+  line-height: 1;
 }
 
 .watermark-powered {
   position: absolute;
   bottom: 8px;
-  right: 12px;
+  right: 14px;
   pointer-events: none;
   display: flex;
   align-items: center;
@@ -939,7 +953,7 @@ html, body {
 }
 
 .watermark-logo {
-  height: 22px;
+  height: 20px;
   width: auto;
   opacity: 0.45;
   display: block;
