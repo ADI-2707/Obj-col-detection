@@ -181,6 +181,27 @@ html, body {
   background: var(--bg-card-sub);
   color: var(--text-muted);
   border: 1px solid var(--border-sub);
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.2s ease;
+}
+
+.pill-rec:hover {
+  border-color: var(--border-focus);
+}
+
+.pill-rec.recording-active {
+  background: rgba(220, 38, 38, 0.2);
+  color: #ff334b;
+  border-color: #ff334b;
+  box-shadow: 0 0 10px rgba(255, 51, 75, 0.5);
+  animation: recPulse 1.2s infinite ease-in-out;
+}
+
+@keyframes recPulse {
+  0% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(1.03); }
+  100% { opacity: 1; transform: scale(1); }
 }
 
 .digital-clock {

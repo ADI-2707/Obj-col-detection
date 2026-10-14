@@ -48,6 +48,8 @@ class BridgeAPI:
         self._window = None
         self.roi = (150, 39, 1549, 870)
         self.source_label = "CAM01_2026-10-09_10-06-01.mp4"
+        self.is_recording = False
+        self.current_recording_path = None
 
     def get_state(self) -> dict:
         return {
@@ -70,6 +72,12 @@ class BridgeAPI:
     def toggle_freeze(self, frozen: bool) -> dict:
         self.is_frozen = frozen
         return {"status": "ok", "is_frozen": self.is_frozen}
+
+    def toggle_recording(self) -> dict:
+        if self._app is not None:
+            return self._app.toggle_recording()
+        self.is_recording = not self.is_recording
+        return {"status": "ok", "recording": self.is_recording}
 
     def toggle_fullscreen(self) -> dict:
         win = self._window or (self._app._window if self._app else None)
@@ -225,6 +233,34 @@ class WebviewApp:
         self.last_measurement = None
         self._new_source = None
         self._source_lock = threading.Lock()
+        self._video_writer = None
+        self._recording_lock = threading.Lock()
+        self._recording_path = None
+
+    def toggle_recording(self) -> dict:
+        with self._recording_lock:
+            if self.api.is_recording:
+                self.api.is_recording = False
+                if self._video_writer is not None:
+                    try:
+                        self._video_writer.release()
+                    except Exception:
+                        pass
+                    self._video_writer = None
+                p = self._recording_path
+                self._recording_path = None
+                self.api.current_recording_path = None
+                return {"status": "ok", "recording": False, "path": p}
+            else:
+                rec_dir = Path("data/recordings")
+                rec_dir.mkdir(parents=True, exist_ok=True)
+                ts = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+                self._recording_path = str(rec_dir / f"dvr_recording_{ts}.avi")
+                fourcc = cv2.VideoWriter_fourcc(*"MJPG")
+                self._video_writer = cv2.VideoWriter(self._recording_path, fourcc, 20.0, (1920, 1080))
+                self.api.is_recording = True
+                self.api.current_recording_path = self._recording_path
+                return {"status": "ok", "recording": True, "path": self._recording_path}
 
     def switch_source(self, new_source):
         with self._source_lock:
@@ -293,6 +329,13 @@ class WebviewApp:
 
     def _on_closing(self, *args):
         self._stop_event.set()
+        with self._recording_lock:
+            if self._video_writer is not None:
+                try:
+                    self._video_writer.release()
+                except Exception:
+                    pass
+                self._video_writer = None
 
     def _telemetry_worker(self):
         source = None
@@ -358,6 +401,16 @@ class WebviewApp:
 
             rendered_frame = self._apply_view_mode(frame, self.api.active_view_mode, measurement)
             self.last_rendered_frame = rendered_frame
+            with self._recording_lock:
+                if self.api.is_recording and self._video_writer is not None:
+                    try:
+                        if rendered_frame.shape[:2] != (1080, 1920):
+                            rec_frame = cv2.resize(rendered_frame, (1920, 1080))
+                        else:
+                            rec_frame = rendered_frame
+                        self._video_writer.write(rec_frame)
+                    except Exception:
+                        pass
             frame_b64 = encode_frame_to_b64(rendered_frame, quality=68)
 
             dt = time.monotonic() - last_time
@@ -393,6 +446,7 @@ class WebviewApp:
                 "roi": list(self.api.roi),
                 "colour_space": getattr(self._engine, "colour_space", "grayscale"),
                 "threshold_mode": getattr(self._engine, "threshold_mode", "otsu"),
+                "is_recording": self.api.is_recording,
             }
 
             if self._stop_event.is_set():

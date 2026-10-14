@@ -215,6 +215,15 @@ class TestBridgeAPI:
         res_err = api.set_calibration(-1.0)
         assert res_err["status"] == "error"
 
+    def test_toggle_recording(self):
+        api = BridgeAPI()
+        res_on = api.toggle_recording()
+        assert res_on["status"] == "ok"
+        assert res_on["recording"] is True
+        res_off = api.toggle_recording()
+        assert res_off["status"] == "ok"
+        assert res_off["recording"] is False
+
 
 class TestWebviewApp:
     def test_initialization(self, mock_config):
@@ -254,6 +263,21 @@ class TestWebviewApp:
         assert not app._stop_event.is_set()
         app._on_closing()
         assert app._stop_event.is_set()
+
+    def test_toggle_recording_service(self, mock_config):
+        app = WebviewApp(mock_config)
+        res_on = app.toggle_recording()
+        assert res_on["status"] == "ok"
+        assert res_on["recording"] is True
+        assert app.api.is_recording is True
+        assert app._video_writer is not None
+        assert Path(res_on["path"]).exists()
+
+        res_off = app.toggle_recording()
+        assert res_off["status"] == "ok"
+        assert res_off["recording"] is False
+        assert app.api.is_recording is False
+        assert app._video_writer is None
 
 
 class TestWebAssets:
@@ -337,4 +361,14 @@ class TestWebAssets:
         assert "showScadaModal" in content
         assert "showHelpModal" in content
         assert "showAboutModal" in content
+
+    def test_html_and_js_recording_integration(self):
+        html_path = Path("orbix/web/index.html")
+        content_html = html_path.read_text(encoding="utf-8")
+        assert "badge-rec" in content_html
+
+        js_path = Path("orbix/web/app.js")
+        content_js = js_path.read_text(encoding="utf-8")
+        assert "toggle_recording" in content_js
+        assert "recording-active" in content_js
 

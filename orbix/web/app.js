@@ -436,6 +436,20 @@
         }
       });
     }
+
+    const badgeRec = document.getElementById("badge-rec");
+    if (badgeRec) {
+      badgeRec.addEventListener("click", () => {
+        if (window.pywebview && window.pywebview.api && window.pywebview.api.toggle_recording) {
+          window.pywebview.api.toggle_recording().then((res) => {
+            if (res && res.recording !== undefined) {
+              badgeRec.textContent = res.recording ? "\u25cf REC ON" : "RECORDING OFF";
+              badgeRec.classList.toggle("recording-active", res.recording);
+            }
+          });
+        }
+      });
+    }
   }
 
   function updateRoiDisplay(roi) {
@@ -1107,6 +1121,12 @@
     }
     if (elDer && !isCalibrating && payload.calibration > 0) {
       elDer.textContent = `= ${(1 / payload.calibration).toFixed(5)} px/mm (derived)`;
+    }
+
+    const badgeRec = document.getElementById("badge-rec");
+    if (badgeRec && payload.is_recording !== undefined) {
+      badgeRec.textContent = payload.is_recording ? "\u25cf REC ON" : "RECORDING OFF";
+      badgeRec.classList.toggle("recording-active", !!payload.is_recording);
     }
 
     updateCaliperOverlay();
