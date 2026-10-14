@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Orbix - Hot Metal Slab Thickness Vision System</title>
+  <title>HOT METAL SLAB THICKNESS VISION SYSTEM</title>
   <link rel="icon" type="image/png" href="orbix_logo.png">
   <link rel="stylesheet" href="style.css">
 </head>
@@ -13,7 +13,7 @@
       <div class="header-left">
         <img src="orbix_logo.png" alt="Orbix" class="header-logo">
         <div class="header-titles">
-          <h1 class="header-title">ORBIX &mdash; HOT METAL SLAB THICKNESS VISION SYSTEM <span class="version-badge">v1.5.0</span></h1>
+          <h1 class="header-title">HOT METAL SLAB THICKNESS VISION SYSTEM <span class="version-badge">v1.5.0</span></h1>
           <div class="header-sub">
             <span>Hot-metal edge detection &bull; Pixel-to-mm calibration &bull; Live thickness profile</span>
             <span class="powered-badge">powered by <img src="systrol_logo.png" alt="Systrol" class="systrol-icon"></span>
@@ -51,7 +51,7 @@
             </div>
             <div class="source-status-text" id="source-status-label">
               <span class="dot-green">&bull;</span> VIDEO PLAYING &bull; Playing<br>
-              <span class="text-muted" id="source-filename">CAM01_2026-10-09_10-07-30.mp4</span>
+              <span class="text-muted" id="source-filename">CAM01_2026-10-09_10-06-01.mp4</span>
             </div>
           </div>
         </section>
@@ -147,12 +147,24 @@
         <div class="video-container" id="video-wrapper">
           <img id="video-stream" class="video-feed" src="orbix_logo.png" alt="Live Feed">
           <svg id="caliper-overlay" class="caliper-svg"></svg>
-          <div id="caliper-tooltip" class="floating-tooltip">
-            <div class="tt-row"><span class="tt-label">X:</span> <span id="tt-x">980</span> px &nbsp; <span class="tt-label">Y:</span> <span id="tt-y">721</span> px</div>
-            <div class="tt-row"><span class="tt-label">Top:</span> <span id="tt-top">541.1</span> px &nbsp; <span class="tt-label">Bottom:</span> <span id="tt-bot">853.5</span> px</div>
-            <div class="tt-row"><span class="tt-label">Thickness:</span> <span id="tt-px">312.4</span> px</div>
-            <div class="tt-row tt-highlight"><span class="tt-label">Thickness:</span> <span id="tt-mm">108.6</span> mm</div>
+          
+          <div class="video-hud-overlay" id="video-hud">
+            <div class="hud-item hud-status"><span class="hud-dot"></span> <span id="hud-status-text">VIDEO PLAYING</span></div>
+            <div class="hud-item" id="hud-fps-text">FPS 17.5 in / 2.9 proc &bull; 1920&times;1080</div>
+            <div class="hud-item" id="hud-mode-text">VIEW THERMAL &bull; THRESHOLD OTSU 108</div>
+            <div class="hud-item hud-thick" id="hud-thick-text">THICKNESS 174.2 mm</div>
           </div>
+
+          <div class="edge-track-label top-label" id="label-top-edge">TOP EDGE</div>
+          <div class="edge-track-label bot-label" id="label-bot-edge">BOTTOM EDGE</div>
+
+          <div id="caliper-tooltip" class="floating-tooltip">
+            <div class="tt-row"><span class="tt-label">X:</span> <span id="tt-x">903</span> px &nbsp; <span class="tt-label">Y:</span> <span id="tt-y">652</span> px</div>
+            <div class="tt-row"><span class="tt-label">Top:</span> <span id="tt-top">340.2</span> px &nbsp; <span class="tt-label">Bottom:</span> <span id="tt-bot">841.3</span> px</div>
+            <div class="tt-row"><span class="tt-label">Thickness:</span> <span id="tt-px">501.1</span> px</div>
+            <div class="tt-row tt-highlight"><span class="tt-label">Thickness:</span> <span id="tt-mm">174.2</span> mm</div>
+          </div>
+
           <div class="watermark-brand">Ecoloop</div>
           <div class="watermark-powered">powered by <img src="systrol_logo.png" alt="Systrol" class="watermark-logo"></div>
         </div>
@@ -164,7 +176,7 @@
               <span class="prof-tab">MEASUREMENT POINTS</span>
             </div>
             <div class="profile-metrics-summary" id="profile-summary">
-              MIN: <span id="prof-min">106.6</span> &bull; MAX: <span id="prof-max">111.1</span> &bull; AVG: <span id="prof-avg">109.0</span> &bull; &sigma;: <span id="prof-std">0.80</span> &bull; CUR: <span id="prof-cur">108.6 mm</span>
+              MIN: <span id="prof-min">173.5</span> &bull; MAX: <span id="prof-max">174.2</span> &bull; AVG: <span id="prof-avg">173.9</span> &bull; &sigma;: <span id="prof-std">0.19</span> &bull; CUR: <span id="prof-cur">174.2 mm</span>
             </div>
             <div class="profile-legend">
               <span class="legend-item"><span class="leg-line line-thick"></span> Thickness</span>
@@ -183,55 +195,56 @@
         <section class="card card-thickness">
           <div class="card-header">
             <span class="card-title">&#128207; THICKNESS</span>
-            <span class="card-sub-info" id="cursor-pos-label">CURSOR X: 980 px</span>
+            <span class="card-sub-info" id="cursor-pos-label">CURSOR X: 903 px</span>
           </div>
           <div class="thickness-hero">
-            <span class="thickness-big" id="readout-mm">108.6</span>
+            <span class="thickness-big" id="readout-mm">174.2</span>
             <span class="thickness-unit">mm</span>
           </div>
-          <div class="thickness-px-sub" id="readout-px">312.4 px</div>
+          <div class="thickness-px-sub" id="readout-px">501.1 px</div>
 
           <div class="stats-table">
             <div class="stat-row">
               <span class="stat-name">MINIMUM</span>
-              <span class="stat-val" id="stat-min">106.6 mm</span>
+              <span class="stat-val" id="stat-min">173.5 mm</span>
             </div>
             <div class="stat-row">
               <span class="stat-name">MAXIMUM</span>
-              <span class="stat-val" id="stat-max">111.1 mm</span>
+              <span class="stat-val" id="stat-max">174.2 mm</span>
             </div>
             <div class="stat-row">
               <span class="stat-name">AVERAGE</span>
-              <span class="stat-val" id="stat-avg">109.0 mm</span>
+              <span class="stat-val" id="stat-avg">173.9 mm</span>
             </div>
             <div class="stat-row">
               <span class="stat-name">STD DEV</span>
-              <span class="stat-val" id="stat-std">0.80 mm</span>
+              <span class="stat-val" id="stat-std">0.19 mm</span>
             </div>
           </div>
 
           <div class="status-banner banner-normal" id="spec-status-banner">
-            &bull; NORMAL
+            <div class="banner-title" id="banner-title-text">&bull; NORMAL</div>
+            <div class="banner-sub" id="banner-sub-text" style="display: none;"></div>
           </div>
 
           <div class="gauge-label">
             <span>DETECTION CONFIDENCE</span>
-            <span class="gauge-pct" id="conf-pct">100% GOOD</span>
+            <span class="gauge-pct" id="conf-pct">85% GOOD</span>
           </div>
           <div class="led-bar" id="led-confidence-bar"></div>
 
           <div class="limits-grid">
             <div class="limit-item">
               <span class="limit-lbl">TARGET</span>
-              <span class="limit-val" id="lim-target">108.6</span>
+              <input type="number" step="0.1" class="limit-input" id="lim-target-input" value="174.0">
             </div>
             <div class="limit-item">
               <span class="limit-lbl">LOWER</span>
-              <span class="limit-val" id="lim-lower">80.0</span>
+              <input type="number" step="0.1" class="limit-input" id="lim-lower-input" value="10.0">
             </div>
             <div class="limit-item">
               <span class="limit-lbl">UPPER</span>
-              <span class="limit-val" id="lim-upper">145.0</span>
+              <input type="number" step="0.1" class="limit-input" id="lim-upper-input" value="300.0">
             </div>
           </div>
         </section>
@@ -243,7 +256,7 @@
           <div class="card-content">
             <div class="calib-val" id="calib-mm-px">0.34757 mm/px</div>
             <div class="calib-derived" id="calib-px-mm">= 2.87712 px/mm (derived)</div>
-            <div class="calib-meta">Known object (2-point) &bull; <span id="calib-date">10-10-2026 10:23:55</span></div>
+            <div class="calib-meta">Known object (2-point) &bull; <span id="calib-date">09-10-2026 10:23:35</span></div>
             <button class="btn btn-primary btn-block" id="btn-calibrate">CALIBRATE</button>
           </div>
         </section>
@@ -263,18 +276,18 @@
 
     <footer class="bottom-status-bar">
       <div class="status-left">
-        <span>FPS <strong id="status-fps">14.5</strong> / 3.9</span>
+        <span>FPS <strong id="status-fps">17.5</strong> / 2.9</span>
         <span class="sep">|</span>
         <span>RESOLUTION <strong id="status-res">1920&times;1080</strong></span>
         <span class="sep">|</span>
-        <span>PROCESSING <strong id="status-proc">250 ms</strong></span>
+        <span>PROCESSING <strong id="status-proc">253 ms</strong></span>
         <span class="sep">|</span>
-        <span>THRESHOLD <strong id="status-thresh">OTSU 113</strong></span>
+        <span>THRESHOLD <strong id="status-thresh">OTSU 108</strong></span>
         <span class="sep">|</span>
         <span>CALIBRATION <strong id="status-calib">0.34757 mm/px</strong></span>
       </div>
       <div class="status-right" id="status-source-name">
-        Playing CAM01_2026-10-09_10-07-30.mp4
+        Playing CAM01_2026-10-09_10-06-01.mp4
       </div>
     </footer>
   </div>
