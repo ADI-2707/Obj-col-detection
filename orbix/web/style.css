@@ -6,7 +6,8 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-:root {
+:root,
+[data-theme="dark"] {
   --bg-main: #000000;
   --bg-topbar: #050505;
   --bg-card: #0a0a0a;
@@ -32,6 +33,34 @@
   --font-sans: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", Arial, sans-serif;
   --font-mono: "Segoe UI Mono", "Cascadia Code", Consolas, "Courier New", monospace;
 }
+
+[data-theme="light"] {
+  --bg-main: #ffffff;
+  --bg-topbar: #f8fafc;
+  --bg-card: #f8fafc;
+  --bg-card-sub: #ffffff;
+  --bg-input: #ffffff;
+  --border-card: #e2e8f0;
+  --border-sub: #cbd5e1;
+  --border-focus: #0f4c81;
+  --text-main: #0f172a;
+  --text-muted: #64748b;
+  --text-dim: #94a3b8;
+  --cyan-primary: #0f4c81;
+  --cyan-accent: #0098db;
+  --cyan-glow: rgba(0, 152, 219, 0.2);
+  --cyan-dim: #0f4c81;
+  --green-success: #10b981;
+  --green-glow: rgba(16, 185, 129, 0.2);
+  --yellow-caliper: #d97706;
+  --yellow-glow: rgba(217, 119, 6, 0.2);
+  --red-alert: #ef4444;
+  --red-glow: rgba(239, 68, 68, 0.2);
+  --amber-warn: #f59e0b;
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "Segoe UI Mono", "Cascadia Code", Consolas, "Courier New", monospace;
+}
+
 
 html, body {
   width: 100%;
@@ -1035,3 +1064,126 @@ html, body {
 .status-right {
   color: #999999;
 }
+
+.settings-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.settings-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  width: 220px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-card);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+  border-radius: 4px;
+  padding: 6px 0;
+  z-index: 100;
+  display: none;
+}
+
+.settings-dropdown.show {
+  display: block;
+}
+
+.dropdown-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  font-size: 11px;
+}
+
+.dropdown-item.clickable {
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+.dropdown-item.clickable:hover {
+  background: var(--bg-card-sub);
+}
+
+.dropdown-label {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.dropdown-title {
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.theme-status-text {
+  font-size: 10px;
+  color: var(--cyan-accent);
+  font-family: var(--font-mono);
+}
+
+.dropdown-subtext {
+  font-size: 9px;
+  color: var(--text-muted);
+}
+
+.dropdown-divider {
+  height: 1px;
+  background: var(--border-card);
+  margin: 4px 0;
+}
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 34px;
+  height: 18px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--bg-card-sub);
+  border: 1px solid var(--border-sub);
+  transition: 0.2s;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 12px;
+  width: 12px;
+  left: 2px;
+  bottom: 2px;
+  background-color: var(--text-main);
+  transition: 0.2s;
+}
+
+input:checked + .slider {
+  background-color: #003652;
+  border-color: var(--cyan-dim);
+}
+
+input:checked + .slider:before {
+  transform: translateX(16px);
+  background-color: var(--cyan-accent);
+}
+
+.slider.round {
+  border-radius: 18px;
+}
+
+.slider.round:before {
+  border-radius: 50%;
+}
+

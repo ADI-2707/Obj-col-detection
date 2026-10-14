@@ -24,8 +24,30 @@
         <div class="pill-badge pill-video" id="badge-video">&bull; VIDEO PLAYING</div>
         <div class="pill-badge pill-status" id="badge-status">&bull; NORMAL</div>
         <div class="pill-badge pill-rec" id="badge-rec">RECORDING OFF</div>
-        <div class="digital-clock" id="digital-clock">00:00:00</div>
-        <button class="icon-btn" id="btn-settings" title="Settings">&#9881;</button>
+        <div class="settings-wrapper">
+          <button class="icon-btn" id="btn-settings" title="Settings">&#9881;</button>
+          <div class="settings-dropdown" id="settings-dropdown">
+            <div class="dropdown-item">
+              <div class="dropdown-label">
+                <span class="dropdown-title">Theme</span>
+                <span class="theme-status-text" id="theme-status-text">Dark (OLED)</span>
+              </div>
+              <label class="switch">
+                <input type="checkbox" id="theme-toggle-chk" checked>
+                <span class="slider round"></span>
+              </label>
+            </div>
+            <div class="dropdown-divider"></div>
+            <div class="dropdown-item clickable" id="item-help">
+              <span class="dropdown-title">Help &amp; Documentation</span>
+              <span class="dropdown-subtext">&bull;</span>
+            </div>
+            <div class="dropdown-item clickable" id="item-about">
+              <span class="dropdown-title">About System</span>
+              <span class="dropdown-subtext">v1.5.0</span>
+            </div>
+          </div>
+        </div>
         <button class="icon-btn" id="btn-help" title="Help">?</button>
       </div>
     </header>

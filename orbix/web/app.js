@@ -21,6 +21,66 @@
     setInterval(tick, 1000);
   }
 
+  function initThemeSystem() {
+    const savedTheme = localStorage.getItem("orbix_theme") || "dark";
+    applyTheme(savedTheme);
+
+    const toggleChk = document.getElementById("theme-toggle-chk");
+    if (toggleChk) {
+      toggleChk.checked = (savedTheme === "dark");
+      toggleChk.addEventListener("change", (e) => {
+        const nextTheme = e.target.checked ? "dark" : "light";
+        applyTheme(nextTheme);
+        localStorage.setItem("orbix_theme", nextTheme);
+      });
+    }
+  }
+
+  function applyTheme(theme) {
+    document.documentElement.setAttribute("data-theme", theme);
+    const statusText = document.getElementById("theme-status-text");
+    if (statusText) {
+      statusText.textContent = (theme === "dark") ? "Dark (OLED)" : "Light (Office)";
+    }
+    const toggleChk = document.getElementById("theme-toggle-chk");
+    if (toggleChk) {
+      toggleChk.checked = (theme === "dark");
+    }
+    renderProfileChart(lastTelemetry);
+  }
+
+  function initSettingsDropdown() {
+    const btnSettings = document.getElementById("btn-settings");
+    const dropdown = document.getElementById("settings-dropdown");
+    if (!btnSettings || !dropdown) return;
+
+    btnSettings.addEventListener("click", (e) => {
+      e.stopPropagation();
+      dropdown.classList.toggle("show");
+    });
+
+    document.addEventListener("click", (e) => {
+      if (!dropdown.contains(e.target) && e.target !== btnSettings) {
+        dropdown.classList.remove("show");
+      }
+    });
+
+    const itemHelp = document.getElementById("item-help");
+    if (itemHelp) {
+      itemHelp.addEventListener("click", () => {
+        dropdown.classList.remove("show");
+      });
+    }
+
+    const itemAbout = document.getElementById("item-about");
+    if (itemAbout) {
+      itemAbout.addEventListener("click", () => {
+        dropdown.classList.remove("show");
+      });
+    }
+  }
+
+
   function initLedBar() {
     const bar = document.getElementById("led-confidence-bar");
     if (!bar) return;
@@ -339,7 +399,13 @@
     const h = canvas.height;
     ctx.clearRect(0, 0, w, h);
 
-    ctx.fillStyle = "#020202";
+    const isLight = document.documentElement.getAttribute("data-theme") === "light";
+    const bgFill = isLight ? "#ffffff" : "#020202";
+    const gridStroke = isLight ? "#e2e8f0" : "#161616";
+    const textFill = isLight ? "#64748b" : "#555555";
+    const curveStroke = isLight ? "#0098db" : "#00e5ff";
+
+    ctx.fillStyle = bgFill;
     ctx.fillRect(0, 0, w, h);
 
     const padLeft = 46;
@@ -349,7 +415,7 @@
     const plotW = w - padLeft - padRight;
     const plotH = h - padTop - padBottom;
 
-    ctx.strokeStyle = "#161616";
+    ctx.strokeStyle = gridStroke;
     ctx.lineWidth = 1;
     for (let i = 0; i <= 5; i++) {
       const y = padTop + (plotH / 5) * i;
@@ -358,7 +424,7 @@
       ctx.lineTo(w - padRight, y);
       ctx.stroke();
 
-      ctx.fillStyle = "#555555";
+      ctx.fillStyle = textFill;
       ctx.font = "9px 'Segoe UI Mono', monospace";
       const val = Math.round(300 - (300 / 5) * i);
       ctx.fillText(String(val), 8, y + 3);
@@ -371,11 +437,12 @@
       ctx.lineTo(x, h - padBottom);
       ctx.stroke();
 
-      ctx.fillStyle = "#555555";
+      ctx.fillStyle = textFill;
       ctx.font = "9px 'Segoe UI Mono', monospace";
       const dist = Math.round(i * 100);
       ctx.fillText(String(dist), x - 8, h - 8);
     }
+
 
     const targetY = padTop + plotH * (1.0 - 174.0 / 300.0);
     ctx.strokeStyle = "#00e676";
@@ -402,7 +469,7 @@
 
     const points = (data && data.profile && data.profile.length > 1) ? data.profile : [];
     if (points.length > 1) {
-      ctx.strokeStyle = "#00e5ff";
+      ctx.strokeStyle = curveStroke;
       ctx.lineWidth = 2;
       ctx.beginPath();
       for (let i = 0; i < points.length; i++) {
@@ -565,9 +632,12 @@
 
   document.addEventListener("DOMContentLoaded", () => {
     initClock();
+    initThemeSystem();
+    initSettingsDropdown();
     initLedBar();
     initTabs();
     initMouseInspection();
     renderProfileChart(null);
   });
 })();
+
