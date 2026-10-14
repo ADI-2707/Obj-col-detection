@@ -22,6 +22,23 @@ class TestVersionAttributes:
         assert match is not None
         assert match.group(1) == orbix.__version__
 
+    def test_index_html_version_matches_init_version(self):
+        index_path = Path(__file__).resolve().parent.parent / "orbix" / "web" / "index.html"
+        content = index_path.read_text(encoding="utf-8")
+        assert f'id="app-version-badge">v{orbix.__version__}</span>' in content
+        assert f'id="app-version-subtext">v{orbix.__version__}</span>' in content
+
+    def test_app_js_version_matches_init_version(self):
+        app_js_path = Path(__file__).resolve().parent.parent / "orbix" / "web" / "app.js"
+        content = app_js_path.read_text(encoding="utf-8")
+        assert f'let currentAppVersion = "{orbix.__version__}";' in content
+
+    def test_bridge_state_contains_version(self):
+        from orbix.bridge import BridgeAPI
+        api = BridgeAPI()
+        state = api.get_state()
+        assert state.get("version") == orbix.__version__
+
 
 class TestSemverComputation:
     def test_parse_semver_valid(self):
@@ -71,12 +88,22 @@ class TestBumpVersionExecution:
             encoding="utf-8",
         )
 
+        web_dir = pkg_dir / "web"
+        web_dir.mkdir()
+        index_file = web_dir / "index.html"
+        index_file.write_text('<span id="app-version-badge">v1.0.0</span><span id="app-version-subtext">v1.0.0</span>', encoding="utf-8")
+        app_file = web_dir / "app.js"
+        app_file.write_text('let currentAppVersion = "1.0.0";', encoding="utf-8")
+
         new_ver = bump_version("patch", repo_root=tmp_path)
         assert new_ver == "1.0.1"
         assert '__version__ = "1.0.1"' in init_file.read_text(encoding="utf-8")
         assert 'version = "1.0.1"' in pyproject_file.read_text(encoding="utf-8")
         assert '#define MyAppVersion "1.0.1"' in iss_file.read_text(encoding="utf-8")
         assert 'version="1.0.1.0"' in manifest_file.read_text(encoding="utf-8")
+        assert 'id="app-version-badge">v1.0.1</span>' in index_file.read_text(encoding="utf-8")
+        assert 'id="app-version-subtext">v1.0.1</span>' in index_file.read_text(encoding="utf-8")
+        assert 'let currentAppVersion = "1.0.1";' in app_file.read_text(encoding="utf-8")
 
         new_minor = bump_version("minor", repo_root=tmp_path)
         assert new_minor == "1.1.0"
@@ -84,3 +111,6 @@ class TestBumpVersionExecution:
         assert 'version = "1.1.0"' in pyproject_file.read_text(encoding="utf-8")
         assert '#define MyAppVersion "1.1.0"' in iss_file.read_text(encoding="utf-8")
         assert 'version="1.1.0.0"' in manifest_file.read_text(encoding="utf-8")
+        assert 'id="app-version-badge">v1.1.0</span>' in index_file.read_text(encoding="utf-8")
+        assert 'id="app-version-subtext">v1.1.0</span>' in index_file.read_text(encoding="utf-8")
+        assert 'let currentAppVersion = "1.1.0";' in app_file.read_text(encoding="utf-8")

@@ -12,6 +12,7 @@ from typing import Any
 import cv2
 import numpy as np
 
+from orbix import __version__
 from orbix.capture import FrameSource
 from orbix.config import Config
 from orbix.logger import CSVLogger
@@ -62,6 +63,7 @@ class BridgeAPI:
 
     def get_state(self) -> dict:
         return {
+            "version": __version__,
             "mode": self.active_view_mode,
             "show_edges": self.show_edges,
             "is_frozen": self.is_frozen,
@@ -293,7 +295,7 @@ class WebviewApp:
         if sys.platform == "win32":
             try:
                 import ctypes
-                ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("Systrol.Orbix.VisionSystem.1.5")
+                ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(f"Systrol.Orbix.VisionSystem.{__version__}")
             except Exception:
                 pass
 
@@ -346,6 +348,7 @@ class WebviewApp:
 
     def _on_closing(self, *args):
         self._stop_event.set()
+        self._window = None
         with self._recording_lock:
             if self._video_writer is not None:
                 try:
@@ -467,6 +470,7 @@ class WebviewApp:
                 "threshold_mode": getattr(self._engine, "threshold_mode", "otsu"),
                 "is_recording": self.api.is_recording,
                 "show_edges": self.api.show_edges,
+                "version": __version__,
             }
 
             if self._stop_event.is_set():

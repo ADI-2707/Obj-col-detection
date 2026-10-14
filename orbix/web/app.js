@@ -13,6 +13,7 @@
   let calibPoints = [];
   let activeProfileTab = "profile";
   let showRoiBox = true;
+  let currentAppVersion = "1.6.0";
 
   function initClock() {
     const clockEl = document.getElementById("digital-clock");
@@ -123,7 +124,7 @@
         <div>
           <div class="manual-title">ORBIX VISION SYSTEM \u2014 FEATURES &amp; OPERATION MANUAL</div>
           <div class="manual-subtitle">
-            Systrol Industrial Vision Software Suite &bull; Optical Hot Metal Slab Thickness Gauging &bull; Version 1.5.0 Production Build
+            Systrol Industrial Vision Software Suite &bull; Optical Hot Metal Slab Thickness Gauging &bull; Version ${currentAppVersion} Production Build
           </div>
           <p style="margin-bottom:12px; font-size:11px; line-height:1.5;">
             This manual details all software features mapped directly to their respective operational screen areas:
@@ -159,7 +160,7 @@
               <tr>
                 <td><strong>About System</strong></td>
                 <td><span class="manual-location-text">Inside Settings:</span> <span class="manual-ctrl-badge">About System</span></td>
-                <td>Displays engine build specifications (v1.5.0), Python 3.14/Webview architecture, and mill operating tolerances.</td>
+                <td>Displays engine build specifications (v${currentAppVersion}), Python 3.14/Webview architecture, and mill operating tolerances.</td>
               </tr>
               <tr>
                 <td><strong>Sensor Stream Status</strong></td>
@@ -410,7 +411,7 @@
   function showAboutModal() {
     showScadaModal("ABOUT \u2014 ORBIX VISION SYSTEM", `
       <h4>ORBIX HOT METAL SLAB THICKNESS VISION SYSTEM</h4>
-      <p><strong>Version:</strong> 1.5.0 Production Build</p>
+      <p><strong>Version:</strong> ${currentAppVersion} Production Build</p>
       <p><strong>Architecture:</strong> Hybrid Python 3.14 Vision Core + Accelerated Webview SCADA</p>
       <p><strong>Mill Subsystem:</strong> Continuous Casting / Roughing Mill In-line Gauging</p>
       <h4>SPECIFICATIONS</h4>
@@ -1310,6 +1311,14 @@
   window.updateTelemetry = function (payload) {
     if (!payload) return;
     lastTelemetry = payload;
+
+    if (payload.version) {
+      currentAppVersion = payload.version;
+      const vBadge = document.getElementById("app-version-badge");
+      if (vBadge) vBadge.textContent = `v${payload.version}`;
+      const vSub = document.getElementById("app-version-subtext");
+      if (vSub) vSub.textContent = `v${payload.version}`;
+    }
 
     const stream = document.getElementById("video-stream");
     if (stream && payload.frame_b64) {

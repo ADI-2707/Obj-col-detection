@@ -15,6 +15,7 @@ from reportlab.platypus import (
     TableStyle,
 )
 
+from orbix import __version__
 from orbix.paths import get_resource_path
 
 
@@ -170,7 +171,7 @@ def generate_features_manual_pdf(output_path: Path | None = None) -> Path:
     story.append(Spacer(1, 2 * mm))
     story.append(
         Paragraph(
-            "Systrol Industrial Vision Software Suite &bull; Non-Contact Optical Slab Thickness Gauging &bull; Version 1.5.0",
+            f"Systrol Industrial Vision Software Suite &bull; Non-Contact Optical Slab Thickness Gauging &bull; Version {__version__}",
             style_subtitle,
         )
     )
@@ -194,7 +195,7 @@ def generate_features_manual_pdf(output_path: Path | None = None) -> Path:
                 ("Settings Dropdown", "Top Right: Gear Icon (&#9881;)", "Click the gear icon to reveal the application configuration menu containing the Theme toggle, Help & Documentation modal, and About System modal."),
                 ("Dark / Light Theme Toggle", "Inside Settings Menu: Switch Slider", "Toggle the slider switch between Dark Industrial mode and High-Contrast Light mode. Theme preference is preserved across restarts."),
                 ("Help & Documentation", "Inside Settings Menu: 'Help & Documentation'", "Opens the on-screen feature manual detailing all software capabilities and provides a one-click button to launch this printable PDF manual."),
-                ("About System Info", "Inside Settings Menu: 'About System'", "Displays the vision engine build version (v1.5.0), Python 3.14 / Webview runtime architecture, and continuous casting mill specifications."),
+                ("About System Info", "Inside Settings Menu: 'About System'", f"Displays the vision engine build version (v{__version__}), Python 3.14 / Webview runtime architecture, and continuous casting mill specifications."),
                 ("Live Stream Status Pill", "Top Right Header: 'VIDEO PLAYING'", "Displays real-time sensor connection health. Green indicates active video feed; amber indicates video pause; red indicates signal loss."),
                 ("Quality Spec Status Pill", "Top Right Header: 'NORMAL' / 'OUT OF SPEC'", "Instant visual annunciator. Displays green NORMAL when slab thickness is within mill tolerance, or flashing red OUT OF SPEC when limits are violated."),
                 ("DVR Recording Badge", "Top Right Header: 'RECORDING OFF' / 'REC ON'", "Click directly on this badge to start or stop real-time MJPEG video recording to disk (data/recordings/). Flashes red when recording."),
