@@ -11,6 +11,7 @@
   let tempRoi = null;
   let isCalibrating = false;
   let calibPoints = [];
+  let activeProfileTab = "profile";
 
   function initClock() {
     const clockEl = document.getElementById("digital-clock");
@@ -141,6 +142,31 @@
         activeMode = btn.dataset.mode;
         if (window.pywebview && window.pywebview.api && window.pywebview.api.set_view_mode) {
           window.pywebview.api.set_view_mode(activeMode);
+        }
+      });
+    });
+
+    const profTabs = document.querySelectorAll(".prof-tab");
+    const chartCanvas = document.getElementById("profile-chart");
+    const tableWrapper = document.getElementById("points-table-wrapper");
+    const legend = document.querySelector(".profile-legend");
+
+    profTabs.forEach((tab, idx) => {
+      tab.addEventListener("click", () => {
+        profTabs.forEach((t) => t.classList.remove("active"));
+        tab.classList.add("active");
+        if (idx === 0) {
+          activeProfileTab = "profile";
+          if (chartCanvas) chartCanvas.style.display = "block";
+          if (tableWrapper) tableWrapper.style.display = "none";
+          if (legend) legend.style.display = "flex";
+          renderProfileChart(lastTelemetry);
+        } else {
+          activeProfileTab = "points";
+          if (chartCanvas) chartCanvas.style.display = "none";
+          if (tableWrapper) tableWrapper.style.display = "block";
+          if (legend) legend.style.display = "none";
+          renderPointsTable(lastTelemetry);
         }
       });
     });
@@ -787,6 +813,52 @@
     ctx.stroke();
   }
 
+  function renderPointsTable(data) {
+    const tbody = document.getElementById("points-table-body");
+    if (!tbody) return;
+    if (!data || !data.profile || data.profile.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:12px; color:var(--text-muted);">NO MEASUREMENT DATA AVAILABLE</td></tr>';
+      return;
+    }
+
+    const prof = data.profile;
+    const len = prof.length;
+    const count = Math.min(25, len);
+    const step = Math.max(1, Math.floor(len / count));
+    const calib = data.calibration || 0.34757;
+    const roi = data.roi || [150, 39, 1549, 870];
+    const topAvg = data.avg_top_y || (roi[1] + roi[3] * 0.33);
+    const lowerIn = document.getElementById("lim-lower-input");
+    const upperIn = document.getElementById("lim-upper-input");
+    const lower = parseFloat(lowerIn ? lowerIn.value : 10.0) || 10.0;
+    const upper = parseFloat(upperIn ? upperIn.value : 300.0) || 300.0;
+
+    let html = "";
+    let ptIndex = 1;
+    for (let i = 0; i < len; i += step) {
+      const thickMm = prof[i];
+      const thickPx = Math.round(thickMm / calib);
+      const posX = Math.round(roi[0] + (i / len) * roi[2]);
+      const topY = Math.round(topAvg);
+      const botY = Math.round(topAvg + thickPx);
+      const isOk = thickMm >= lower && thickMm <= upper;
+      const statusClass = isOk ? "status-cell-ok" : "status-cell-bad";
+      const statusText = isOk ? "NORMAL" : "OUT OF SPEC";
+
+      html += `<tr>
+        <td>#${String(ptIndex).padStart(2, "0")}</td>
+        <td>${posX}</td>
+        <td>${topY}</td>
+        <td>${botY}</td>
+        <td>${thickPx}</td>
+        <td>${thickMm.toFixed(1)}</td>
+        <td class="${statusClass}">${statusText}</td>
+      </tr>`;
+      ptIndex++;
+    }
+    tbody.innerHTML = html;
+  }
+
   window.updateTelemetry = function (payload) {
     if (!payload) return;
     lastTelemetry = payload;
@@ -941,7 +1013,11 @@
     }
 
     updateCaliperOverlay();
-    renderProfileChart(payload);
+    if (activeProfileTab === "points") {
+      renderPointsTable(payload);
+    } else {
+      renderProfileChart(payload);
+    }
   };
 
   document.addEventListener("DOMContentLoaded", () => {

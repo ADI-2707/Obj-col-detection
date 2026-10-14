@@ -1000,6 +1000,55 @@ html, body {
   display: block;
 }
 
+.points-table-container {
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: var(--bg-card-sub);
+}
+
+.scada-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  text-align: left;
+}
+
+.scada-table thead th {
+  position: sticky;
+  top: 0;
+  background: var(--bg-topbar);
+  color: var(--text-muted);
+  font-weight: 700;
+  padding: 4px 8px;
+  border-bottom: 1px solid var(--border-sub);
+  font-size: 8.5px;
+  letter-spacing: 0.5px;
+}
+
+.scada-table tbody td {
+  padding: 3px 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  color: var(--text-main);
+  white-space: nowrap;
+}
+
+.scada-table tbody tr:hover {
+  background: rgba(0, 229, 255, 0.05);
+}
+
+.status-cell-ok {
+  color: var(--green-success);
+  font-weight: bold;
+}
+
+.status-cell-bad {
+  color: var(--red-alert);
+  font-weight: bold;
+}
+
 .card-thickness {
   padding: 10px;
 }

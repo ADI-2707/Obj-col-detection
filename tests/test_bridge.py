@@ -312,3 +312,15 @@ class TestWebAssets:
         assert "select-colour-space" in content
         assert "select-thresh-mode" in content
 
+    def test_html_contains_measurement_points_table(self):
+        html_path = Path("orbix/web/index.html")
+        content = html_path.read_text(encoding="utf-8")
+        assert "points-table-wrapper" in content
+        assert "points-table" in content
+
+    def test_js_contains_points_table_renderer(self):
+        js_path = Path("orbix/web/app.js")
+        content = js_path.read_text(encoding="utf-8")
+        assert "renderPointsTable" in content
+        assert "points-table-body" in content
+
