@@ -1148,7 +1148,7 @@
       if (showEdges && !isCalibrating && !isSelectingRoi) {
         topLabel.style.display = "block";
         topLabel.style.left = `${Math.max(8, rx + 16)}px`;
-        topLabel.style.top = `${Math.max(8, topY - 14)}px`;
+        topLabel.style.top = `${Math.max(32, topY - 14)}px`;
       } else {
         topLabel.style.display = "none";
       }

@@ -793,24 +793,47 @@ html, body {
 
 .video-hud-overlay {
   position: absolute;
-  top: 10px;
-  left: 10px;
-  background: rgba(0, 0, 0, 0.85);
-  border: 1px solid #1a2833;
-  border-left: 3px solid var(--cyan-accent);
-  padding: 6px 10px;
-  border-radius: 3px;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 28px;
+  background: rgba(8, 12, 18, 0.85);
+  backdrop-filter: blur(4px);
+  border-bottom: 1px solid var(--border-card);
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 14px;
+  padding: 0 14px;
   font-family: var(--font-mono);
   font-size: 10px;
   color: #cccccc;
-  line-height: 1.45;
   z-index: 6;
   pointer-events: none;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+  box-sizing: border-box;
+}
+
+[data-theme="light"] .video-hud-overlay {
+  background: rgba(15, 23, 42, 0.88);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  color: #e2e8f0;
 }
 
 .hud-item {
   white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.hud-item:not(:last-child):not(.hud-thick)::after {
+  content: "";
+  display: inline-block;
+  width: 1px;
+  height: 12px;
+  background: rgba(255, 255, 255, 0.12);
+  margin-left: 14px;
 }
 
 .hud-status {
@@ -832,6 +855,7 @@ html, body {
 .hud-thick {
   font-weight: 700;
   color: var(--cyan-accent);
+  margin-left: auto;
 }
 
 .edge-track-label {
