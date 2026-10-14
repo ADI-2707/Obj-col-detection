@@ -918,34 +918,38 @@ html, body {
 
 .watermark-brand {
   position: absolute;
-  bottom: 8px;
-  left: 14px;
+  bottom: 10px;
+  left: 16px;
+  height: 22px;
   pointer-events: none;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   z-index: 4;
 }
 
 .watermark-brand-logo {
-  height: 18px;
-  width: 18px;
-  opacity: 0.45;
+  height: 20px;
+  width: 20px;
+  opacity: 0.7;
   display: block;
+  object-fit: contain;
 }
 
 .watermark-brand-text {
-  font-size: 13px;
+  font-family: var(--font-main);
+  font-size: 14px;
   font-weight: 700;
-  color: rgba(255, 255, 255, 0.45);
-  letter-spacing: 0.6px;
+  color: rgba(255, 255, 255, 0.7);
+  letter-spacing: 0.5px;
   line-height: 1;
 }
 
 .watermark-powered {
   position: absolute;
-  bottom: 8px;
-  right: 14px;
+  bottom: 10px;
+  right: 16px;
+  height: 22px;
   pointer-events: none;
   display: flex;
   align-items: center;
@@ -955,8 +959,9 @@ html, body {
 .watermark-logo {
   height: 20px;
   width: auto;
-  opacity: 0.45;
+  opacity: 0.7;
   display: block;
+  object-fit: contain;
 }
 
 .profile-card {
