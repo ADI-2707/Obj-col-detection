@@ -40,7 +40,7 @@
     document.documentElement.setAttribute("data-theme", theme);
     const statusText = document.getElementById("theme-status-text");
     if (statusText) {
-      statusText.textContent = (theme === "dark") ? "Dark (OLED)" : "Light (Office)";
+      statusText.textContent = (theme === "dark") ? "Dark" : "Light";
     }
     const toggleChk = document.getElementById("theme-toggle-chk");
     if (toggleChk) {

@@ -106,17 +106,18 @@ html, body {
 
 .header-titles {
   display: flex;
-  flex-direction: column;
+  align-items: center;
 }
 
 .header-title {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
-  letter-spacing: 0.8px;
+  letter-spacing: 0.6px;
   color: var(--text-main);
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
+  white-space: nowrap;
 }
 
 .version-badge {
@@ -129,25 +130,14 @@ html, body {
   border-radius: 3px;
 }
 
-.header-sub {
+.header-sub-inline {
   font-size: 10px;
+  font-weight: 400;
   color: var(--text-muted);
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  margin-left: 6px;
+  white-space: nowrap;
 }
 
-.powered-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  color: var(--text-dim);
-}
-
-.systrol-icon {
-  height: 10px;
-  opacity: 0.6;
-}
 
 .header-right {
   display: flex;
@@ -235,8 +225,8 @@ html, body {
 .sidebar-right {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  overflow-y: auto;
+  gap: 4px;
+  overflow-y: hidden;
   min-height: 0;
 }
 
@@ -244,27 +234,26 @@ html, body {
   background: var(--bg-card);
   border: 1px solid var(--border-card);
   border-radius: 4px;
-  padding: 9px;
+  padding: 6px 8px;
   display: flex;
   flex-direction: column;
-  gap: 7px;
+  gap: 4px;
 }
 
 .card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-bottom: 5px;
+  padding-bottom: 3px;
   border-bottom: 1px solid var(--border-card);
 }
 
 .card-content {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding-top: 2px;
+  gap: 5px;
+  padding-top: 1px;
 }
-
 
 .card-title {
   font-size: 11px;
@@ -295,9 +284,8 @@ html, body {
   letter-spacing: 0.6px;
   color: var(--text-muted);
   text-transform: uppercase;
-  margin-bottom: 3px;
+  margin-bottom: 1px;
 }
-
 
 .text-input,
 .select-input {
@@ -305,7 +293,7 @@ html, body {
   background: var(--bg-input);
   border: 1px solid var(--border-sub);
   color: var(--text-main);
-  padding: 5px 7px;
+  padding: 4px 6px;
   border-radius: 3px;
   font-size: 11px;
   font-family: var(--font-mono);
@@ -323,9 +311,9 @@ html, body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 5px;
-  padding: 6px 10px;
-  font-size: 11px;
+  gap: 4px;
+  padding: 4px 8px;
+  font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.5px;
   border-radius: 3px;
@@ -434,16 +422,15 @@ html, body {
 }
 
 .source-status-text {
-  font-size: 10px;
+  font-size: 9px;
   color: var(--text-muted);
-  padding: 7px 8px;
+  padding: 4px 6px;
   background: var(--bg-card-sub);
   border: 1px solid var(--border-card);
   border-radius: 3px;
-  line-height: 1.5;
-  margin-top: 2px;
+  line-height: 1.35;
+  margin-top: 0;
 }
-
 
 .dot-green {
   color: var(--green-success);
@@ -458,9 +445,9 @@ html, body {
   background: var(--bg-card-sub);
   border: 1px solid var(--border-sub);
   color: var(--cyan-accent);
-  padding: 4px 6px;
+  padding: 3px 5px;
   border-radius: 3px;
-  font-size: 10px;
+  font-size: 9px;
   font-family: var(--font-mono);
   font-weight: 600;
   text-align: center;
@@ -469,17 +456,17 @@ html, body {
 .coord-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 4px;
+  gap: 3px;
 }
 
 .coord-item {
   display: flex;
   justify-content: space-between;
   background: var(--bg-card-sub);
-  padding: 3px 6px;
+  padding: 2px 5px;
   border-radius: 2px;
   border: 1px solid var(--border-card);
-  font-size: 10px;
+  font-size: 9px;
   font-family: var(--font-mono);
 }
 
@@ -497,12 +484,13 @@ html, body {
   display: flex;
   justify-content: space-between;
   background: var(--bg-card-sub);
-  padding: 4px 6px;
+  padding: 3px 5px;
   border-radius: 2px;
   border: 1px solid var(--border-card);
-  font-size: 10px;
+  font-size: 9px;
   font-family: var(--font-mono);
 }
+
 
 .coord-val-area {
   color: var(--cyan-accent);
@@ -1246,8 +1234,8 @@ input:checked + .slider:before {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 5px;
-  padding: 8px;
+  gap: 6px;
+  padding: 8px 10px;
   background: var(--bg-card);
   border: 1px solid var(--border-card);
   border-radius: 4px;
@@ -1261,9 +1249,9 @@ input:checked + .slider:before {
 }
 
 .branding-logo {
-  max-width: 130px;
-  max-height: 44px;
-  width: auto;
+  max-width: 190px;
+  max-height: 65px;
+  width: 90%;
   height: auto;
   object-fit: contain;
 }
@@ -1275,4 +1263,5 @@ input:checked + .slider:before {
 [data-theme="light"] .branding-logo {
   filter: none;
 }
+
 
