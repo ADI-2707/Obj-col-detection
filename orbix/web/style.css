@@ -932,18 +932,17 @@ html, body {
   position: absolute;
   bottom: 8px;
   right: 12px;
-  font-size: 9px;
-  color: rgba(255, 255, 255, 0.35);
   pointer-events: none;
   display: flex;
   align-items: center;
-  gap: 4px;
   z-index: 4;
 }
 
 .watermark-logo {
-  height: 10px;
-  opacity: 0.4;
+  height: 22px;
+  width: auto;
+  opacity: 0.45;
+  display: block;
 }
 
 .profile-card {

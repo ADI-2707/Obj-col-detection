@@ -286,7 +286,7 @@ class TestWebAssets:
         assert html_path.exists()
         content = html_path.read_text(encoding="utf-8")
         assert "ORBIX" in content
-        assert "systrol_logo.png" in content
+        assert "systrol_transparent.png" in content
         assert "caliper-overlay" in content
         assert "profile-chart" in content
         assert "readout-mm" in content
