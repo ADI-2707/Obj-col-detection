@@ -98,6 +98,100 @@ class TestBridgeAPI:
         assert api.capture_image()["captured"] is True
         assert api.generate_report()["report_generated"] is True
 
+    def test_connect_camera_with_ip_url(self):
+        api = BridgeAPI()
+        mock_app = MagicMock()
+        api._app = mock_app
+        res = api.connect_camera("rtsp://192.168.1.100:554/live")
+        assert res["status"] == "ok"
+        assert res["source"] == "rtsp://192.168.1.100:554/live"
+        assert api.source_label == "IP: rtsp://192.168.1.100:554/live"
+        mock_app.switch_source.assert_called_once_with("rtsp://192.168.1.100:554/live")
+
+    def test_connect_camera_with_device_index(self):
+        api = BridgeAPI()
+        mock_app = MagicMock()
+        api._app = mock_app
+        res = api.connect_camera("0")
+        assert res["status"] == "ok"
+        mock_app.switch_source.assert_called_once_with(0)
+
+    def test_set_limits(self):
+        engine = SlabMeasurementEngine()
+        api = BridgeAPI(engine)
+        res = api.set_limits(180.0, 15.0, 250.0)
+        assert res["status"] == "ok"
+        assert engine.target_thickness_mm == 180.0
+        assert engine.lower_limit_mm == 15.0
+        assert engine.upper_limit_mm == 250.0
+
+    def test_set_roi(self):
+        api = BridgeAPI()
+        res = api.set_roi(100, 50, 800, 600)
+        assert res["status"] == "ok"
+        assert api.roi == (100, 50, 800, 600)
+
+    def test_open_video_dialog_selection(self):
+        api = BridgeAPI()
+        mock_win = MagicMock()
+        mock_app = MagicMock()
+        api._window = mock_win
+        api._app = mock_app
+        mock_win.create_file_dialog.return_value = ["/path/to/test_slab.mp4"]
+        res = api.open_video_dialog()
+        assert res["status"] == "ok"
+        assert res["filename"] == "test_slab.mp4"
+        mock_app.switch_source.assert_called_once_with("/path/to/test_slab.mp4")
+
+    def test_open_video_dialog_cancelled(self):
+        api = BridgeAPI()
+        mock_win = MagicMock()
+        api._window = mock_win
+        mock_win.create_file_dialog.return_value = []
+        res = api.open_video_dialog()
+        assert res["status"] == "cancelled"
+
+    def test_open_video_dialog_no_window(self):
+        api = BridgeAPI()
+        res = api.open_video_dialog()
+        assert res["status"] == "error"
+
+    def test_open_image_dialog_selection(self):
+        api = BridgeAPI()
+        mock_win = MagicMock()
+        mock_app = MagicMock()
+        api._window = mock_win
+        api._app = mock_app
+        mock_win.create_file_dialog.return_value = ["/path/to/slab_frame.jpg"]
+        res = api.open_image_dialog()
+        assert res["status"] == "ok"
+        assert res["filename"] == "slab_frame.jpg"
+        mock_app.switch_source.assert_called_once_with("/path/to/slab_frame.jpg")
+
+    def test_open_image_dialog_cancelled(self):
+        api = BridgeAPI()
+        mock_win = MagicMock()
+        api._window = mock_win
+        mock_win.create_file_dialog.return_value = None
+        res = api.open_image_dialog()
+        assert res["status"] == "cancelled"
+
+    def test_open_image_dialog_no_window(self):
+        api = BridgeAPI()
+        res = api.open_image_dialog()
+        assert res["status"] == "error"
+
+    def test_load_sample_video_and_image(self):
+        api = BridgeAPI()
+        mock_app = MagicMock()
+        api._app = mock_app
+        res_v = api.load_sample_video()
+        assert res_v["status"] == "ok"
+        assert "CAM01" in res_v["filename"]
+        res_i = api.load_sample_image()
+        assert res_i["status"] == "ok"
+        assert "SLAB" in res_i["filename"]
+
 
 class TestWebviewApp:
     def test_initialization(self, mock_config):
@@ -135,6 +229,19 @@ class TestWebAssets:
         assert "profile-chart" in content
         assert "readout-mm" in content
 
+    def test_html_contains_settings_and_theme_toggle(self):
+        html_path = Path("orbix/web/index.html")
+        content = html_path.read_text(encoding="utf-8")
+        assert "btn-settings" in content
+        assert "settings-dropdown" in content
+        assert "theme-toggle-chk" in content
+
+    def test_html_contains_bottom_right_branding(self):
+        html_path = Path("orbix/web/index.html")
+        content = html_path.read_text(encoding="utf-8")
+        assert "bottom-right-branding" in content
+        assert "systrol_ico_logo.png" in content
+
     def test_css_contains_black_scada_theme(self):
         css_path = Path("orbix/web/style.css")
         assert css_path.exists()
@@ -142,9 +249,22 @@ class TestWebAssets:
         assert "--bg-main: #000000;" in content
         assert "--cyan-accent:" in content
 
+    def test_css_contains_responsive_media_queries(self):
+        css_path = Path("orbix/web/style.css")
+        content = css_path.read_text(encoding="utf-8")
+        assert "@media (min-width: 2200px)" in content
+        assert "@media (min-width: 3200px)" in content
+
     def test_js_defines_telemetry_handler(self):
         js_path = Path("orbix/web/app.js")
         assert js_path.exists()
         content = js_path.read_text(encoding="utf-8")
         assert "window.updateTelemetry" in content
         assert "renderProfileChart" in content
+
+    def test_js_contains_dynamic_canvas_resolution(self):
+        js_path = Path("orbix/web/app.js")
+        content = js_path.read_text(encoding="utf-8")
+        assert "canvas.clientWidth" in content
+        assert "canvas.clientHeight" in content
+
