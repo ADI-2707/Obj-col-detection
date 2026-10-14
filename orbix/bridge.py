@@ -98,6 +98,19 @@ class BridgeAPI:
         self.roi = (int(x), int(y), int(w), int(h))
         return {"status": "ok", "roi": self.roi}
 
+    def set_colour_space(self, space: str) -> dict:
+        self.engine.colour_space = str(space).lower()
+        return {"status": "ok", "colour_space": self.engine.colour_space}
+
+    def set_threshold_mode(self, mode: str, manual_val: int = 128) -> dict:
+        self.engine.threshold_mode = str(mode).lower()
+        self.engine.manual_threshold = int(manual_val)
+        return {"status": "ok", "threshold_mode": self.engine.threshold_mode}
+
+    def set_blur(self, ksize: int) -> dict:
+        self.engine.blur_ksize = max(1, int(ksize))
+        return {"status": "ok", "blur": self.engine.blur_ksize}
+
     def start_measurement(self) -> dict:
         self.is_measuring = not self.is_measuring
         return {"status": "ok", "is_measuring": self.is_measuring}
@@ -371,6 +384,8 @@ class WebviewApp:
                 "cursor_y": self.api.cursor_y,
                 "source_name": self.api.source_label,
                 "roi": list(self.api.roi),
+                "colour_space": getattr(self._engine, "colour_space", "grayscale"),
+                "threshold_mode": getattr(self._engine, "threshold_mode", "otsu"),
             }
 
             if self._stop_event.is_set():
@@ -400,9 +415,20 @@ class WebviewApp:
             gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
             return cv2.cvtColor(gray, cv2.COLOR_GRAY2BGR)
         elif mode == "THRESHOLD":
-            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-            blurred = cv2.GaussianBlur(gray, (5, 5), 0)
-            _, th = cv2.threshold(blurred, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+            if getattr(self._engine, "colour_space", "grayscale") == "hsv":
+                chan = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)[:, :, 2]
+            elif getattr(self._engine, "colour_space", "grayscale") == "lab":
+                chan = cv2.cvtColor(frame, cv2.COLOR_BGR2LAB)[:, :, 0]
+            else:
+                chan = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            k = max(1, self._engine.blur_ksize if self._engine.blur_ksize % 2 == 1 else self._engine.blur_ksize + 1)
+            blurred = cv2.GaussianBlur(chan, (k, k), 0)
+            if getattr(self._engine, "threshold_mode", "otsu") == "adaptive":
+                th = cv2.adaptiveThreshold(blurred, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 15, 2)
+            elif getattr(self._engine, "threshold_mode", "otsu") == "manual":
+                _, th = cv2.threshold(blurred, int(self._engine.manual_threshold), 255, cv2.THRESH_BINARY)
+            else:
+                _, th = cv2.threshold(blurred, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
             return cv2.cvtColor(th, cv2.COLOR_GRAY2BGR)
         elif mode == "DETECTION":
             gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)

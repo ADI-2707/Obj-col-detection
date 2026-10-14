@@ -47,6 +47,10 @@ class SlabMeasurementEngine:
         self.target_thickness_mm = 174.0
         self.lower_limit_mm = 10.0
         self.upper_limit_mm = 300.0
+        self.colour_space = "grayscale"
+        self.threshold_mode = "otsu"
+        self.manual_threshold = 128
+        self.blur_ksize = 5
 
     def generate_synthetic_slab_frame(
         self, width: int = 1920, height: int = 1080, frame_number: int = 0
@@ -104,11 +108,28 @@ class SlabMeasurementEngine:
             rh = max(10, min(rh, h - ry))
 
         roi_frame = frame[ry : ry + rh, rx : rx + rw]
-        gray = cv2.cvtColor(roi_frame, cv2.COLOR_BGR2GRAY)
-        blurred = cv2.GaussianBlur(gray, (5, 5), 0)
+        if self.colour_space == "hsv":
+            hsv = cv2.cvtColor(roi_frame, cv2.COLOR_BGR2HSV)
+            proc_channel = hsv[:, :, 2]
+        elif self.colour_space == "lab":
+            lab = cv2.cvtColor(roi_frame, cv2.COLOR_BGR2LAB)
+            proc_channel = lab[:, :, 0]
+        else:
+            proc_channel = cv2.cvtColor(roi_frame, cv2.COLOR_BGR2GRAY)
 
-        otsu_val, thresh = cv2.threshold(blurred, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-        otsu_val_int = int(round(otsu_val))
+        k = max(1, self.blur_ksize if self.blur_ksize % 2 == 1 else self.blur_ksize + 1)
+        blurred = cv2.GaussianBlur(proc_channel, (k, k), 0)
+
+        if self.threshold_mode == "adaptive":
+            thresh = cv2.adaptiveThreshold(blurred, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 15, 2)
+            otsu_val_int = int(round(float(np.mean(blurred))))
+        elif self.threshold_mode == "manual":
+            th_val = max(1, min(254, int(self.manual_threshold)))
+            _, thresh = cv2.threshold(blurred, th_val, 255, cv2.THRESH_BINARY)
+            otsu_val_int = th_val
+        else:
+            otsu_val, thresh = cv2.threshold(blurred, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+            otsu_val_int = int(round(otsu_val))
 
         col_count = rw
         xs = np.arange(rx, rx + rw)

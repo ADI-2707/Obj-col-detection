@@ -192,6 +192,21 @@ class TestBridgeAPI:
         assert res_i["status"] == "ok"
         assert "SLAB" in res_i["filename"]
 
+    def test_colour_space_and_threshold_controls(self):
+        api = BridgeAPI()
+        res_c = api.set_colour_space("HSV")
+        assert res_c["status"] == "ok"
+        assert api.engine.colour_space == "hsv"
+
+        res_t = api.set_threshold_mode("adaptive", 140)
+        assert res_t["status"] == "ok"
+        assert api.engine.threshold_mode == "adaptive"
+        assert api.engine.manual_threshold == 140
+
+        res_b = api.set_blur(7)
+        assert res_b["status"] == "ok"
+        assert api.engine.blur_ksize == 7
+
 
 class TestWebviewApp:
     def test_initialization(self, mock_config):
@@ -206,6 +221,21 @@ class TestWebviewApp:
         for mode in ["ORIGINAL", "GRAY", "THRESHOLD", "DETECTION", "THERMAL", "MEASUREMENT"]:
             out = app._apply_view_mode(frame, mode, meas)
             assert out.shape == (100, 100, 3)
+
+    def test_apply_view_modes_with_custom_spaces(self, mock_config):
+        app = WebviewApp(mock_config)
+        frame = np.full((100, 100, 3), 150, dtype=np.uint8)
+        meas = app._engine.measure(frame, cursor_x=50)
+
+        app.api.set_colour_space("hsv")
+        app.api.set_threshold_mode("adaptive")
+        out_hsv = app._apply_view_mode(frame, "THRESHOLD", meas)
+        assert out_hsv.shape == (100, 100, 3)
+
+        app.api.set_colour_space("lab")
+        app.api.set_threshold_mode("manual", 120)
+        out_lab = app._apply_view_mode(frame, "THRESHOLD", meas)
+        assert out_lab.shape == (100, 100, 3)
 
     def test_apply_window_icon_does_not_crash(self, mock_config):
         app = WebviewApp(mock_config)
@@ -267,4 +297,10 @@ class TestWebAssets:
         content = js_path.read_text(encoding="utf-8")
         assert "canvas.clientWidth" in content
         assert "canvas.clientHeight" in content
+
+    def test_html_contains_detection_selectors(self):
+        html_path = Path("orbix/web/index.html")
+        content = html_path.read_text(encoding="utf-8")
+        assert "select-colour-space" in content
+        assert "select-thresh-mode" in content
 

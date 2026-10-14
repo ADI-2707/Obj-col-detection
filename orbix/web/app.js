@@ -407,6 +407,27 @@
     }
   }
 
+  function initDetectionControls() {
+    const selColor = document.getElementById("select-colour-space");
+    const selThresh = document.getElementById("select-thresh-mode");
+
+    if (selColor) {
+      selColor.addEventListener("change", (e) => {
+        if (window.pywebview && window.pywebview.api && window.pywebview.api.set_colour_space) {
+          window.pywebview.api.set_colour_space(e.target.value);
+        }
+      });
+    }
+
+    if (selThresh) {
+      selThresh.addEventListener("change", (e) => {
+        if (window.pywebview && window.pywebview.api && window.pywebview.api.set_threshold_mode) {
+          window.pywebview.api.set_threshold_mode(e.target.value);
+        }
+      });
+    }
+  }
+
   function initMouseInspection() {
     const wrapper = document.getElementById("video-wrapper");
     const tooltip = document.getElementById("caliper-tooltip");
@@ -775,7 +796,28 @@
     if (statusProc) statusProc.textContent = `${payload.processing_ms} ms`;
 
     const statusThresh = document.getElementById("status-thresh");
-    if (statusThresh) statusThresh.textContent = `OTSU ${payload.otsu_threshold}`;
+    if (statusThresh) statusThresh.textContent = `${(payload.threshold_mode || "otsu").toUpperCase()} ${payload.otsu_threshold}`;
+
+    const hudStatus = document.getElementById("hud-status-text");
+    if (hudStatus) hudStatus.textContent = isFrozen ? "PAUSED / FROZEN" : (payload.is_valid ? "VIDEO PLAYING" : "LOW CONFIDENCE");
+
+    const hudFps = document.getElementById("hud-fps-text");
+    if (hudFps) hudFps.textContent = `FPS ${payload.fps.toFixed(1)} in / ${payload.processing_ms}ms proc \u2022 1920\u00d71080`;
+
+    const hudMode = document.getElementById("hud-mode-text");
+    if (hudMode) hudMode.textContent = `VIEW ${activeMode} \u2022 THRESHOLD ${(payload.threshold_mode || "otsu").toUpperCase()} ${payload.otsu_threshold} \u2022 ${(payload.colour_space || "grayscale").toUpperCase()}`;
+
+    const hudThick = document.getElementById("hud-thick-text");
+    if (hudThick) hudThick.textContent = `THICKNESS ${payload.thickness_mm.toFixed(1)} mm`;
+
+    const selColor = document.getElementById("select-colour-space");
+    if (selColor && document.activeElement !== selColor && payload.colour_space) {
+      selColor.value = payload.colour_space;
+    }
+    const selThresh = document.getElementById("select-thresh-mode");
+    if (selThresh && document.activeElement !== selThresh && payload.threshold_mode) {
+      selThresh.value = payload.threshold_mode;
+    }
 
     if (payload.source_name) {
       updateSourceDisplay(payload.source_name);
@@ -799,6 +841,7 @@
     initLedBar();
     initTabs();
     initRoiControls();
+    initDetectionControls();
     initMouseInspection();
     updateRoiDisplay(activeRoi);
     renderProfileChart(null);
