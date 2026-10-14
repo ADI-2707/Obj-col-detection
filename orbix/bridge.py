@@ -227,6 +227,14 @@ class BridgeAPI:
                     writer.writerow([i, val])
         return {"status": "ok", "report_generated": True, "path": str(filepath)}
 
+    def open_pdf_manual(self) -> dict:
+        try:
+            from orbix.manual import open_pdf_manual as _open_pdf
+            path = _open_pdf()
+            return {"status": "ok", "path": str(path)}
+        except Exception as e:
+            return {"status": "error", "message": str(e)}
+
 
 class WebviewApp:
     def __init__(self, config: Config):

@@ -1833,6 +1833,7 @@ input:checked + .slider:before {
 }
 
 .scada-modal-window {
+  position: relative;
   width: 600px;
   max-width: 90vw;
   max-height: 85vh;
@@ -1844,6 +1845,29 @@ input:checked + .slider:before {
   flex-direction: column;
   overflow: hidden;
   animation: modalFadeIn 0.15s ease-out;
+}
+
+.scada-modal-window.modal-wide {
+  width: 920px;
+  max-width: 95vw;
+  max-height: 88vh;
+}
+
+.modal-sticky-watermark {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 440px;
+  height: 220px;
+  transform: translate(-50%, -50%);
+  background-image: url("systrol_logo.png");
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: contain;
+  opacity: 0.055;
+  pointer-events: none;
+  z-index: 0;
+  display: none;
 }
 
 @keyframes modalFadeIn {
@@ -1883,11 +1907,15 @@ input:checked + .slider:before {
 }
 
 .scada-modal-body {
-  padding: 16px;
+  position: relative;
+  z-index: 1;
+  padding: 16px 20px;
   overflow-y: auto;
-  font-size: 11px;
+  font-family: 'Segoe UI', Calibri, Arial, sans-serif;
+  font-size: 11.5px;
   line-height: 1.6;
   color: var(--text-main);
+  background: transparent;
 }
 
 .scada-modal-body h4 {
@@ -1916,12 +1944,122 @@ input:checked + .slider:before {
   margin-bottom: 4px;
 }
 
+.manual-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.manual-title {
+  font-family: 'Segoe UI', Calibri, Arial, sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--cyan-accent);
+  margin: 0 0 4px 0;
+  letter-spacing: 0.5px;
+}
+
+.manual-subtitle {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin: 0 0 10px 0;
+  line-height: 1.4;
+}
+
+.manual-section-card {
+  background: rgba(15, 23, 42, 0.4);
+  border: 1px solid var(--border-card);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.manual-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: var(--bg-topbar);
+  border-bottom: 1px solid var(--border-card);
+}
+
+.manual-section-title {
+  font-family: 'Segoe UI', Calibri, Arial, sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--cyan-accent);
+  margin: 0;
+}
+
+.manual-area-tag {
+  font-family: 'Segoe UI Mono', monospace;
+  font-size: 9.5px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 3px;
+  background: rgba(0, 229, 255, 0.12);
+  color: var(--cyan-accent);
+  border: 1px solid rgba(0, 229, 255, 0.3);
+}
+
+.manual-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+}
+
+.manual-table th {
+  text-align: left;
+  padding: 7px 10px;
+  background: rgba(0, 0, 0, 0.3);
+  color: var(--text-muted);
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid var(--border-card);
+}
+
+.manual-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  vertical-align: top;
+  color: var(--text-main);
+  line-height: 1.45;
+}
+
+.manual-table tr:last-child td {
+  border-bottom: none;
+}
+
+.manual-table tr:hover td {
+  background: rgba(0, 229, 255, 0.03);
+}
+
+.manual-ctrl-badge {
+  display: inline-block;
+  padding: 2px 6px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid var(--border-focus);
+  font-family: 'Segoe UI Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--amber-warn);
+  white-space: nowrap;
+}
+
+.manual-location-text {
+  font-weight: 600;
+  color: var(--cyan-accent);
+}
+
 .scada-modal-footer {
   padding: 10px 14px;
   background: var(--bg-topbar);
   border-top: 1px solid var(--border-card);
   display: flex;
+  align-items: center;
   justify-content: flex-end;
+  gap: 10px;
 }
 
 

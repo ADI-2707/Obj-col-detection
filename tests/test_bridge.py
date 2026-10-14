@@ -389,3 +389,27 @@ class TestWebAssets:
         assert "btn-toggle-roi-box" in content_js
         assert "ROI: SEARCH REGION" in content_js
 
+    def test_html_contains_modal_watermark_and_pdf_button(self):
+        html_path = Path("orbix/web/index.html")
+        content_html = html_path.read_text(encoding="utf-8")
+        assert "modal-sticky-watermark" in content_html
+        assert "btn-modal-open-pdf" in content_html
+
+    def test_js_contains_features_manual_and_pdf_launcher(self):
+        js_path = Path("orbix/web/app.js")
+        content_js = js_path.read_text(encoding="utf-8")
+        assert "btn-modal-open-pdf" in content_js
+        assert "open_pdf_manual" in content_js
+        assert "TOPBAR AREA" in content_js
+        assert "LEFT PANEL" in content_js
+
+    def test_bridge_api_open_pdf_manual(self, monkeypatch, tmp_path):
+        import orbix.manual
+        pdf_path = tmp_path / "test_manual.pdf"
+        monkeypatch.setattr(orbix.manual, "open_pdf_manual", lambda: pdf_path)
+        api = BridgeAPI()
+        res = api.open_pdf_manual()
+        assert res["status"] == "ok"
+        assert res["path"] == str(pdf_path)
+
+

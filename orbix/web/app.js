@@ -90,12 +90,25 @@
     }
   }
 
-  function showScadaModal(title, html) {
+  function showScadaModal(title, html, isWide = false, showPdfBtn = false) {
     const backdrop = document.getElementById("scada-modal-backdrop");
+    const win = document.getElementById("scada-modal-window");
     const titleEl = document.getElementById("scada-modal-title");
     const bodyEl = document.getElementById("scada-modal-body");
+    const watermark = document.getElementById("modal-sticky-watermark");
+    const pdfBtn = document.getElementById("btn-modal-open-pdf");
+
     if (titleEl) titleEl.textContent = title;
     if (bodyEl) bodyEl.innerHTML = html;
+    if (win) {
+      win.classList.toggle("modal-wide", !!isWide);
+    }
+    if (watermark) {
+      watermark.style.display = showPdfBtn ? "block" : "none";
+    }
+    if (pdfBtn) {
+      pdfBtn.style.display = showPdfBtn ? "inline-block" : "none";
+    }
     if (backdrop) backdrop.style.display = "flex";
   }
 
@@ -105,26 +118,293 @@
   }
 
   function showHelpModal() {
-    showScadaModal("ORBIX \u2014 SYSTEM HELP & DOCUMENTATION", `
-      <h4>1. SYSTEM OVERVIEW</h4>
-      <p>The Orbix Hot Metal Slab Thickness Vision System performs non-contact real-time optical thickness gauging of red-hot cast steel slabs at 1920\u00d71080 resolution.</p>
-      <h4>2. EDGE DETECTION &amp; COLOR SPACES</h4>
-      <p>The vision engine computes vertical Sobel intensity gradients combined with Otsu, Adaptive Gaussian, or Manual thresholding to lock onto boundary edges.</p>
-      <ul>
-        <li><strong>Grayscale:</strong> Standard luminance intensity calculation.</li>
-        <li><strong>HSV (V):</strong> High dynamic range value channel for glowing hot steel.</li>
-        <li><strong>CIELAB (L):</strong> Perceptually uniform lightness channel.</li>
-      </ul>
-      <h4>3. CALIBRATION PROCEDURE</h4>
-      <p>Click <strong>CALIBRATE</strong> on the right panel, then click Point 1 (top edge) and Point 2 (bottom edge) on the live video. Enter the known reference distance in millimeters to synchronize scale.</p>
-      <h4>4. REGION OF INTEREST (ROI)</h4>
-      <p>Click <strong>SELECT ROI</strong> and drag across the slab area to constrain edge tracking and improve noise immunity.</p>
-      <h4>5. KEYBOARD SHORTCUTS</h4>
-      <ul>
-        <li><strong>ESC:</strong> Cancel ROI selection, Calibration mode, or close modal dialogs.</li>
-        <li><strong>F11:</strong> Toggle Fullscreen display mode.</li>
-      </ul>
-    `);
+    const manualHtml = `
+      <div class="manual-container">
+        <div>
+          <div class="manual-title">ORBIX VISION SYSTEM \u2014 FEATURES &amp; OPERATION MANUAL</div>
+          <div class="manual-subtitle">
+            Systrol Industrial Vision Software Suite &bull; Optical Hot Metal Slab Thickness Gauging &bull; Version 1.5.0 Production Build
+          </div>
+          <p style="margin-bottom:12px; font-size:11px; line-height:1.5;">
+            This manual details all software features mapped directly to their respective operational screen areas:
+            <strong>Top Bar</strong>, <strong>Left Panel</strong>, <strong>Center Viewport</strong>, <strong>Right Panel</strong>, and <strong>Bottom Bar</strong>.
+            Click the <strong>OPEN PRINTABLE MANUAL (PDF)</strong> button below to launch the formal offline ISO-compliant documentation.
+          </p>
+        </div>
+
+        <div class="manual-section-card">
+          <div class="manual-section-header">
+            <h3 class="manual-section-title">1. TOP BAR (GLOBAL SYSTEM CONTROLS &amp; STATUS)</h3>
+            <span class="manual-area-tag">TOPBAR AREA</span>
+          </div>
+          <table class="manual-table">
+            <thead>
+              <tr>
+                <th style="width:28%;">FEATURE / OPERATION</th>
+                <th style="width:32%;">UI LOCATION &amp; CONTROL</th>
+                <th style="width:40%;">OPERATIONAL ACTION &amp; DESCRIPTION</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Settings Dropdown</strong></td>
+                <td><span class="manual-location-text">Top-Right:</span> <span class="manual-ctrl-badge">&#9881; Gear Button</span></td>
+                <td>Click to reveal the application menu containing Theme Switcher, Help &amp; Documentation, and About System dialogs.</td>
+              </tr>
+              <tr>
+                <td><strong>Theme Toggle</strong></td>
+                <td><span class="manual-location-text">Inside Settings:</span> <span class="manual-ctrl-badge">Switch Slider</span></td>
+                <td>Toggle between Dark Industrial theme and High-Contrast Light theme. Saved in local browser storage.</td>
+              </tr>
+              <tr>
+                <td><strong>About System</strong></td>
+                <td><span class="manual-location-text">Inside Settings:</span> <span class="manual-ctrl-badge">About System</span></td>
+                <td>Displays engine build specifications (v1.5.0), Python 3.14/Webview architecture, and mill operating tolerances.</td>
+              </tr>
+              <tr>
+                <td><strong>Sensor Stream Status</strong></td>
+                <td><span class="manual-location-text">Top-Right Header:</span> <span class="manual-ctrl-badge">&bull; VIDEO PLAYING</span></td>
+                <td>Real-time ingestion indicator. Green dot signifies healthy video feed; amber indicates paused stream.</td>
+              </tr>
+              <tr>
+                <td><strong>Tolerance Spec Status</strong></td>
+                <td><span class="manual-location-text">Top-Right Header:</span> <span class="manual-ctrl-badge">&bull; NORMAL / &bull; OUT OF SPEC</span></td>
+                <td>Instant mill quality annunciator. Green indicates thickness within bounds; red indicates tolerance deviation.</td>
+              </tr>
+              <tr>
+                <td><strong>DVR Recording Badge</strong></td>
+                <td><span class="manual-location-text">Top-Right Header:</span> <span class="manual-ctrl-badge">RECORDING OFF / &bull; REC ON</span></td>
+                <td>Click directly on this badge to start or stop real-time MJPEG AVI recording to <code>data/recordings/</code>. Flashes red while active.</td>
+              </tr>
+              <tr>
+                <td><strong>Plant Digital Clock</strong></td>
+                <td><span class="manual-location-text">Top-Center Header:</span> <span class="manual-ctrl-badge">HH:MM:SS</span></td>
+                <td>Displays synchronized 24-hour plant workstation time with real-time seconds ticking.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="manual-section-card">
+          <div class="manual-section-header">
+            <h3 class="manual-section-title">2. LEFT PANEL (INGESTION, REGION OF INTEREST &amp; FILTERING)</h3>
+            <span class="manual-area-tag">LEFT PANEL</span>
+          </div>
+          <table class="manual-table">
+            <thead>
+              <tr>
+                <th style="width:28%;">FEATURE / OPERATION</th>
+                <th style="width:32%;">UI LOCATION &amp; CONTROL</th>
+                <th style="width:40%;">OPERATIONAL ACTION &amp; DESCRIPTION</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Sensor Input String</strong></td>
+                <td><span class="manual-location-text">IMAGE SOURCE:</span> <span class="manual-ctrl-badge">RTSP URL / Camera IP Input</span></td>
+                <td>Enter camera index (<code>0</code> or <code>1</code>) for USB/integrated webcams, or enter network stream URI (<code>rtsp://192.168.1.250:554/live</code>).</td>
+              </tr>
+              <tr>
+                <td><strong>Connect Camera</strong></td>
+                <td><span class="manual-location-text">IMAGE SOURCE:</span> <span class="manual-ctrl-badge">[CONNECT CAMERA]</span></td>
+                <td>Initiates hardware capture for the specified camera index or RTSP network stream.</td>
+              </tr>
+              <tr>
+                <td><strong>Open File Dialogs</strong></td>
+                <td><span class="manual-location-text">IMAGE SOURCE:</span> <span class="manual-ctrl-badge">[OPEN VIDEO] &amp; [OPEN IMAGE]</span></td>
+                <td>Opens native Windows file dialogs to load recorded mill MP4/AVI reels or single-frame test images.</td>
+              </tr>
+              <tr>
+                <td><strong>Sample Test Media</strong></td>
+                <td><span class="manual-location-text">IMAGE SOURCE:</span> <span class="manual-ctrl-badge">[SAMPLE VIDEO] &amp; [SAMPLE IMAGE]</span></td>
+                <td>Quickly reloads pre-bundled hot rolling mill slab reels without needing physical cameras.</td>
+              </tr>
+              <tr>
+                <td><strong>Interactive Canvas ROI</strong></td>
+                <td><span class="manual-location-text">REGION OF INTEREST:</span> <span class="manual-ctrl-badge">[SELECT ROI]</span></td>
+                <td>Activates interactive canvas dragging. Click and drag across the slab on the video feed to define search window boundaries.</td>
+              </tr>
+              <tr>
+                <td><strong>Confirm ROI Window</strong></td>
+                <td><span class="manual-location-text">REGION OF INTEREST:</span> <span class="manual-ctrl-badge">[CONFIRM ROI]</span></td>
+                <td>Locks in the drawn selection and synchronizes mathematical edge search constraints with the vision engine.</td>
+              </tr>
+              <tr>
+                <td><strong>Full Field of View ROI</strong></td>
+                <td><span class="manual-location-text">REGION OF INTEREST:</span> <span class="manual-ctrl-badge">[FULL]</span></td>
+                <td>Resets search constraints to the entire 1920\u00d71080 resolution field of view.</td>
+              </tr>
+              <tr>
+                <td><strong>ROI Presets &amp; Reset</strong></td>
+                <td><span class="manual-location-text">REGION OF INTEREST:</span> <span class="manual-ctrl-badge">[+ ADD] &amp; [DELETE]</span></td>
+                <td>Applies standard centered 1440\u00d7810 mill bounding box, or clears ROI back to full canvas.</td>
+              </tr>
+              <tr>
+                <td><strong>Show/Hide ROI Overlay</strong></td>
+                <td><span class="manual-location-text">REGION OF INTEREST:</span> <span class="manual-ctrl-badge">Eye Button (&#128065;)</span></td>
+                <td>Toggles visibility of the slate-gray dashed search window overlay without interrupting edge tracking.</td>
+              </tr>
+              <tr>
+                <td><strong>Colour Space Selection</strong></td>
+                <td><span class="manual-location-text">THRESHOLD &amp; DETECTION:</span> <span class="manual-ctrl-badge">Colour Space Select</span></td>
+                <td>Select <strong>Grayscale</strong> for cold steel, <strong>HSV Luminance</strong> for red-hot glowing metal (max dynamic range), or <strong>CIELAB</strong> for glare/water suppression.</td>
+              </tr>
+              <tr>
+                <td><strong>Threshold Mode Selection</strong></td>
+                <td><span class="manual-location-text">THRESHOLD &amp; DETECTION:</span> <span class="manual-ctrl-badge">Threshold Mode Select</span></td>
+                <td>Choose between <strong>Otsu (automatic)</strong>, <strong>Adaptive Gaussian</strong> (local variations), or <strong>Manual Slider</strong>.</td>
+              </tr>
+              <tr>
+                <td><strong>Spatial Blur Kernel</strong></td>
+                <td><span class="manual-location-text">THRESHOLD &amp; DETECTION:</span> <span class="manual-ctrl-badge">Gaussian Blur (k=5)</span></td>
+                <td>Applies 2D Gaussian convolution filter to suppress airborne steam, sparks, and roller surface speckle noise.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="manual-section-card">
+          <div class="manual-section-header">
+            <h3 class="manual-section-title">3. CENTER VIEWPORT (VIDEO FEED, VIEW MODES &amp; CALIPERS)</h3>
+            <span class="manual-area-tag">CENTER VIEWPORT</span>
+          </div>
+          <table class="manual-table">
+            <thead>
+              <tr>
+                <th style="width:28%;">FEATURE / OPERATION</th>
+                <th style="width:32%;">UI LOCATION &amp; CONTROL</th>
+                <th style="width:40%;">OPERATIONAL ACTION &amp; DESCRIPTION</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>View Mode Toolbar Tabs</strong></td>
+                <td><span class="manual-location-text">Viewport Toolbar:</span> <span class="manual-ctrl-badge">[ORIGINAL] [GRAY] [THRESHOLD] [DETECTION] [THERMAL] [MEASUREMENT]</span></td>
+                <td>Select between full color stream, luminance channel, segmented binary mask, Canny edge filter, false-color thermal heat map, or clean vector measurement overlay.</td>
+              </tr>
+              <tr>
+                <td><strong>Toggle Slab Edges</strong></td>
+                <td><span class="manual-location-text">Viewport Toolbar:</span> <span class="manual-ctrl-badge">[EDGES] Button</span></td>
+                <td>Toggles the cyan boundary vector lines tracking the slab top and bottom surfaces on the video canvas.</td>
+              </tr>
+              <tr>
+                <td><strong>Freeze Stream</strong></td>
+                <td><span class="manual-location-text">Viewport Toolbar:</span> <span class="manual-ctrl-badge">[FREEZE] Button</span></td>
+                <td>Pauses real-time video ingestion to inspect transient surface anomalies or perform stationary caliper inspection.</td>
+              </tr>
+              <tr>
+                <td><strong>Fullscreen Toggle</strong></td>
+                <td><span class="manual-location-text">Viewport Toolbar:</span> <span class="manual-ctrl-badge">[FULLSCREEN] Button</span></td>
+                <td>Expands SCADA viewport to full display monitor. Press F11 or ESC to return to windowed mode.</td>
+              </tr>
+              <tr>
+                <td><strong>Hover Caliper Tooltip</strong></td>
+                <td><span class="manual-location-text">Video Canvas:</span> <span class="manual-ctrl-badge">Mouse Movement</span></td>
+                <td>Hover mouse cursor anywhere over the slab to inspect localized X, Y coordinates, Top/Bottom Edge pixel positions, and thickness in px and mm.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="manual-section-card">
+          <div class="manual-section-header">
+            <h3 class="manual-section-title">4. RIGHT PANEL (THICKNESS GAUGING, CALIBRATION &amp; OPERATION)</h3>
+            <span class="manual-area-tag">RIGHT PANEL</span>
+          </div>
+          <table class="manual-table">
+            <thead>
+              <tr>
+                <th style="width:28%;">FEATURE / OPERATION</th>
+                <th style="width:32%;">UI LOCATION &amp; CONTROL</th>
+                <th style="width:40%;">OPERATIONAL ACTION &amp; DESCRIPTION</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Digital Thickness Readout</strong></td>
+                <td><span class="manual-location-text">THICKNESS Card:</span> <span class="manual-ctrl-badge">Digital Number Hero</span></td>
+                <td>Displays calibrated slab thickness in millimeters (e.g. 174.2 mm) and raw sensor pixel height (501.1 px).</td>
+              </tr>
+              <tr>
+                <td><strong>Statistical Summary</strong></td>
+                <td><span class="manual-location-text">THICKNESS Card:</span> <span class="manual-ctrl-badge">MIN / MAX / AVG / STD DEV</span></td>
+                <td>Live statistical distribution computed across all horizontal cross-section measurement columns across the ROI.</td>
+              </tr>
+              <tr>
+                <td><strong>Confidence LED Bar</strong></td>
+                <td><span class="manual-location-text">THICKNESS Card:</span> <span class="manual-ctrl-badge">24-Segment LED Ladder</span></td>
+                <td>Optical signal-to-noise rating. Lit green for solid edge boundaries (&gt;75%), amber for fair (40-74%), red for low confidence.</td>
+              </tr>
+              <tr>
+                <td><strong>Target &amp; Tolerance Inputs</strong></td>
+                <td><span class="manual-location-text">THICKNESS Card:</span> <span class="manual-ctrl-badge">TARGET, LOWER, UPPER Fields</span></td>
+                <td>Operators configure nominal target thickness (174.0 mm) and tolerance reject thresholds (10.0 mm to 300.0 mm).</td>
+              </tr>
+              <tr>
+                <td><strong>2-Point Calibration Wizard</strong></td>
+                <td><span class="manual-location-text">CALIBRATION Card:</span> <span class="manual-ctrl-badge">[CALIBRATE] Button</span></td>
+                <td>Click [CALIBRATE], then click Point 1 on the top edge and Point 2 on the bottom edge on the live video. Enter known distance in mm to synchronize scale.</td>
+              </tr>
+              <tr>
+                <td><strong>Start / Stop Measurement</strong></td>
+                <td><span class="manual-location-text">OPERATION Card:</span> <span class="manual-ctrl-badge">[START MEASUREMENT]</span></td>
+                <td>Toggles active mathematical thickness gauging calculations without stopping video playback or recording.</td>
+              </tr>
+              <tr>
+                <td><strong>Capture Image Snapshot</strong></td>
+                <td><span class="manual-location-text">OPERATION Card:</span> <span class="manual-ctrl-badge">[CAPTURE IMAGE]</span></td>
+                <td>Captures instantaneous full-resolution PNG image of the live inspection display saved to <code>data/captures/</code>.</td>
+              </tr>
+              <tr>
+                <td><strong>Generate Quality Report</strong></td>
+                <td><span class="manual-location-text">OPERATION Card:</span> <span class="manual-ctrl-badge">[GENERATE REPORT]</span></td>
+                <td>Exports formal quality audit CSV report with timestamp, statistics, and discrete profile points to <code>data/reports/</code>.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="manual-section-card">
+          <div class="manual-section-header">
+            <h3 class="manual-section-title">5. BOTTOM SECTION (PROFILE CURVE, POINT TABLE &amp; TELEMETRY)</h3>
+            <span class="manual-area-tag">BOTTOM BAR</span>
+          </div>
+          <table class="manual-table">
+            <thead>
+              <tr>
+                <th style="width:28%;">FEATURE / OPERATION</th>
+                <th style="width:32%;">UI LOCATION &amp; CONTROL</th>
+                <th style="width:40%;">OPERATIONAL ACTION &amp; DESCRIPTION</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Thickness Profile Chart</strong></td>
+                <td><span class="manual-location-text">Bottom Section:</span> <span class="manual-ctrl-badge">'THICKNESS PROFILE' Tab</span></td>
+                <td>Plots continuous thickness curve across the slab length. Features Target reference line, Tolerance limit lines, and interactive vertical cursor scrubber.</td>
+              </tr>
+              <tr>
+                <td><strong>Measurement Points Table</strong></td>
+                <td><span class="manual-location-text">Bottom Section:</span> <span class="manual-ctrl-badge">'MEASUREMENT POINTS' Tab</span></td>
+                <td>Displays discrete cross-section columns (#01 to #25) with exact X, Top Y, Bottom Y, pixel thickness, millimeter thickness, and NORMAL / OUT OF SPEC status.</td>
+              </tr>
+              <tr>
+                <td><strong>SCADA Performance Strip</strong></td>
+                <td><span class="manual-location-text">Bottom Footer:</span> <span class="manual-ctrl-badge">Left Status Bar</span></td>
+                <td>Displays real-time pipeline performance: sensor FPS, processing latency in milliseconds, resolution (1920\u00d71080), Otsu threshold, and calibration ratio.</td>
+              </tr>
+              <tr>
+                <td><strong>Active Source Indicator</strong></td>
+                <td><span class="manual-location-text">Bottom Footer:</span> <span class="manual-ctrl-badge">Right Status Bar</span></td>
+                <td>Displays the currently ingested file name, camera IP address, or device identifier (e.g., <code>Playing Camera 0</code>).</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    `;
+
+    showScadaModal("ORBIX \u2014 SYSTEM FEATURES & OPERATOR MANUAL", manualHtml, true, true);
   }
 
   function showAboutModal() {
@@ -164,9 +444,22 @@
     const closeBtn = document.getElementById("scada-modal-close");
     const okBtn = document.getElementById("scada-modal-ok");
     const win = document.getElementById("scada-modal-window");
+    const pdfBtn = document.getElementById("btn-modal-open-pdf");
 
     if (closeBtn) closeBtn.addEventListener("click", closeScadaModal);
     if (okBtn) okBtn.addEventListener("click", closeScadaModal);
+
+    if (pdfBtn) {
+      pdfBtn.addEventListener("click", () => {
+        if (window.pywebview && window.pywebview.api && window.pywebview.api.open_pdf_manual) {
+          const origText = pdfBtn.innerHTML;
+          pdfBtn.innerHTML = "&#10004; OPENING MANUAL...";
+          window.pywebview.api.open_pdf_manual().then(() => {
+            setTimeout(() => { pdfBtn.innerHTML = origText; }, 2000);
+          });
+        }
+      });
+    }
 
     if (backdrop && win) {
       backdrop.addEventListener("click", (e) => {
