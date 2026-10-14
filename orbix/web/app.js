@@ -2,8 +2,8 @@
   let activeMode = "ORIGINAL";
   let showEdges = true;
   let isFrozen = false;
-  let cursorXRatio = 0.51;
-  let cursorYRatio = 0.65;
+  let cursorXRatio = 0.47;
+  let cursorYRatio = 0.55;
   let lastTelemetry = null;
 
   function initClock() {
@@ -33,20 +33,35 @@
     }
   }
 
-  function setConfidencePct(pct) {
+  function setConfidencePct(pct, isValid) {
     const bar = document.getElementById("led-confidence-bar");
     const label = document.getElementById("conf-pct");
+    const rounded = Math.round(pct);
     if (label) {
-      label.textContent = `${Math.round(pct)}% GOOD`;
+      if (!isValid || rounded < 40) {
+        label.textContent = `${rounded}% LOW`;
+        label.style.color = "var(--red-alert)";
+      } else if (rounded < 75) {
+        label.textContent = `${rounded}% FAIR`;
+        label.style.color = "var(--amber-warn)";
+      } else {
+        label.textContent = `${rounded}% GOOD`;
+        label.style.color = "var(--green-success)";
+      }
     }
     if (!bar) return;
     const segs = bar.querySelectorAll(".led-seg");
     const litCount = Math.round((pct / 100) * segs.length);
     segs.forEach((seg, idx) => {
+      seg.className = "led-seg";
       if (idx < litCount) {
-        seg.classList.add("lit");
-      } else {
-        seg.classList.remove("lit");
+        if (!isValid || pct < 40) {
+          seg.classList.add("lit-danger");
+        } else if (pct < 75) {
+          seg.classList.add("lit-warn");
+        } else {
+          seg.classList.add("lit");
+        }
       }
     });
   }
@@ -95,7 +110,104 @@
       });
     }
 
+    initSourceButtons();
     initOperationButtons();
+    initLimitsSync();
+  }
+
+  function initSourceButtons() {
+    const btnOpenVid = document.getElementById("btn-open-video");
+    if (btnOpenVid) {
+      btnOpenVid.addEventListener("click", () => {
+        if (window.pywebview && window.pywebview.api && window.pywebview.api.open_video_dialog) {
+          window.pywebview.api.open_video_dialog().then((res) => {
+            if (res && res.filename) {
+              updateSourceDisplay(res.filename);
+            }
+          });
+        }
+      });
+    }
+
+    const btnOpenImg = document.getElementById("btn-open-image");
+    if (btnOpenImg) {
+      btnOpenImg.addEventListener("click", () => {
+        if (window.pywebview && window.pywebview.api && window.pywebview.api.open_image_dialog) {
+          window.pywebview.api.open_image_dialog().then((res) => {
+            if (res && res.filename) {
+              updateSourceDisplay(res.filename);
+            }
+          });
+        }
+      });
+    }
+
+    const btnSampleVid = document.getElementById("btn-sample-video");
+    if (btnSampleVid) {
+      btnSampleVid.addEventListener("click", () => {
+        if (window.pywebview && window.pywebview.api && window.pywebview.api.load_sample_video) {
+          window.pywebview.api.load_sample_video().then((res) => {
+            if (res && res.filename) {
+              updateSourceDisplay(res.filename);
+            }
+          });
+        }
+      });
+    }
+
+    const btnSampleImg = document.getElementById("btn-sample-image");
+    if (btnSampleImg) {
+      btnSampleImg.addEventListener("click", () => {
+        if (window.pywebview && window.pywebview.api && window.pywebview.api.load_sample_image) {
+          window.pywebview.api.load_sample_image().then((res) => {
+            if (res && res.filename) {
+              updateSourceDisplay(res.filename);
+            }
+          });
+        }
+      });
+    }
+
+    const btnConnect = document.getElementById("btn-connect");
+    const inputRtsp = document.getElementById("rtsp-input");
+    if (btnConnect && inputRtsp) {
+      btnConnect.addEventListener("click", () => {
+        const val = inputRtsp.value.trim();
+        if (val && window.pywebview && window.pywebview.api && window.pywebview.api.connect_camera) {
+          window.pywebview.api.connect_camera(val).then((res) => {
+            if (res && res.source) {
+              updateSourceDisplay(res.source);
+            }
+          });
+        }
+      });
+    }
+  }
+
+  function updateSourceDisplay(name) {
+    const fn = document.getElementById("source-filename");
+    if (fn) fn.textContent = name;
+    const sfn = document.getElementById("status-source-name");
+    if (sfn) sfn.textContent = `Playing ${name}`;
+  }
+
+  function initLimitsSync() {
+    const targetIn = document.getElementById("lim-target-input");
+    const lowerIn = document.getElementById("lim-lower-input");
+    const upperIn = document.getElementById("lim-upper-input");
+
+    function pushLimits() {
+      const t = parseFloat(targetIn ? targetIn.value : 174.0) || 174.0;
+      const l = parseFloat(lowerIn ? lowerIn.value : 10.0) || 10.0;
+      const u = parseFloat(upperIn ? upperIn.value : 300.0) || 300.0;
+      if (window.pywebview && window.pywebview.api && window.pywebview.api.set_limits) {
+        window.pywebview.api.set_limits(t, l, u);
+      }
+    }
+
+    if (targetIn) targetIn.addEventListener("change", pushLimits);
+    if (lowerIn) lowerIn.addEventListener("change", pushLimits);
+    if (upperIn) upperIn.addEventListener("change", pushLimits);
   }
 
   function initOperationButtons() {
@@ -117,7 +229,7 @@
       btnCap.addEventListener("click", () => {
         const origText = btnCap.textContent;
         btnCap.textContent = "\u2714 CAPTURED!";
-        setTimeout(() => { btnCap.textContent = origText; }, 1000);
+        setTimeout(() => { btnCap.textContent = origText; }, 1200);
         if (window.pywebview && window.pywebview.api && window.pywebview.api.capture_image) {
           window.pywebview.api.capture_image();
         }
@@ -129,7 +241,7 @@
       btnRep.addEventListener("click", () => {
         const origText = btnRep.textContent;
         btnRep.textContent = "\u2714 EXPORTED!";
-        setTimeout(() => { btnRep.textContent = origText; }, 1000);
+        setTimeout(() => { btnRep.textContent = origText; }, 1200);
         if (window.pywebview && window.pywebview.api && window.pywebview.api.generate_report) {
           window.pywebview.api.generate_report();
         }
@@ -152,9 +264,9 @@
 
       if (tooltip) {
         tooltip.style.display = "block";
-        const maxTipX = rect.width - 220;
-        const tipX = Math.min(maxTipX, Math.max(10, x + 14));
-        const tipY = Math.min(rect.height - 80, Math.max(30, y));
+        const maxTipX = rect.width - 230;
+        const tipX = Math.min(maxTipX, Math.max(10, x + 16));
+        const tipY = Math.min(rect.height - 90, Math.max(20, y - 20));
         tooltip.style.left = `${tipX}px`;
         tooltip.style.top = `${tipY}px`;
       }
@@ -186,111 +298,148 @@
     const h = wrapper.clientHeight;
     const cx = cursorXRatio * w;
 
-    const topRatio = 0.50;
-    const botRatio = 0.79;
+    let topRatio = 0.33;
+    let botRatio = 0.78;
+
+    if (lastTelemetry && lastTelemetry.top_y !== undefined) {
+      topRatio = Math.max(0, Math.min(1, lastTelemetry.top_y / 1080));
+      botRatio = Math.max(0, Math.min(1, lastTelemetry.bottom_y / 1080));
+    }
+
     const topY = topRatio * h;
     const botY = botRatio * h;
 
     svg.innerHTML = `
-      <rect x="${w * 0.08}" y="${h * 0.04}" width="${w * 0.81}" height="${h * 0.81}" fill="none" stroke="#00d7ff" stroke-width="1.5" stroke-dasharray="6 4"/>
-      <line x1="${cx}" y1="${h * 0.04}" x2="${cx}" y2="${h * 0.85}" stroke="#94a3b8" stroke-width="1" stroke-dasharray="4 4"/>
-      <line x1="${cx}" y1="${topY}" x2="${cx}" y2="${botY}" stroke="#eab308" stroke-width="2.5"/>
-      <circle cx="${cx}" cy="${topY}" r="4" fill="#00d7ff"/>
-      <circle cx="${cx}" cy="${botY}" r="4" fill="#00d7ff"/>
+      <rect x="${w * 0.08}" y="${h * 0.04}" width="${w * 0.81}" height="${h * 0.81}" fill="none" stroke="#00e5ff" stroke-width="1.2" stroke-dasharray="6 4" opacity="0.8"/>
+      <line x1="${cx}" y1="${h * 0.04}" x2="${cx}" y2="${h * 0.85}" stroke="#555555" stroke-width="1" stroke-dasharray="3 3"/>
+      <line x1="${cx}" y1="${topY}" x2="${cx}" y2="${botY}" stroke="#ffb703" stroke-width="2.5"/>
+      <circle cx="${cx}" cy="${topY}" r="4.5" fill="#00e5ff" stroke="#000000" stroke-width="1.5"/>
+      <circle cx="${cx}" cy="${botY}" r="4.5" fill="#00e5ff" stroke="#000000" stroke-width="1.5"/>
     `;
 
-    const ttX = document.getElementById("tt-x");
-    const ttY = document.getElementById("tt-y");
-    if (ttX) ttX.textContent = Math.round(cursorXRatio * 1920);
-    if (ttY) ttY.textContent = Math.round(cursorYRatio * 1080);
+    const topLabel = document.getElementById("label-top-edge");
+    const botLabel = document.getElementById("label-bot-edge");
+    if (topLabel) {
+      topLabel.style.left = `${w * 0.12}px`;
+      topLabel.style.top = `${Math.max(8, topY - 14)}px`;
+    }
+    if (botLabel) {
+      botLabel.style.left = `${w * 0.12}px`;
+      botLabel.style.top = `${Math.min(h - 22, botY + 4)}px`;
+    }
   }
 
   function renderProfileChart(data) {
     const canvas = document.getElementById("profile-chart");
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
     const w = canvas.width;
     const h = canvas.height;
-
     ctx.clearRect(0, 0, w, h);
 
-    const padLeft = 40;
+    ctx.fillStyle = "#020202";
+    ctx.fillRect(0, 0, w, h);
+
+    const padLeft = 46;
     const padRight = 20;
-    const padTop = 15;
-    const padBottom = 25;
+    const padTop = 14;
+    const padBottom = 22;
     const plotW = w - padLeft - padRight;
     const plotH = h - padTop - padBottom;
 
-    ctx.strokeStyle = "#e2e8f0";
+    ctx.strokeStyle = "#161616";
     ctx.lineWidth = 1;
-    for (let i = 0; i <= 3; i++) {
-      const y = padTop + (plotH / 3) * i;
+    for (let i = 0; i <= 5; i++) {
+      const y = padTop + (plotH / 5) * i;
       ctx.beginPath();
       ctx.moveTo(padLeft, y);
       ctx.lineTo(w - padRight, y);
       ctx.stroke();
 
-      const val = 300 - i * 100;
-      ctx.fillStyle = "#94a3b8";
-      ctx.font = "10px sans-serif";
-      ctx.fillText(`${val}`, 12, y + 3);
+      ctx.fillStyle = "#555555";
+      ctx.font = "9px 'Segoe UI Mono', monospace";
+      const val = Math.round(300 - (300 / 5) * i);
+      ctx.fillText(String(val), 8, y + 3);
     }
 
-    const targetY = padTop + plotH * (1.0 - 108.6 / 300);
-    ctx.strokeStyle = "#94a3b8";
-    ctx.setLineDash([]);
+    for (let i = 0; i <= 6; i++) {
+      const x = padLeft + (plotW / 6) * i;
+      ctx.beginPath();
+      ctx.moveTo(x, padTop);
+      ctx.lineTo(x, h - padBottom);
+      ctx.stroke();
+
+      ctx.fillStyle = "#555555";
+      ctx.font = "9px 'Segoe UI Mono', monospace";
+      const dist = Math.round(i * 100);
+      ctx.fillText(String(dist), x - 8, h - 8);
+    }
+
+    const targetY = padTop + plotH * (1.0 - 174.0 / 300.0);
+    ctx.strokeStyle = "#00e676";
+    ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.moveTo(padLeft, targetY);
     ctx.lineTo(w - padRight, targetY);
     ctx.stroke();
 
-    const upperY = padTop + plotH * (1.0 - 145 / 300);
-    const lowerY = padTop + plotH * (1.0 - 80 / 300);
-    ctx.strokeStyle = "#ef4444";
-    ctx.setLineDash([5, 4]);
+    const lowerY = padTop + plotH * (1.0 - 10.0 / 300.0);
+    const upperY = padTop + plotH * (1.0 - 300.0 / 300.0);
+    ctx.strokeStyle = "#ff334b";
+    ctx.lineWidth = 1;
+    ctx.setLineDash([4, 4]);
     ctx.beginPath();
-    ctx.moveTo(padLeft, upperY);
-    ctx.lineTo(w - padRight, upperY);
     ctx.moveTo(padLeft, lowerY);
     ctx.lineTo(w - padRight, lowerY);
     ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(padLeft, upperY);
+    ctx.lineTo(w - padRight, upperY);
+    ctx.stroke();
     ctx.setLineDash([]);
 
-    const profile = (data && data.profile && data.profile.length > 0) ? data.profile : null;
-    ctx.strokeStyle = "#0f4c81";
-    ctx.lineWidth = 2.5;
-    ctx.beginPath();
-
-    const steps = 120;
-    for (let i = 0; i <= steps; i++) {
-      const r = i / steps;
-      const px = padLeft + r * plotW;
-      let valMm = 108.6;
-      if (profile) {
-        const pIdx = Math.floor(r * (profile.length - 1));
-        valMm = profile[pIdx];
-      } else {
-        valMm = 108.6 + Math.sin(r * Math.PI * 4) * 2.5;
+    const points = (data && data.profile && data.profile.length > 1) ? data.profile : [];
+    if (points.length > 1) {
+      ctx.strokeStyle = "#00e5ff";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      for (let i = 0; i < points.length; i++) {
+        const x = padLeft + (plotW / (points.length - 1)) * i;
+        const normY = Math.max(0, Math.min(300, points[i])) / 300.0;
+        const y = padTop + plotH * (1.0 - normY);
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
       }
-      const py = padTop + plotH * Math.max(0, Math.min(1, 1.0 - valMm / 300));
-      if (i === 0) ctx.moveTo(px, py);
-      else ctx.lineTo(px, py);
+      ctx.stroke();
+    } else {
+      ctx.strokeStyle = "#00e5ff";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(padLeft, targetY);
+      ctx.lineTo(w - padRight, targetY);
+      ctx.stroke();
     }
-    ctx.stroke();
 
-    const curPx = padLeft + cursorXRatio * plotW;
-    let curMm = 108.6;
-    if (profile) {
-      const pIdx = Math.floor(cursorXRatio * (profile.length - 1));
-      curMm = profile[pIdx];
-    }
-    const curPy = padTop + plotH * (1.0 - curMm / 300);
+    const scrubberX = padLeft + plotW * cursorXRatio;
+    ctx.strokeStyle = "#ffffff";
+    ctx.lineWidth = 1;
+    ctx.setLineDash([3, 3]);
+    ctx.beginPath();
+    ctx.moveTo(scrubberX, padTop);
+    ctx.lineTo(scrubberX, h - padBottom);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    let curThick = (data && data.thickness_mm) ? data.thickness_mm : 174.2;
+    const scrubberY = padTop + plotH * (1.0 - Math.min(300, curThick) / 300.0);
     ctx.fillStyle = "#ffffff";
     ctx.beginPath();
-    ctx.arc(curPx, curPy, 5, 0, Math.PI * 2);
+    ctx.arc(scrubberX, scrubberY, 4, 0, Math.PI * 2);
     ctx.fill();
-    ctx.strokeStyle = "#0f4c81";
-    ctx.lineWidth = 2;
+    ctx.strokeStyle = "#00e5ff";
+    ctx.lineWidth = 1.5;
     ctx.stroke();
   }
 
@@ -298,139 +447,127 @@
     if (!payload) return;
     lastTelemetry = payload;
 
-    if (payload.frame_b64) {
-      const img = document.getElementById("video-stream");
-      if (img) {
-        img.src = `data:image/jpeg;base64,${payload.frame_b64}`;
-      }
+    const stream = document.getElementById("video-stream");
+    if (stream && payload.frame_b64) {
+      stream.src = "data:image/jpeg;base64," + payload.frame_b64;
     }
 
-    if (payload.thickness_mm !== undefined) {
-      const el = document.getElementById("readout-mm");
-      if (el) el.textContent = payload.thickness_mm.toFixed(1);
-      const ttMm = document.getElementById("tt-mm");
-      if (ttMm) ttMm.textContent = payload.thickness_mm.toFixed(1);
-      const pCur = document.getElementById("prof-cur");
-      if (pCur) pCur.textContent = `${payload.thickness_mm.toFixed(1)} mm`;
-    }
+    const readoutMm = document.getElementById("readout-mm");
+    if (readoutMm) readoutMm.textContent = payload.thickness_mm.toFixed(1);
 
-    if (payload.thickness_px !== undefined) {
-      const el = document.getElementById("readout-px");
-      if (el) el.textContent = `${payload.thickness_px.toFixed(1)} px`;
-      const ttPx = document.getElementById("tt-px");
-      if (ttPx) ttPx.textContent = payload.thickness_px.toFixed(1);
-    }
+    const readoutPx = document.getElementById("readout-px");
+    if (readoutPx) readoutPx.textContent = `${payload.thickness_px.toFixed(1)} px`;
 
-    if (payload.min_mm !== undefined) {
-      const el = document.getElementById("stat-min");
-      if (el) el.textContent = `${payload.min_mm.toFixed(1)} mm`;
-      const pMin = document.getElementById("prof-min");
-      if (pMin) pMin.textContent = payload.min_mm.toFixed(1);
-    }
+    const statMin = document.getElementById("stat-min");
+    if (statMin) statMin.textContent = `${payload.min_mm.toFixed(1)} mm`;
 
-    if (payload.max_mm !== undefined) {
-      const el = document.getElementById("stat-max");
-      if (el) el.textContent = `${payload.max_mm.toFixed(1)} mm`;
-      const pMax = document.getElementById("prof-max");
-      if (pMax) pMax.textContent = payload.max_mm.toFixed(1);
-    }
+    const statMax = document.getElementById("stat-max");
+    if (statMax) statMax.textContent = `${payload.max_mm.toFixed(1)} mm`;
 
-    if (payload.avg_mm !== undefined) {
-      const el = document.getElementById("stat-avg");
-      if (el) el.textContent = `${payload.avg_mm.toFixed(1)} mm`;
-      const pAvg = document.getElementById("prof-avg");
-      if (pAvg) pAvg.textContent = payload.avg_mm.toFixed(1);
-    }
+    const statAvg = document.getElementById("stat-avg");
+    if (statAvg) statAvg.textContent = `${payload.avg_mm.toFixed(1)} mm`;
 
-    if (payload.std_dev_mm !== undefined) {
-      const el = document.getElementById("stat-std");
-      if (el) el.textContent = `${payload.std_dev_mm.toFixed(2)} mm`;
-      const pStd = document.getElementById("prof-std");
-      if (pStd) pStd.textContent = payload.std_dev_mm.toFixed(2);
-    }
+    const statStd = document.getElementById("stat-std");
+    if (statStd) statStd.textContent = `${payload.std_dev_mm.toFixed(2)} mm`;
 
-    if (payload.is_normal !== undefined) {
-      const banner = document.getElementById("spec-status-banner");
-      const badge = document.getElementById("badge-status");
+    const hudFps = document.getElementById("hud-fps-text");
+    if (hudFps) hudFps.textContent = `FPS ${payload.fps.toFixed(1)} in / ${(payload.processing_ms / 100).toFixed(1)} proc \u2022 1920\u00d71080`;
+
+    const hudMode = document.getElementById("hud-mode-text");
+    if (hudMode) hudMode.textContent = `VIEW ${activeMode} \u2022 THRESHOLD OTSU ${payload.otsu_threshold}`;
+
+    const hudThick = document.getElementById("hud-thick-text");
+    if (hudThick) hudThick.textContent = `THICKNESS ${payload.thickness_mm.toFixed(1)} mm`;
+
+    const ttX = document.getElementById("tt-x");
+    const ttY = document.getElementById("tt-y");
+    const ttTop = document.getElementById("tt-top");
+    const ttBot = document.getElementById("tt-bot");
+    const ttPx = document.getElementById("tt-px");
+    const ttMm = document.getElementById("tt-mm");
+
+    if (ttX) ttX.textContent = Math.round(payload.cursor_x);
+    if (ttY) ttY.textContent = Math.round(payload.cursor_y);
+    if (ttTop) ttTop.textContent = payload.top_y.toFixed(1);
+    if (ttBot) ttBot.textContent = payload.bottom_y.toFixed(1);
+    if (ttPx) ttPx.textContent = payload.thickness_px.toFixed(1);
+    if (ttMm) ttMm.textContent = payload.thickness_mm.toFixed(1);
+
+    const profMin = document.getElementById("prof-min");
+    const profMax = document.getElementById("prof-max");
+    const profAvg = document.getElementById("prof-avg");
+    const profStd = document.getElementById("prof-std");
+    const profCur = document.getElementById("prof-cur");
+
+    if (profMin) profMin.textContent = payload.min_mm.toFixed(1);
+    if (profMax) profMax.textContent = payload.max_mm.toFixed(1);
+    if (profAvg) profAvg.textContent = payload.avg_mm.toFixed(1);
+    if (profStd) profStd.textContent = payload.std_dev_mm.toFixed(2);
+    if (profCur) profCur.textContent = `${payload.thickness_mm.toFixed(1)} mm`;
+
+    const banner = document.getElementById("spec-status-banner");
+    const bannerTitle = document.getElementById("banner-title-text");
+    const bannerSub = document.getElementById("banner-sub-text");
+    const badgeStatus = document.getElementById("badge-status");
+
+    if (payload.is_valid === false) {
       if (banner) {
-        banner.className = payload.is_normal ? "status-banner banner-normal" : "status-banner banner-alert";
-        banner.textContent = payload.is_normal ? "\u2022 NORMAL" : "\u2022 OUT OF SPEC";
+        banner.className = "status-banner banner-warning";
       }
-      if (badge) {
-        badge.textContent = payload.is_normal ? "\u2022 NORMAL" : "\u2022 OUT OF SPEC";
-        badge.className = payload.is_normal ? "pill-badge pill-status" : "pill-badge pill-alert";
+      if (bannerTitle) bannerTitle.textContent = "\u25b2 LOW CONFIDENCE \u2014 MEASUREMENT NOT VALID";
+      if (bannerSub) {
+        bannerSub.textContent = "\u25b2 " + (payload.warning_text || "Detected boundaries are weak - check threshold settings");
+        bannerSub.style.display = "block";
+      }
+      if (badgeStatus) {
+        badgeStatus.textContent = "\u2022 LOW CONFIDENCE";
+        badgeStatus.className = "pill-badge pill-status out-of-spec";
+      }
+    } else if (payload.is_normal) {
+      if (banner) banner.className = "status-banner banner-normal";
+      if (bannerTitle) bannerTitle.textContent = "\u2022 NORMAL";
+      if (bannerSub) bannerSub.style.display = "none";
+      if (badgeStatus) {
+        badgeStatus.textContent = "\u2022 NORMAL";
+        badgeStatus.className = "pill-badge pill-status";
+      }
+    } else {
+      if (banner) banner.className = "status-banner banner-warning";
+      if (bannerTitle) bannerTitle.textContent = "\u25b2 OUT OF SPEC";
+      if (bannerSub) {
+        bannerSub.textContent = "\u25b2 " + (payload.warning_text || "Thickness outside target tolerance");
+        bannerSub.style.display = "block";
+      }
+      if (badgeStatus) {
+        badgeStatus.textContent = "\u2022 OUT OF SPEC";
+        badgeStatus.className = "pill-badge pill-status out-of-spec";
       }
     }
 
-    if (payload.confidence_pct !== undefined) {
-      setConfidencePct(payload.confidence_pct);
+    setConfidencePct(payload.confidence_pct, payload.is_valid !== false);
+
+    const statusFps = document.getElementById("status-fps");
+    if (statusFps) statusFps.textContent = payload.fps.toFixed(1);
+
+    const statusProc = document.getElementById("status-proc");
+    if (statusProc) statusProc.textContent = `${payload.processing_ms} ms`;
+
+    const statusThresh = document.getElementById("status-thresh");
+    if (statusThresh) statusThresh.textContent = `OTSU ${payload.otsu_threshold}`;
+
+    if (payload.source_name) {
+      updateSourceDisplay(payload.source_name);
     }
 
-    if (payload.fps !== undefined) {
-      const el = document.getElementById("status-fps");
-      if (el) el.textContent = payload.fps.toFixed(1);
-    }
-
-    if (payload.processing_ms !== undefined) {
-      const el = document.getElementById("status-proc");
-      if (el) el.textContent = `${Math.round(payload.processing_ms)} ms`;
-    }
-
-    if (payload.calibration !== undefined) {
-      const el = document.getElementById("calib-mm-px");
-      if (el) el.textContent = `${payload.calibration.toFixed(5)} mm/px`;
-      const elStat = document.getElementById("status-calib");
-      if (elStat) elStat.textContent = `${payload.calibration.toFixed(5)} mm/px`;
-    }
-
+    updateCaliperOverlay();
     renderProfileChart(payload);
   };
-
-  function startPolling() {
-    async function poll() {
-      if (window.pywebview && window.pywebview.api && window.pywebview.api.get_telemetry) {
-        try {
-          const data = await window.pywebview.api.get_telemetry();
-          if (data) {
-            window.updateTelemetry(data);
-          }
-        } catch (e) {}
-      }
-      setTimeout(poll, 30);
-    }
-    poll();
-  }
 
   document.addEventListener("DOMContentLoaded", () => {
     initClock();
     initLedBar();
     initTabs();
     initMouseInspection();
-    updateCaliperOverlay();
     renderProfileChart(null);
-    initKeyboardShortcuts();
-    window.addEventListener("pywebviewready", startPolling);
-    if (window.pywebview && window.pywebview.api) {
-      startPolling();
-    } else {
-      setTimeout(startPolling, 500);
-    }
   });
-
-  function initKeyboardShortcuts() {
-    window.addEventListener("keydown", (e) => {
-      if (["INPUT", "SELECT", "TEXTAREA"].includes(e.target.tagName)) return;
-      if (e.key === "f" || e.key === "F" || e.key === "F11") {
-        e.preventDefault();
-        if (window.pywebview && window.pywebview.api && window.pywebview.api.toggle_fullscreen) {
-          window.pywebview.api.toggle_fullscreen();
-        }
-      } else if (e.key === "q" || e.key === "Q" || e.key === "Escape") {
-        e.preventDefault();
-        if (window.pywebview && window.pywebview.api && window.pywebview.api.close_window) {
-          window.pywebview.api.close_window();
-        }
-      }
-    });
-  }
 })();
