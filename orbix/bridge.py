@@ -447,6 +447,7 @@ class WebviewApp:
                 "colour_space": getattr(self._engine, "colour_space", "grayscale"),
                 "threshold_mode": getattr(self._engine, "threshold_mode", "otsu"),
                 "is_recording": self.api.is_recording,
+                "show_edges": self.api.show_edges,
             }
 
             if self._stop_event.is_set():

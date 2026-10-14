@@ -273,6 +273,7 @@
       btnEdges.addEventListener("click", () => {
         showEdges = !showEdges;
         btnEdges.classList.toggle("active", showEdges);
+        updateCaliperOverlay();
         if (window.pywebview && window.pywebview.api && window.pywebview.api.toggle_edges) {
           window.pywebview.api.toggle_edges(showEdges);
         }
@@ -759,16 +760,23 @@
     const topY = topRatio * h;
     const botY = botRatio * h;
 
+    let edgeGraphic = "";
+    if (showEdges) {
+      edgeGraphic = `
+        <line x1="${cx}" y1="${ry}" x2="${cx}" y2="${ry + rh}" stroke="#555555" stroke-width="1" stroke-dasharray="3 3"/>
+        <line x1="${cx}" y1="${topY}" x2="${cx}" y2="${botY}" stroke="#ffb703" stroke-width="2.5"/>
+        <circle cx="${cx}" cy="${topY}" r="4.5" fill="#00e5ff" stroke="#000000" stroke-width="1.5"/>
+        <circle cx="${cx}" cy="${botY}" r="4.5" fill="#00e5ff" stroke="#000000" stroke-width="1.5"/>
+      `;
+    }
+
     svg.innerHTML = `
       <rect x="${rx}" y="${ry}" width="${rw}" height="${rh}" fill="rgba(0, 229, 255, 0.04)" stroke="#00e5ff" stroke-width="1.4" stroke-dasharray="6 4" opacity="0.85"/>
       <rect x="${rx - 3}" y="${ry - 3}" width="6" height="6" fill="#00e5ff"/>
       <rect x="${rx + rw - 3}" y="${ry - 3}" width="6" height="6" fill="#00e5ff"/>
       <rect x="${rx - 3}" y="${ry + rh - 3}" width="6" height="6" fill="#00e5ff"/>
       <rect x="${rx + rw - 3}" y="${ry + rh - 3}" width="6" height="6" fill="#00e5ff"/>
-      <line x1="${cx}" y1="${ry}" x2="${cx}" y2="${ry + rh}" stroke="#555555" stroke-width="1" stroke-dasharray="3 3"/>
-      <line x1="${cx}" y1="${topY}" x2="${cx}" y2="${botY}" stroke="#ffb703" stroke-width="2.5"/>
-      <circle cx="${cx}" cy="${topY}" r="4.5" fill="#00e5ff" stroke="#000000" stroke-width="1.5"/>
-      <circle cx="${cx}" cy="${botY}" r="4.5" fill="#00e5ff" stroke="#000000" stroke-width="1.5"/>
+      ${edgeGraphic}
     `;
 
     if (isCalibrating && calibPoints.length > 0) {
@@ -787,12 +795,22 @@
     const topLabel = document.getElementById("label-top-edge");
     const botLabel = document.getElementById("label-bot-edge");
     if (topLabel) {
-      topLabel.style.left = `${Math.max(8, rx + 16)}px`;
-      topLabel.style.top = `${Math.max(8, topY - 14)}px`;
+      if (showEdges && !isCalibrating && !isSelectingRoi) {
+        topLabel.style.display = "block";
+        topLabel.style.left = `${Math.max(8, rx + 16)}px`;
+        topLabel.style.top = `${Math.max(8, topY - 14)}px`;
+      } else {
+        topLabel.style.display = "none";
+      }
     }
     if (botLabel) {
-      botLabel.style.left = `${Math.max(8, rx + 16)}px`;
-      botLabel.style.top = `${Math.min(h - 22, botY + 4)}px`;
+      if (showEdges && !isCalibrating && !isSelectingRoi) {
+        botLabel.style.display = "block";
+        botLabel.style.left = `${Math.max(8, rx + 16)}px`;
+        botLabel.style.top = `${Math.min(h - 22, botY + 4)}px`;
+      } else {
+        botLabel.style.display = "none";
+      }
     }
   }
 
@@ -1127,6 +1145,12 @@
     if (badgeRec && payload.is_recording !== undefined) {
       badgeRec.textContent = payload.is_recording ? "\u25cf REC ON" : "RECORDING OFF";
       badgeRec.classList.toggle("recording-active", !!payload.is_recording);
+    }
+
+    if (payload.show_edges !== undefined && payload.show_edges !== showEdges) {
+      showEdges = payload.show_edges;
+      const btnEdges = document.getElementById("btn-toggle-edges");
+      if (btnEdges) btnEdges.classList.toggle("active", showEdges);
     }
 
     updateCaliperOverlay();

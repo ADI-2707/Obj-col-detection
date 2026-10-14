@@ -372,3 +372,9 @@ class TestWebAssets:
         assert "toggle_recording" in content_js
         assert "recording-active" in content_js
 
+    def test_js_contains_show_edges_toggle_behavior(self):
+        js_path = Path("orbix/web/app.js")
+        content_js = js_path.read_text(encoding="utf-8")
+        assert "btn-toggle-edges" in content_js
+        assert "edgeGraphic" in content_js
+
