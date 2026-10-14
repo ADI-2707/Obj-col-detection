@@ -395,6 +395,11 @@
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
+    if (canvas.clientWidth && (canvas.width !== canvas.clientWidth || canvas.height !== canvas.clientHeight)) {
+      canvas.width = canvas.clientWidth;
+      canvas.height = canvas.clientHeight;
+    }
+
     const w = canvas.width;
     const h = canvas.height;
     ctx.clearRect(0, 0, w, h);
