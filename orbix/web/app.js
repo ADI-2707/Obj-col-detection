@@ -174,9 +174,6 @@
       });
     }
 
-    const btnHelp = document.getElementById("btn-help");
-    if (btnHelp) btnHelp.addEventListener("click", showHelpModal);
-
     const btnSourceCfg = document.getElementById("btn-source-config");
     if (btnSourceCfg) btnSourceCfg.addEventListener("click", showSourceConfigModal);
 
