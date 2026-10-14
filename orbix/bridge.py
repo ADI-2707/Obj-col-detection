@@ -355,18 +355,46 @@ class WebviewApp:
         icon_path = str(get_resource_path("assets/Vision_logo.ico")) if get_resource_path("assets/Vision_logo.ico").exists() else str(get_resource_path("assets/orbix_ico_logo.ico"))
         if not Path(icon_path).exists():
             return
+
+        def _set_icon_for_hwnd(hwnd):
+            try:
+                import ctypes
+                cx_sm = ctypes.windll.user32.GetSystemMetrics(49) or 16
+                cy_sm = ctypes.windll.user32.GetSystemMetrics(50) or 16
+                cx_lg = ctypes.windll.user32.GetSystemMetrics(11) or 32
+                cy_lg = ctypes.windll.user32.GetSystemMetrics(12) or 32
+                hicon_sm = ctypes.windll.user32.LoadImageW(None, icon_path, 1, cx_sm, cy_sm, 0x00000010)
+                hicon_lg = ctypes.windll.user32.LoadImageW(None, icon_path, 1, cx_lg, cy_lg, 0x00000010)
+                if hicon_sm:
+                    ctypes.windll.user32.SendMessageW(hwnd, 0x0080, 0, hicon_sm)
+                if hicon_lg:
+                    ctypes.windll.user32.SendMessageW(hwnd, 0x0080, 1, hicon_lg)
+            except Exception:
+                pass
+
         try:
             import ctypes
             hwnd = ctypes.windll.user32.FindWindowW(None, "Vision — Smart Material Management System")
             if hwnd:
-                hicon_sm = ctypes.windll.user32.LoadImageW(None, icon_path, 1, 16, 16, 0x00000010)
-                hicon_lg = ctypes.windll.user32.LoadImageW(None, icon_path, 1, 32, 32, 0x00000010)
-                if hicon_sm:
-                    ctypes.windll.user32.PostMessageW(hwnd, 0x0080, 0, hicon_sm)
-                if hicon_lg:
-                    ctypes.windll.user32.PostMessageW(hwnd, 0x0080, 1, hicon_lg)
+                _set_icon_for_hwnd(hwnd)
+                return
         except Exception:
             pass
+
+        def _poll_and_apply():
+            try:
+                import ctypes
+                import time
+                for _ in range(15):
+                    hwnd = ctypes.windll.user32.FindWindowW(None, "Vision — Smart Material Management System")
+                    if hwnd:
+                        _set_icon_for_hwnd(hwnd)
+                        return
+                    time.sleep(0.1)
+            except Exception:
+                pass
+
+        threading.Thread(target=_poll_and_apply, daemon=True).start()
 
     def _on_closing(self, *args):
         self._stop_event.set()
