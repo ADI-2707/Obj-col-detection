@@ -1,6 +1,6 @@
 import math
 
-from orbix.motion import MotionEstimator, MotionState
+from vision.motion import MotionEstimator, MotionState
 
 
 class TestMotionEstimatorStationary:

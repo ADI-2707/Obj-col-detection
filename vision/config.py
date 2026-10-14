@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from orbix.paths import get_default_log_dir
+from vision.paths import get_default_log_dir
 
 
 @dataclass(frozen=True)

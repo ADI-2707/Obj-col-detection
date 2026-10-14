@@ -3,8 +3,8 @@ from pathlib import Path
 
 import pytest
 
-from orbix.logger import CSVLogger
-from orbix.motion import MotionState
+from vision.logger import CSVLogger
+from vision.motion import MotionState
 
 
 @pytest.fixture

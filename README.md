@@ -123,7 +123,7 @@ The run.bat script handles common runtime environments automatically:
 - Automatically verifies Python availability.
 - Creates an isolated virtual environment (.venv) inside the project folder.
 - Installs all dependencies from requirements.txt via pip.
-- Starts the camera application and opens the Orbix display window.
+- Starts the camera application and opens the Vision display window.
 
 ### 2. Subsequent Launches
 - Detects the existing virtual environment.
@@ -163,7 +163,7 @@ The run.bat script handles common runtime environments automatically:
 - Detects end of stream, terminates the processing loop cleanly, flushes the CSV log to disk, and closes all open windows.
 
 ### 10. Stopping the Application
-- Press q inside the Orbix video window.
+- Press q inside the Vision video window.
 - Or press Ctrl+C in the terminal.
 - The script flushes the log, displays the total processed frame count and CSV file path, and pauses before closing.
 
@@ -188,25 +188,25 @@ pip install -e ".[dev]"
 Default webcam:
 
 ```
-python -m orbix --source 0
+python -m vision --source 0
 ```
 
 Using a video file:
 
 ```
-python -m orbix --source "path/to/video.mp4"
+python -m vision --source "path/to/video.mp4"
 ```
 
 Headless mode (no display window, logs to CSV only):
 
 ```
-python -m orbix --no-display
+python -m vision --no-display
 ```
 
 Custom confidence threshold:
 
 ```
-python -m orbix --confidence 0.4
+python -m vision --confidence 0.4
 ```
 
 ### CLI Arguments
@@ -231,7 +231,7 @@ python -m pytest tests/ -v
 ## Project Structure
 
 ```
-orbix/
+vision/
     __init__.py        Package version
     __main__.py        CLI entry point
     config.py          Centralized configuration
@@ -267,7 +267,7 @@ When a pull request is successfully merged into `main`, the automated workflow (
 - **Minor (`1.X.0`)**: Triggered when the PR title or labels contain `feat` or `minor`.
 - **Patch (`1.0.X`)**: Default increment for maintenance and fixes.
 
-The workflow updates `orbix/__init__.py` and `pyproject.toml`, commits the update, pushes a Git tag (e.g., `v1.0.1`), and the new version is rendered dynamically in the dashboard interface.
+The workflow updates `vision/__init__.py` and `pyproject.toml`, commits the update, pushes a Git tag (e.g., `v1.0.1`), and the new version is rendered dynamically in the dashboard interface.
 
 ## Limitations
 

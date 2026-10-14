@@ -6,9 +6,9 @@ import cv2
 import numpy as np
 import pytest
 
-from orbix.bridge import BridgeAPI, WebviewApp, encode_frame_to_b64
-from orbix.config import Config
-from orbix.measurement import SlabMeasurementEngine, ThicknessMeasurement
+from vision.bridge import BridgeAPI, WebviewApp, encode_frame_to_b64
+from vision.config import Config
+from vision.measurement import SlabMeasurementEngine, ThicknessMeasurement
 
 
 @pytest.fixture
@@ -282,7 +282,7 @@ class TestWebviewApp:
 
 class TestWebAssets:
     def test_html_contains_critical_elements(self):
-        html_path = Path("orbix/web/index.html")
+        html_path = Path("vision/web/index.html")
         assert html_path.exists()
         content = html_path.read_text(encoding="utf-8")
         assert "VISION" in content
@@ -292,111 +292,111 @@ class TestWebAssets:
         assert "readout-mm" in content
 
     def test_html_contains_settings_and_theme_toggle(self):
-        html_path = Path("orbix/web/index.html")
+        html_path = Path("vision/web/index.html")
         content = html_path.read_text(encoding="utf-8")
         assert "btn-settings" in content
         assert "settings-dropdown" in content
         assert "theme-toggle-chk" in content
 
     def test_html_contains_bottom_right_branding(self):
-        html_path = Path("orbix/web/index.html")
+        html_path = Path("vision/web/index.html")
         content = html_path.read_text(encoding="utf-8")
         assert "bottom-right-branding" in content
         assert "systrol_ico_logo.png" in content
 
     def test_css_contains_black_scada_theme(self):
-        css_path = Path("orbix/web/style.css")
+        css_path = Path("vision/web/style.css")
         assert css_path.exists()
         content = css_path.read_text(encoding="utf-8")
         assert "--bg-main: #000000;" in content
         assert "--cyan-accent:" in content
 
     def test_css_contains_responsive_media_queries(self):
-        css_path = Path("orbix/web/style.css")
+        css_path = Path("vision/web/style.css")
         content = css_path.read_text(encoding="utf-8")
         assert "@media (min-width: 2200px)" in content
         assert "@media (min-width: 3200px)" in content
 
     def test_js_defines_telemetry_handler(self):
-        js_path = Path("orbix/web/app.js")
+        js_path = Path("vision/web/app.js")
         assert js_path.exists()
         content = js_path.read_text(encoding="utf-8")
         assert "window.updateTelemetry" in content
         assert "renderProfileChart" in content
 
     def test_js_contains_dynamic_canvas_resolution(self):
-        js_path = Path("orbix/web/app.js")
+        js_path = Path("vision/web/app.js")
         content = js_path.read_text(encoding="utf-8")
         assert "canvas.clientWidth" in content
         assert "canvas.clientHeight" in content
 
     def test_html_contains_detection_selectors(self):
-        html_path = Path("orbix/web/index.html")
+        html_path = Path("vision/web/index.html")
         content = html_path.read_text(encoding="utf-8")
         assert "select-colour-space" in content
         assert "select-thresh-mode" in content
 
     def test_html_contains_measurement_points_table(self):
-        html_path = Path("orbix/web/index.html")
+        html_path = Path("vision/web/index.html")
         content = html_path.read_text(encoding="utf-8")
         assert "points-table-wrapper" in content
         assert "points-table" in content
 
     def test_js_contains_points_table_renderer(self):
-        js_path = Path("orbix/web/app.js")
+        js_path = Path("vision/web/app.js")
         content = js_path.read_text(encoding="utf-8")
         assert "renderPointsTable" in content
         assert "points-table-body" in content
 
     def test_html_contains_modal_dialog(self):
-        html_path = Path("orbix/web/index.html")
+        html_path = Path("vision/web/index.html")
         content = html_path.read_text(encoding="utf-8")
         assert "scada-modal-backdrop" in content
         assert "scada-modal-window" in content
         assert "scada-modal-title" in content
 
     def test_js_contains_modal_system(self):
-        js_path = Path("orbix/web/app.js")
+        js_path = Path("vision/web/app.js")
         content = js_path.read_text(encoding="utf-8")
         assert "showScadaModal" in content
         assert "showHelpModal" in content
         assert "showAboutModal" in content
 
     def test_html_and_js_recording_integration(self):
-        html_path = Path("orbix/web/index.html")
+        html_path = Path("vision/web/index.html")
         content_html = html_path.read_text(encoding="utf-8")
         assert "badge-rec" in content_html
 
-        js_path = Path("orbix/web/app.js")
+        js_path = Path("vision/web/app.js")
         content_js = js_path.read_text(encoding="utf-8")
         assert "toggle_recording" in content_js
         assert "recording-active" in content_js
 
     def test_js_contains_show_edges_toggle_behavior(self):
-        js_path = Path("orbix/web/app.js")
+        js_path = Path("vision/web/app.js")
         content_js = js_path.read_text(encoding="utf-8")
         assert "btn-toggle-edges" in content_js
         assert "edgeGraphic" in content_js
 
     def test_html_contains_roi_toggle_button(self):
-        html_path = Path("orbix/web/index.html")
+        html_path = Path("vision/web/index.html")
         content_html = html_path.read_text(encoding="utf-8")
         assert "btn-toggle-roi-box" in content_html
 
     def test_js_contains_roi_toggle_and_label(self):
-        js_path = Path("orbix/web/app.js")
+        js_path = Path("vision/web/app.js")
         content_js = js_path.read_text(encoding="utf-8")
         assert "btn-toggle-roi-box" in content_js
         assert "ROI: SEARCH REGION" in content_js
 
     def test_html_contains_modal_watermark_and_pdf_button(self):
-        html_path = Path("orbix/web/index.html")
+        html_path = Path("vision/web/index.html")
         content_html = html_path.read_text(encoding="utf-8")
         assert "modal-sticky-watermark" in content_html
         assert "btn-modal-open-pdf" in content_html
 
     def test_js_contains_features_manual_and_pdf_launcher(self):
-        js_path = Path("orbix/web/app.js")
+        js_path = Path("vision/web/app.js")
         content_js = js_path.read_text(encoding="utf-8")
         assert "btn-modal-open-pdf" in content_js
         assert "open_pdf_manual" in content_js
@@ -404,9 +404,9 @@ class TestWebAssets:
         assert "LEFT PANEL" in content_js
 
     def test_bridge_api_open_pdf_manual(self, monkeypatch, tmp_path):
-        import orbix.manual
+        import vision.manual
         pdf_path = tmp_path / "test_manual.pdf"
-        monkeypatch.setattr(orbix.manual, "open_pdf_manual", lambda: pdf_path)
+        monkeypatch.setattr(vision.manual, "open_pdf_manual", lambda: pdf_path)
         api = BridgeAPI()
         res = api.open_pdf_manual()
         assert res["status"] == "ok"
@@ -415,14 +415,14 @@ class TestWebAssets:
 
 class TestLetterboxFrame:
     def test_letterbox_same_size_returns_same(self):
-        from orbix.bridge import letterbox_frame
+        from vision.bridge import letterbox_frame
         frame = np.ones((1080, 1920, 3), dtype=np.uint8) * 128
         out = letterbox_frame(frame, 1920, 1080)
         assert out.shape == (1080, 1920, 3)
         assert np.array_equal(out, frame)
 
     def test_letterbox_4_to_3_preserves_aspect_ratio(self):
-        from orbix.bridge import letterbox_frame
+        from vision.bridge import letterbox_frame
         frame = np.ones((480, 640, 3), dtype=np.uint8) * 200
         out = letterbox_frame(frame, 1920, 1080)
         assert out.shape == (1080, 1920, 3)
@@ -431,7 +431,7 @@ class TestLetterboxFrame:
         assert np.all(out[:, 240:1680] == 200)
 
     def test_letterbox_grayscale(self):
-        from orbix.bridge import letterbox_frame
+        from vision.bridge import letterbox_frame
         frame = np.ones((480, 640), dtype=np.uint8) * 255
         out = letterbox_frame(frame, 1920, 1080)
         assert out.shape == (1080, 1920)
@@ -439,13 +439,13 @@ class TestLetterboxFrame:
         assert np.all(out[:, 240:1680] == 255)
 
     def test_letterbox_none_or_empty(self):
-        from orbix.bridge import letterbox_frame
+        from vision.bridge import letterbox_frame
         assert letterbox_frame(None) is None
         empty = np.array([])
         assert letterbox_frame(empty).size == 0
 
     def test_letterbox_ultrawide_21_to_9_letterboxes_top_bottom(self):
-        from orbix.bridge import letterbox_frame
+        from vision.bridge import letterbox_frame
         frame = np.ones((1080, 2560, 3), dtype=np.uint8) * 180
         out = letterbox_frame(frame, 1920, 1080)
         assert out.shape == (1080, 1920, 3)
@@ -454,7 +454,7 @@ class TestLetterboxFrame:
         assert np.all(out[135:945, :] == 180)
 
     def test_letterbox_portrait_9_to_16_pillarboxes_left_right(self):
-        from orbix.bridge import letterbox_frame
+        from vision.bridge import letterbox_frame
         frame = np.ones((1920, 1080, 3), dtype=np.uint8) * 220
         out = letterbox_frame(frame, 1920, 1080)
         assert out.shape == (1080, 1920, 3)
@@ -494,7 +494,7 @@ class TestBridgeShutdownAndRecording:
 
 class TestUIElementsContract:
     def test_html_contains_hud_toolbar_and_symmetrical_watermarks(self):
-        html_path = Path("orbix/web/index.html")
+        html_path = Path("vision/web/index.html")
         content = html_path.read_text(encoding="utf-8")
         assert "video-hud-overlay" in content
         assert "hud-status-text" in content

@@ -5,10 +5,10 @@ import time
 import cv2
 import numpy as np
 
-from orbix import __version__
-from orbix.measurement import SlabMeasurementEngine, ThicknessMeasurement
-from orbix.motion import MotionState
-from orbix.paths import get_resource_path
+from vision import __version__
+from vision.measurement import SlabMeasurementEngine, ThicknessMeasurement
+from vision.motion import MotionState
+from vision.paths import get_resource_path
 
 
 def _heading_to_compass(deg: float) -> str:

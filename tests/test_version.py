@@ -3,41 +3,41 @@ from pathlib import Path
 
 import pytest
 
-import orbix
+import vision
 from scripts.bump_version import bump_version, compute_next_version, parse_semver
 
 
 class TestVersionAttributes:
     def test_version_is_non_empty_string(self):
-        assert isinstance(orbix.__version__, str)
-        assert len(orbix.__version__) > 0
+        assert isinstance(vision.__version__, str)
+        assert len(vision.__version__) > 0
 
     def test_version_format_is_semver(self):
-        assert re.match(r"^\d+\.\d+\.\d+$", orbix.__version__)
+        assert re.match(r"^\d+\.\d+\.\d+$", vision.__version__)
 
     def test_pyproject_version_matches_init_version(self):
         pyproject_path = Path(__file__).resolve().parent.parent / "pyproject.toml"
         content = pyproject_path.read_text(encoding="utf-8")
         match = re.search(r'version\s*=\s*"([^"]+)"', content)
         assert match is not None
-        assert match.group(1) == orbix.__version__
+        assert match.group(1) == vision.__version__
 
     def test_index_html_version_matches_init_version(self):
-        index_path = Path(__file__).resolve().parent.parent / "orbix" / "web" / "index.html"
+        index_path = Path(__file__).resolve().parent.parent / "vision" / "web" / "index.html"
         content = index_path.read_text(encoding="utf-8")
-        assert f'id="app-version-badge">v{orbix.__version__}</span>' in content
-        assert f'id="app-version-subtext">v{orbix.__version__}</span>' in content
+        assert f'id="app-version-badge">v{vision.__version__}</span>' in content
+        assert f'id="app-version-subtext">v{vision.__version__}</span>' in content
 
     def test_app_js_version_matches_init_version(self):
-        app_js_path = Path(__file__).resolve().parent.parent / "orbix" / "web" / "app.js"
+        app_js_path = Path(__file__).resolve().parent.parent / "vision" / "web" / "app.js"
         content = app_js_path.read_text(encoding="utf-8")
-        assert f'let currentAppVersion = "{orbix.__version__}";' in content
+        assert f'let currentAppVersion = "{vision.__version__}";' in content
 
     def test_bridge_state_contains_version(self):
-        from orbix.bridge import BridgeAPI
+        from vision.bridge import BridgeAPI
         api = BridgeAPI()
         state = api.get_state()
-        assert state.get("version") == orbix.__version__
+        assert state.get("version") == vision.__version__
 
 
 class TestSemverComputation:
@@ -67,14 +67,14 @@ class TestSemverComputation:
 
 class TestBumpVersionExecution:
     def test_bump_version_in_temp_directory(self, tmp_path):
-        pkg_dir = tmp_path / "orbix"
+        pkg_dir = tmp_path / "vision"
         pkg_dir.mkdir()
         init_file = pkg_dir / "__init__.py"
         pyproject_file = tmp_path / "pyproject.toml"
 
         installer_dir = tmp_path / "installer"
         installer_dir.mkdir()
-        iss_file = installer_dir / "OrbixSetup.iss"
+        iss_file = installer_dir / "VisionSetup.iss"
         iss_file.write_text('#define MyAppVersion "1.0.0"\n', encoding="utf-8")
 
         packaging_dir = tmp_path / "packaging"
@@ -84,7 +84,7 @@ class TestBumpVersionExecution:
 
         init_file.write_text('__version__ = "1.0.0"\n', encoding="utf-8")
         pyproject_file.write_text(
-            '[project]\nname = "orbix"\nversion = "1.0.0"\n',
+            '[project]\nname = "vision"\nversion = "1.0.0"\n',
             encoding="utf-8",
         )
 

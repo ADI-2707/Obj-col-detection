@@ -4,7 +4,7 @@ import numpy as np
 import supervision as sv
 from ultralytics import YOLO
 
-from orbix.paths import get_resource_path
+from vision.paths import get_resource_path
 
 
 class DetectorError(Exception):

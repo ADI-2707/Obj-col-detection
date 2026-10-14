@@ -1,6 +1,6 @@
 import pytest
 
-from orbix.config import Config
+from vision.config import Config
 
 
 @pytest.fixture

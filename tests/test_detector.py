@@ -1,6 +1,6 @@
 import pytest
 
-from orbix.detector import Detector, DetectorError
+from vision.detector import Detector, DetectorError
 
 
 class TestDetectorInit:

@@ -32,13 +32,15 @@ def bump_version(bump_type: str = "patch", repo_root: Path | None = None) -> str
     if repo_root is None:
         repo_root = Path(__file__).resolve().parent.parent
 
-    init_file = repo_root / "orbix" / "__init__.py"
+    init_file = repo_root / "vision" / "__init__.py"
+    if not init_file.exists():
+        init_file = repo_root / "orbix" / "__init__.py"
     pyproject_file = repo_root / "pyproject.toml"
 
     init_content = init_file.read_text(encoding="utf-8")
     match = re.search(r'__version__\s*=\s*["\']([^"\']+)["\']', init_content)
     if not match:
-        raise ValueError("Could not find __version__ in orbix/__init__.py")
+        raise ValueError("Could not find __version__ in vision/__init__.py")
 
     current_version = match.group(1)
     new_version = compute_next_version(current_version, bump_type)
@@ -60,7 +62,9 @@ def bump_version(bump_type: str = "patch", repo_root: Path | None = None) -> str
         )
         pyproject_file.write_text(new_pyproject_content, encoding="utf-8")
 
-    iss_file = repo_root / "installer" / "OrbixSetup.iss"
+    iss_file = repo_root / "installer" / "VisionSetup.iss"
+    if not iss_file.exists():
+        iss_file = repo_root / "installer" / "OrbixSetup.iss"
     if iss_file.exists():
         iss_content = iss_file.read_text(encoding="utf-8")
         new_iss_content = re.sub(
@@ -82,7 +86,9 @@ def bump_version(bump_type: str = "patch", repo_root: Path | None = None) -> str
         )
         manifest_file.write_text(new_manifest_content, encoding="utf-8")
 
-    index_html = repo_root / "orbix" / "web" / "index.html"
+    index_html = repo_root / "vision" / "web" / "index.html"
+    if not index_html.exists():
+        index_html = repo_root / "orbix" / "web" / "index.html"
     if index_html.exists():
         html_content = index_html.read_text(encoding="utf-8")
         html_content = re.sub(
@@ -97,7 +103,9 @@ def bump_version(bump_type: str = "patch", repo_root: Path | None = None) -> str
         )
         index_html.write_text(html_content, encoding="utf-8")
 
-    app_js = repo_root / "orbix" / "web" / "app.js"
+    app_js = repo_root / "vision" / "web" / "app.js"
+    if not app_js.exists():
+        app_js = repo_root / "orbix" / "web" / "app.js"
     if app_js.exists():
         app_js_content = app_js.read_text(encoding="utf-8")
         app_js_content = re.sub(

@@ -1,5 +1,5 @@
 from pathlib import Path
-from orbix.manual import generate_features_manual_pdf, get_manual_pdf_path
+from vision.manual import generate_features_manual_pdf, get_manual_pdf_path
 
 
 def test_get_manual_pdf_path():
@@ -18,7 +18,7 @@ def test_generate_features_manual_pdf_creates_file(tmp_path):
 
 
 def test_open_pdf_manual_generates_if_not_present(monkeypatch, tmp_path):
-    from orbix.manual import open_pdf_manual
+    from vision.manual import open_pdf_manual
     target_pdf = tmp_path / "test_docs" / "manual.pdf"
     opened = []
     monkeypatch.setattr("os.startfile", lambda p: opened.append(p), raising=False)
@@ -30,7 +30,7 @@ def test_open_pdf_manual_generates_if_not_present(monkeypatch, tmp_path):
 
 
 def test_draw_page_watermark_gracefully_handles_missing_logo():
-    from orbix.manual import draw_page_watermark_and_chrome
+    from vision.manual import draw_page_watermark_and_chrome
     from reportlab.pdfgen import canvas
     import io
 

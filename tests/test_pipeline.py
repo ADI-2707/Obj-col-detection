@@ -5,8 +5,8 @@ import numpy as np
 import pytest
 import supervision as sv
 
-from orbix.config import Config
-from orbix.pipeline import Pipeline
+from vision.config import Config
+from vision.pipeline import Pipeline
 
 
 @pytest.fixture
@@ -20,7 +20,7 @@ def headless_config(tmp_path):
 
 
 class TestPipelineConstruction:
-    @patch("orbix.pipeline.Detector")
+    @patch("vision.pipeline.Detector")
     def test_constructs_all_components(self, mock_detector_cls, headless_config):
         mock_detector_cls.return_value = MagicMock()
         pipeline = Pipeline(headless_config)
@@ -32,7 +32,7 @@ class TestPipelineConstruction:
 
 
 class TestPipelineProcessFrame:
-    @patch("orbix.pipeline.Detector")
+    @patch("vision.pipeline.Detector")
     def test_process_frame_empty_detections(self, mock_detector_cls, headless_config):
         mock_detector = MagicMock()
         mock_detector.detect.return_value = sv.Detections.empty()
@@ -47,7 +47,7 @@ class TestPipelineProcessFrame:
         assert confs == []
         assert bboxes == []
 
-    @patch("orbix.pipeline.Detector")
+    @patch("vision.pipeline.Detector")
     def test_process_frame_with_detections(self, mock_detector_cls, headless_config):
         detections = sv.Detections(
             xyxy=np.array([[10, 20, 50, 60]], dtype=np.float32),
@@ -69,7 +69,7 @@ class TestPipelineProcessFrame:
 
 
 class TestPipelineSourceError:
-    @patch("orbix.pipeline.Detector")
+    @patch("vision.pipeline.Detector")
     def test_run_with_invalid_source_prints_error(
         self, mock_detector_cls, headless_config, capsys
     ):
@@ -82,7 +82,7 @@ class TestPipelineSourceError:
 
 class TestCLIParsing:
     def test_default_args(self):
-        from orbix.__main__ import parse_args
+        from vision.__main__ import parse_args
 
         args = parse_args([])
         assert args.source == "0"
@@ -92,7 +92,7 @@ class TestCLIParsing:
         assert args.windowed is False
 
     def test_custom_args(self):
-        from orbix.__main__ import parse_args
+        from vision.__main__ import parse_args
 
         args = parse_args([
             "--source", "video.mp4",
@@ -108,20 +108,20 @@ class TestCLIParsing:
         assert args.windowed is True
 
     def test_source_parsing_integer(self):
-        from orbix.__main__ import _parse_source
+        from vision.__main__ import _parse_source
 
         assert _parse_source("0") == 0
         assert _parse_source("2") == 2
 
     def test_source_parsing_string(self):
-        from orbix.__main__ import _parse_source
+        from vision.__main__ import _parse_source
 
         assert _parse_source("video.mp4") == "video.mp4"
 
 
 class TestPipelineFullscreenToggle:
-    @patch("orbix.pipeline.cv2.setWindowProperty")
-    @patch("orbix.pipeline.Detector")
+    @patch("vision.pipeline.cv2.setWindowProperty")
+    @patch("vision.pipeline.Detector")
     def test_toggle_fullscreen(self, mock_detector_cls, mock_set_prop, headless_config):
         mock_detector_cls.return_value = MagicMock()
         pipeline = Pipeline(headless_config)
@@ -133,7 +133,7 @@ class TestPipelineFullscreenToggle:
 
 
 class TestPipelineMouseCallback:
-    @patch("orbix.pipeline.Detector")
+    @patch("vision.pipeline.Detector")
     def test_on_mouse_forwards_to_visualizer(self, mock_detector_cls, headless_config):
         mock_detector_cls.return_value = MagicMock()
         pipeline = Pipeline(headless_config)
@@ -142,8 +142,8 @@ class TestPipelineMouseCallback:
         pipeline._on_mouse(0, 100, 200, 0, None)
         pipeline._visualizer.handle_mouse_event.assert_called_once_with(0, 100, 200)
 
-    @patch("orbix.pipeline.cv2.setWindowProperty")
-    @patch("orbix.pipeline.Detector")
+    @patch("vision.pipeline.cv2.setWindowProperty")
+    @patch("vision.pipeline.Detector")
     def test_on_mouse_fullscreen_action(self, mock_detector_cls, mock_set_prop, headless_config):
         mock_detector_cls.return_value = MagicMock()
         pipeline = Pipeline(headless_config)

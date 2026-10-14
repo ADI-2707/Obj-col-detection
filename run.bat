@@ -89,7 +89,7 @@ if not exist ".venv\Scripts\python.exe" (
     echo.
 )
 
-".venv\Scripts\python.exe" -m orbix %*
+".venv\Scripts\python.exe" -m vision %*
 echo.
 pause
 endlocal

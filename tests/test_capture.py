@@ -1,6 +1,6 @@
 import pytest
 
-from orbix.capture import FrameSource, FrameSourceError
+from vision.capture import FrameSource, FrameSourceError
 
 
 class TestFrameSourceErrors:

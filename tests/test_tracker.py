@@ -1,7 +1,7 @@
 import numpy as np
 import supervision as sv
 
-from orbix.tracker import ObjectTracker
+from vision.tracker import ObjectTracker
 
 
 class TestObjectTrackerInit:

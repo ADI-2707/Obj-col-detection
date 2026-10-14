@@ -8,7 +8,8 @@ datas = [
     (str(repo_root / "packaging" / "icons" / "orbix.ico"), "packaging/icons"),
     (str(repo_root / "packaging" / "icons" / "vision.ico"), "packaging/icons"),
     (str(repo_root / "assets"), "assets"),
-    (str(repo_root / "orbix" / "web"), "orbix/web"),
+    (str(repo_root / "vision" / "web"), "vision/web"),
+    (str(repo_root / "vision" / "web"), "orbix/web"),
 ]
 
 datas += collect_data_files("ultralytics")
@@ -21,18 +22,18 @@ hiddenimports = [
     "PIL",
     "numpy",
     "webview",
-    "orbix",
-    "orbix.paths",
-    "orbix.config",
-    "orbix.capture",
-    "orbix.detector",
-    "orbix.logger",
-    "orbix.motion",
-    "orbix.tracker",
-    "orbix.visualizer",
-    "orbix.measurement",
-    "orbix.bridge",
-    "orbix.pipeline",
+    "vision",
+    "vision.paths",
+    "vision.config",
+    "vision.capture",
+    "vision.detector",
+    "vision.logger",
+    "vision.motion",
+    "vision.tracker",
+    "vision.visualizer",
+    "vision.measurement",
+    "vision.bridge",
+    "vision.pipeline",
 ]
 
 hiddenimports += collect_submodules("ultralytics")
@@ -46,7 +47,7 @@ excludes = [
 ]
 
 a = Analysis(
-    [str(repo_root / "orbix" / "__main__.py")],
+    [str(repo_root / "vision" / "__main__.py")],
     pathex=[str(repo_root)],
     binaries=[],
     datas=datas,

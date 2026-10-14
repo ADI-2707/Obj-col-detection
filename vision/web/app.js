@@ -31,7 +31,7 @@
   }
 
   function initThemeSystem() {
-    const savedTheme = localStorage.getItem("orbix_theme") || "dark";
+    const savedTheme = localStorage.getItem("vision_theme") || localStorage.getItem("orbix_theme") || "dark";
     applyTheme(savedTheme);
 
     const toggleChk = document.getElementById("theme-toggle-chk");
@@ -40,7 +40,7 @@
       toggleChk.addEventListener("change", (e) => {
         const nextTheme = e.target.checked ? "dark" : "light";
         applyTheme(nextTheme);
-        localStorage.setItem("orbix_theme", nextTheme);
+        localStorage.setItem("vision_theme", nextTheme);
       });
     }
   }

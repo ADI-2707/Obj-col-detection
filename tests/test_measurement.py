@@ -1,6 +1,6 @@
 import numpy as np
 
-from orbix.measurement import SlabMeasurementEngine, ThicknessMeasurement
+from vision.measurement import SlabMeasurementEngine, ThicknessMeasurement
 
 
 def test_measurement_engine_synthetic_frame():

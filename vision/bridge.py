@@ -12,12 +12,12 @@ from typing import Any
 import cv2
 import numpy as np
 
-from orbix import __version__
-from orbix.capture import FrameSource
-from orbix.config import Config
-from orbix.logger import CSVLogger
-from orbix.measurement import SlabMeasurementEngine, ThicknessMeasurement
-from orbix.paths import get_resource_path
+from vision import __version__
+from vision.capture import FrameSource
+from vision.config import Config
+from vision.logger import CSVLogger
+from vision.measurement import SlabMeasurementEngine, ThicknessMeasurement
+from vision.paths import get_resource_path
 
 
 def encode_frame_to_b64(frame: np.ndarray, quality: int = 75) -> str:
@@ -251,7 +251,7 @@ class BridgeAPI:
 
     def open_pdf_manual(self) -> dict:
         try:
-            from orbix.manual import open_pdf_manual as _open_pdf
+            from vision.manual import open_pdf_manual as _open_pdf
             path = _open_pdf()
             return {"status": "ok", "path": str(path)}
         except Exception as e:
@@ -310,7 +310,9 @@ class WebviewApp:
         import webview
         logging.getLogger("pywebview").setLevel(logging.CRITICAL)
 
-        index_path = get_resource_path("orbix/web/index.html")
+        index_path = get_resource_path("vision/web/index.html")
+        if not index_path.exists():
+            index_path = get_resource_path("orbix/web/index.html")
         if not index_path.exists():
             index_path = Path(__file__).parent / "web" / "index.html"
 

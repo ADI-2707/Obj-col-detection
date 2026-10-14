@@ -2,13 +2,13 @@ import argparse
 import sys
 from pathlib import Path
 
-from orbix.config import Config
-from orbix.pipeline import Pipeline
+from vision.config import Config
+from vision.pipeline import Pipeline
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        prog="orbix",
+        prog="vision",
         description="Vision: Smart Material Management System",
     )
 
@@ -74,7 +74,7 @@ def main(argv: list[str] | None = None):
 
     if config.display:
         try:
-            from orbix.bridge import WebviewApp
+            from vision.bridge import WebviewApp
             app = WebviewApp(config)
             app.run()
             return

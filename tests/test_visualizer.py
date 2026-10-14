@@ -1,8 +1,8 @@
 import cv2
 import numpy as np
 
-from orbix.motion import MotionState
-from orbix.visualizer import Visualizer
+from vision.motion import MotionState
+from vision.visualizer import Visualizer
 
 
 def _blank_frame(width=640, height=480):
@@ -258,7 +258,7 @@ class TestVisualizerCollisionAlerts:
 
 class TestVisualizerHeadingHelper:
     def test_all_eight_compass_directions(self):
-        from orbix.visualizer import _heading_to_compass
+        from vision.visualizer import _heading_to_compass
 
         assert _heading_to_compass(0.0) == "N"
         assert _heading_to_compass(45.0) == "NE"

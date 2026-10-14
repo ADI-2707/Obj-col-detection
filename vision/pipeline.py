@@ -4,14 +4,14 @@ from pathlib import Path
 import cv2
 import numpy as np
 
-from orbix.capture import FrameSource, FrameSourceError
-from orbix.config import Config
-from orbix.detector import Detector
-from orbix.logger import CSVLogger
-from orbix.motion import MotionEstimator
-from orbix.paths import get_resource_path
-from orbix.tracker import ObjectTracker
-from orbix.visualizer import Visualizer
+from vision.capture import FrameSource, FrameSourceError
+from vision.config import Config
+from vision.detector import Detector
+from vision.logger import CSVLogger
+from vision.motion import MotionEstimator
+from vision.paths import get_resource_path
+from vision.tracker import ObjectTracker
+from vision.visualizer import Visualizer
 
 
 class Pipeline:

@@ -3,7 +3,7 @@ requires = ["setuptools>=75.0", "wheel"]
 build-backend = "setuptools.backends._legacy:_Backend"
 
 [project]
-name = "orbix"
+name = "vision"
 version = "1.7.0"
 description = "Vision: Smart Material Management System"
 requires-python = ">=3.11"
@@ -22,11 +22,11 @@ dev = [
 ]
 
 [project.scripts]
-orbix = "orbix.__main__:main"
-vision = "orbix.__main__:main"
+vision = "vision.__main__:main"
+orbix = "vision.__main__:main"
 
 [tool.setuptools.packages.find]
-include = ["orbix*"]
+include = ["vision*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

@@ -15,8 +15,8 @@ from reportlab.platypus import (
     TableStyle,
 )
 
-from orbix import __version__
-from orbix.paths import get_resource_path
+from vision import __version__
+from vision.paths import get_resource_path
 
 
 def get_manual_pdf_path() -> Path:
@@ -69,7 +69,9 @@ def generate_features_manual_pdf(output_path: Path | None = None) -> Path:
         output_path = get_manual_pdf_path()
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
-    logo_path = get_resource_path("orbix/web/systrol_logo.png")
+    logo_path = get_resource_path("vision/web/systrol_logo.png")
+    if not logo_path.exists():
+        logo_path = get_resource_path("orbix/web/systrol_logo.png")
     if not logo_path.exists():
         logo_path = Path(__file__).parent / "web" / "systrol_logo.png"
 

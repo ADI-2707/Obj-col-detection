@@ -2,7 +2,7 @@ import sys
 from pathlib import Path
 from unittest.mock import patch
 
-from orbix.paths import (
+from vision.paths import (
     get_default_log_dir,
     get_default_model_path,
     get_resource_path,
@@ -42,23 +42,23 @@ def test_get_resource_path_frozen_mock(monkeypatch, tmp_path):
 def test_get_user_data_dir(tmp_path, monkeypatch):
     monkeypatch.setenv("LOCALAPPDATA", str(tmp_path))
     monkeypatch.setenv("XDG_DATA_HOME", str(tmp_path))
-    user_dir = get_user_data_dir("OrbixTest")
+    user_dir = get_user_data_dir("VisionTest")
     assert user_dir.exists()
-    assert user_dir == tmp_path / "OrbixTest"
+    assert user_dir == tmp_path / "VisionTest"
 
 
 def test_get_user_data_dir_windows_branch(tmp_path, monkeypatch):
     monkeypatch.setattr(sys, "platform", "win32")
     monkeypatch.setenv("LOCALAPPDATA", str(tmp_path))
-    user_dir = get_user_data_dir("OrbixWin")
-    assert user_dir == tmp_path / "OrbixWin"
+    user_dir = get_user_data_dir("VisionWin")
+    assert user_dir == tmp_path / "VisionWin"
 
 
 def test_get_user_data_dir_linux_branch(tmp_path, monkeypatch):
     monkeypatch.setattr(sys, "platform", "linux")
     monkeypatch.setenv("XDG_DATA_HOME", str(tmp_path))
-    user_dir = get_user_data_dir("OrbixLinux")
-    assert user_dir == tmp_path / "OrbixLinux"
+    user_dir = get_user_data_dir("VisionLinux")
+    assert user_dir == tmp_path / "VisionLinux"
 
 
 def test_get_default_log_dir_in_development():
