@@ -12,6 +12,7 @@
   let isCalibrating = false;
   let calibPoints = [];
   let activeProfileTab = "profile";
+  let showRoiBox = true;
 
   function initClock() {
     const clockEl = document.getElementById("digital-clock");
@@ -476,7 +477,17 @@
     const btnFull = document.getElementById("btn-roi-full");
     const btnDel = document.getElementById("btn-roi-del");
     const btnAdd = document.getElementById("btn-roi-add");
+    const btnToggleRoi = document.getElementById("btn-toggle-roi-box");
     const wrapper = document.getElementById("video-wrapper");
+
+    if (btnToggleRoi) {
+      btnToggleRoi.addEventListener("click", () => {
+        showRoiBox = !showRoiBox;
+        btnToggleRoi.classList.toggle("active", showRoiBox);
+        btnToggleRoi.style.opacity = showRoiBox ? "1" : "0.4";
+        updateCaliperOverlay();
+      });
+    }
 
     if (btnSelect) {
       btnSelect.addEventListener("click", () => {
@@ -760,10 +771,32 @@
     const topY = topRatio * h;
     const botY = botRatio * h;
 
+    let roiHtml = "";
+    if (showRoiBox && (r.w < 1910 || r.h < 1070 || isSelectingRoi || roiDragStart)) {
+      const isSelecting = isSelectingRoi || roiDragStart;
+      const strokeColor = isSelecting ? "#ffb703" : "rgba(148, 163, 184, 0.65)";
+      const handleFill = isSelecting ? "#ffb703" : "#64748b";
+      const tagBg = isSelecting ? "#ffb703" : "#1e293b";
+      const tagText = isSelecting ? "#000000" : "#94a3b8";
+      const labelText = isSelecting ? "EDITING ROI..." : "ROI: SEARCH REGION";
+
+      roiHtml = `
+        <rect x="${rx}" y="${ry}" width="${rw}" height="${rh}" fill="rgba(100, 116, 139, 0.04)" stroke="${strokeColor}" stroke-width="${isSelecting ? 1.8 : 1.2}" stroke-dasharray="6 4"/>
+        <rect x="${rx - 3}" y="${ry - 3}" width="6" height="6" fill="${handleFill}"/>
+        <rect x="${rx + rw - 3}" y="${ry - 3}" width="6" height="6" fill="${handleFill}"/>
+        <rect x="${rx - 3}" y="${ry + rh - 3}" width="6" height="6" fill="${handleFill}"/>
+        <rect x="${rx + rw - 3}" y="${ry + rh - 3}" width="6" height="6" fill="${handleFill}"/>
+        <rect x="${rx}" y="${Math.max(2, ry - 14)}" width="${isSelecting ? 90 : 116}" height="14" fill="${tagBg}" rx="2" opacity="0.9"/>
+        <text x="${rx + 4}" y="${Math.max(12, ry - 3)}" fill="${tagText}" font-size="8.5" font-family="'Segoe UI Mono', monospace" font-weight="bold">${labelText}</text>
+      `;
+    }
+
     let edgeGraphic = "";
     if (showEdges) {
       edgeGraphic = `
-        <line x1="${cx}" y1="${ry}" x2="${cx}" y2="${ry + rh}" stroke="#555555" stroke-width="1" stroke-dasharray="3 3"/>
+        <line x1="${rx}" y1="${topY}" x2="${rx + rw}" y2="${topY}" stroke="#00e5ff" stroke-width="1.8" stroke-dasharray="8 4" opacity="0.85"/>
+        <line x1="${rx}" y1="${botY}" x2="${rx + rw}" y2="${botY}" stroke="#00e5ff" stroke-width="1.8" stroke-dasharray="8 4" opacity="0.85"/>
+        <line x1="${cx}" y1="${topY - 12}" x2="${cx}" y2="${botY + 12}" stroke="#555555" stroke-width="1" stroke-dasharray="3 3"/>
         <line x1="${cx}" y1="${topY}" x2="${cx}" y2="${botY}" stroke="#ffb703" stroke-width="2.5"/>
         <circle cx="${cx}" cy="${topY}" r="4.5" fill="#00e5ff" stroke="#000000" stroke-width="1.5"/>
         <circle cx="${cx}" cy="${botY}" r="4.5" fill="#00e5ff" stroke="#000000" stroke-width="1.5"/>
@@ -771,11 +804,7 @@
     }
 
     svg.innerHTML = `
-      <rect x="${rx}" y="${ry}" width="${rw}" height="${rh}" fill="rgba(0, 229, 255, 0.04)" stroke="#00e5ff" stroke-width="1.4" stroke-dasharray="6 4" opacity="0.85"/>
-      <rect x="${rx - 3}" y="${ry - 3}" width="6" height="6" fill="#00e5ff"/>
-      <rect x="${rx + rw - 3}" y="${ry - 3}" width="6" height="6" fill="#00e5ff"/>
-      <rect x="${rx - 3}" y="${ry + rh - 3}" width="6" height="6" fill="#00e5ff"/>
-      <rect x="${rx + rw - 3}" y="${ry + rh - 3}" width="6" height="6" fill="#00e5ff"/>
+      ${roiHtml}
       ${edgeGraphic}
     `;
 
