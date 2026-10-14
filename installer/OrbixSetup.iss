@@ -1,5 +1,5 @@
 #define MyAppName "Orbix"
-#define MyAppVersion "1.6.0"
+#define MyAppVersion "1.7.0"
 #define MyAppPublisher "Orbix Vision"
 #define MyAppURL "https://github.com/ADI-2707/Orbix"
 #define MyAppExeName "Orbix.exe"
