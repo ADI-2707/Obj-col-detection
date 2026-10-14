@@ -21,6 +21,7 @@ env/
 data/logs/*
 data/reports/*
 data/captures/*
+data/recordings/*
 
 .idea/
 .vscode/
