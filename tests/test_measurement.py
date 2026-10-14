@@ -99,4 +99,37 @@ def test_measurement_empty_or_tiny_frame():
     assert result.is_valid is False
 
 
+def test_measurement_color_spaces():
+    engine = SlabMeasurementEngine()
+    frame = engine.generate_synthetic_slab_frame(width=400, height=300)
+    for space in ["grayscale", "hsv", "lab"]:
+        engine.colour_space = space
+        result = engine.measure(frame)
+        assert isinstance(result, ThicknessMeasurement)
+        assert result.thickness_mm > 0
+
+
+def test_measurement_threshold_modes():
+    engine = SlabMeasurementEngine()
+    frame = engine.generate_synthetic_slab_frame(width=400, height=300)
+    for mode in ["otsu", "adaptive", "manual"]:
+        engine.threshold_mode = mode
+        engine.manual_threshold = 120
+        result = engine.measure(frame)
+        assert isinstance(result, ThicknessMeasurement)
+        assert result.thickness_mm > 0
+
+
+def test_measurement_custom_blur():
+    engine = SlabMeasurementEngine()
+    frame = engine.generate_synthetic_slab_frame(width=400, height=300)
+    engine.blur_ksize = 7
+    result_odd = engine.measure(frame)
+    assert isinstance(result_odd, ThicknessMeasurement)
+
+    engine.blur_ksize = 6
+    result_even = engine.measure(frame)
+    assert isinstance(result_even, ThicknessMeasurement)
+
+
 

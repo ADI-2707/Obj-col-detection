@@ -378,3 +378,14 @@ class TestWebAssets:
         assert "btn-toggle-edges" in content_js
         assert "edgeGraphic" in content_js
 
+    def test_html_contains_roi_toggle_button(self):
+        html_path = Path("orbix/web/index.html")
+        content_html = html_path.read_text(encoding="utf-8")
+        assert "btn-toggle-roi-box" in content_html
+
+    def test_js_contains_roi_toggle_and_label(self):
+        js_path = Path("orbix/web/app.js")
+        content_js = js_path.read_text(encoding="utf-8")
+        assert "btn-toggle-roi-box" in content_js
+        assert "ROI: SEARCH REGION" in content_js
+
