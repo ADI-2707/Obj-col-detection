@@ -979,8 +979,10 @@
             const elVal = document.getElementById("calib-mm-px");
             const elDer = document.getElementById("calib-px-mm");
             const elDate = document.getElementById("calib-date");
+            const statusCalib = document.getElementById("status-calib");
             if (elVal) elVal.textContent = `${newScale.toFixed(5)} mm/px`;
             if (elDer) elDer.textContent = `= ${(1 / newScale).toFixed(5)} px/mm (derived)`;
+            if (statusCalib) statusCalib.textContent = `${newScale.toFixed(5)} mm/px`;
             if (elDate) {
               const d = new Date();
               elDate.textContent = `${String(d.getDate()).padStart(2, "0")}-${String(d.getMonth() + 1).padStart(2, "0")}-${d.getFullYear()} ${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}:${String(d.getSeconds()).padStart(2, "0")}`;
@@ -1538,11 +1540,15 @@
 
     const elVal = document.getElementById("calib-mm-px");
     const elDer = document.getElementById("calib-px-mm");
+    const statusCalib = document.getElementById("status-calib");
     if (elVal && !isCalibrating && payload.calibration) {
       elVal.textContent = `${payload.calibration.toFixed(5)} mm/px`;
     }
     if (elDer && !isCalibrating && payload.calibration > 0) {
       elDer.textContent = `= ${(1 / payload.calibration).toFixed(5)} px/mm (derived)`;
+    }
+    if (statusCalib && payload.calibration) {
+      statusCalib.textContent = `${payload.calibration.toFixed(5)} mm/px`;
     }
 
     const badgeRec = document.getElementById("badge-rec");
