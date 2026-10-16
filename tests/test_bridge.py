@@ -203,6 +203,19 @@ class TestBridgeAPI:
         assert api.engine.threshold_mode == "adaptive"
         assert api.engine.manual_threshold == 140
 
+        res_m = api.set_manual_threshold(155)
+        assert res_m["status"] == "ok"
+        assert res_m["manual_threshold"] == 155
+        assert api.engine.manual_threshold == 155
+
+        res_m_low = api.set_manual_threshold(-10)
+        assert res_m_low["status"] == "ok"
+        assert res_m_low["manual_threshold"] == 1
+
+        res_m_high = api.set_manual_threshold(999)
+        assert res_m_high["status"] == "ok"
+        assert res_m_high["manual_threshold"] == 254
+
         res_b = api.set_blur(7)
         assert res_b["status"] == "ok"
         assert api.engine.blur_ksize == 7
