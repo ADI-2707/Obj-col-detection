@@ -208,6 +208,8 @@ class BridgeAPI:
         except ValueError:
             parsed = url_str
         self.source_label = f"IP: {url_str}"
+        if self.engine is not None and hasattr(self.engine, "reset_state"):
+            self.engine.reset_state()
         if self._app is not None:
             self._app.switch_source(parsed)
         return {"status": "ok", "source": url_str}
@@ -304,6 +306,8 @@ class WebviewApp:
     def switch_source(self, new_source):
         with self._source_lock:
             self._new_source = new_source
+            if self._engine is not None and hasattr(self._engine, "reset_state"):
+                self._engine.reset_state()
 
     def run(self):
         import logging
