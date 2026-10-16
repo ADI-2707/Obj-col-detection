@@ -1492,6 +1492,12 @@ html, body {
   color: var(--text-muted);
 }
 
+#item-help .dropdown-subtext {
+  font-size: 12px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+}
+
 .dropdown-divider {
   height: 1px;
   background: var(--border-card);
