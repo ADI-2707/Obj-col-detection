@@ -13,7 +13,7 @@
   let calibPoints = [];
   let activeProfileTab = "profile";
   let showRoiBox = true;
-  let currentAppVersion = "1.7.0";
+  let currentAppVersion = "1.8.0";
 
   function initClock() {
     const clockEl = document.getElementById("digital-clock");
