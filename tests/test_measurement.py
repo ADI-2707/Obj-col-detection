@@ -132,4 +132,37 @@ def test_measurement_custom_blur():
     assert isinstance(result_even, ThicknessMeasurement)
 
 
+def test_temporal_filter_convergence():
+    engine = SlabMeasurementEngine()
+    frame1 = engine.generate_synthetic_slab_frame(width=400, height=300, frame_number=0)
+    frame2 = engine.generate_synthetic_slab_frame(width=400, height=300, frame_number=1)
+    res1 = engine.measure(frame1)
+    res2 = engine.measure(frame2)
+    assert engine._prev_cur_top is not None
+    assert engine._prev_cur_bot is not None
+    assert abs(res2.top_y - res1.top_y) < 5.0
+    assert abs(res2.bottom_y - res1.bottom_y) < 5.0
+
+
+def test_engine_reset_state():
+    engine = SlabMeasurementEngine()
+    frame = engine.generate_synthetic_slab_frame(width=400, height=300, frame_number=0)
+    engine.measure(frame)
+    assert engine._prev_top_edges is not None
+    engine.reset_state()
+    assert engine._prev_top_edges is None
+    assert engine._prev_bottom_edges is None
+    assert engine._prev_cur_top is None
+
+
+def test_outlier_noise_rejection():
+    engine = SlabMeasurementEngine()
+    frame = engine.generate_synthetic_slab_frame(width=400, height=300, frame_number=0)
+    frame[10:30, 150:250] = (255, 255, 255)
+    result = engine.measure(frame)
+    assert result.is_valid is True
+    assert result.thickness_mm > 0
+    assert result.max_mm < 350.0
+
+
 
