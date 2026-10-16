@@ -168,6 +168,7 @@ class SlabMeasurementEngine:
         w_bot_max = min(rh - 1, cand_bot + 45)
 
         detected_count = 0
+        detected_mask = np.zeros(col_count, dtype=bool)
         step = max(1, col_count // 320)
         for c in range(0, col_count, step):
             col_grad = sobel_y[:, c]
@@ -185,14 +186,18 @@ class SlabMeasurementEngine:
                 ref_bot = _subpixel_peak(-col_grad, cur_bot_idx)
                 top_edges[c : c + step] = ry + ref_top
                 bottom_edges[c : c + step] = ry + ref_bot
+                detected_mask[c : c + step] = True
                 detected_count += 1
-            else:
-                col_thresh = thresh[:, c]
-                nz = np.where(col_thresh > 0)[0]
-                if len(nz) > 10 and (nz[-1] - nz[0]) > rh * 0.15:
-                    top_edges[c : c + step] = ry + nz[0]
-                    bottom_edges[c : c + step] = ry + nz[-1]
-                    detected_count += 1
+
+        if detected_count > 0:
+            if not np.all(detected_mask):
+                valid_indices = np.where(detected_mask)[0]
+                all_indices = np.arange(col_count)
+                top_edges = np.interp(all_indices, valid_indices, top_edges[valid_indices])
+                bottom_edges = np.interp(all_indices, valid_indices, bottom_edges[valid_indices])
+        else:
+            top_edges = np.full(col_count, ry + cand_top, dtype=np.float32)
+            bottom_edges = np.full(col_count, ry + cand_bot, dtype=np.float32)
 
         kernel_size = 9
         if len(top_edges) >= kernel_size:
