@@ -966,8 +966,9 @@
       } else if (calibPoints.length >= 2) {
         const pt1 = calibPoints[0];
         const pt2 = calibPoints[1];
-        const distPx = Math.hypot(pt2.x - pt1.x, pt2.y - pt1.y);
-        const input = window.prompt("Enter known reference distance in millimeters (mm):", "174.0");
+        const tgtInput = document.getElementById("target-thick-input");
+        const promptDefault = (tgtInput && parseFloat(tgtInput.value) > 0) ? parseFloat(tgtInput.value).toFixed(1) : "78.0";
+        const input = window.prompt("Enter known reference distance in millimeters (mm):", promptDefault);
         if (input !== null) {
           const knownMm = parseFloat(input);
           if (knownMm > 0 && distPx > 0) {
