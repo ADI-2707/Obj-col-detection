@@ -17,7 +17,12 @@ from vision.capture import FrameSource
 from vision.config import Config
 from vision.logger import CSVLogger
 from vision.measurement import SlabMeasurementEngine, ThicknessMeasurement
-from vision.paths import get_resource_path
+from vision.paths import (
+    get_default_capture_dir,
+    get_default_recording_dir,
+    get_default_report_dir,
+    get_resource_path,
+)
 
 
 def encode_frame_to_b64(frame: np.ndarray, quality: int = 75) -> str:
@@ -221,8 +226,7 @@ class BridgeAPI:
         return {"status": "ok", "source": url_str}
 
     def capture_image(self) -> dict:
-        cap_dir = Path("data/captures")
-        cap_dir.mkdir(parents=True, exist_ok=True)
+        cap_dir = get_default_capture_dir()
         ts = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
         filepath = cap_dir / f"capture_{ts}.png"
         last_frame = self._app.last_rendered_frame if self._app else None
@@ -232,8 +236,7 @@ class BridgeAPI:
         return {"status": "ok", "captured": True, "path": str(filepath)}
 
     def generate_report(self) -> dict:
-        rep_dir = Path("data/reports")
-        rep_dir.mkdir(parents=True, exist_ok=True)
+        rep_dir = get_default_report_dir()
         ts = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
         filepath = rep_dir / f"slab_report_{ts}.csv"
         m = self._app.last_measurement if self._app else None
@@ -299,8 +302,7 @@ class WebviewApp:
                 self.api.current_recording_path = None
                 return {"status": "ok", "recording": False, "path": p}
             else:
-                rec_dir = Path("data/recordings")
-                rec_dir.mkdir(parents=True, exist_ok=True)
+                rec_dir = get_default_recording_dir()
                 ts = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
                 self._recording_path = str(rec_dir / f"dvr_recording_{ts}.avi")
                 fourcc = cv2.VideoWriter_fourcc(*"MJPG")
