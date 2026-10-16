@@ -81,6 +81,13 @@ class SlabMeasurementEngine:
         self._prev_cur_bot: float | None = None
         self._prev_cur_px: float | None = None
 
+    def reset_state(self):
+        self._prev_top_edges = None
+        self._prev_bottom_edges = None
+        self._prev_cur_top = None
+        self._prev_cur_bot = None
+        self._prev_cur_px = None
+
     def generate_synthetic_slab_frame(
         self, width: int = 1920, height: int = 1080, frame_number: int = 0
     ) -> np.ndarray:
