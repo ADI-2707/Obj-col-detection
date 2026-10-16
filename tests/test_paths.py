@@ -3,8 +3,11 @@ from pathlib import Path
 from unittest.mock import patch
 
 from vision.paths import (
+    get_default_capture_dir,
     get_default_log_dir,
     get_default_model_path,
+    get_default_recording_dir,
+    get_default_report_dir,
     get_resource_path,
     get_user_data_dir,
     is_frozen,
@@ -79,3 +82,20 @@ def test_get_default_log_dir_when_frozen(monkeypatch, tmp_path):
 def test_get_default_model_path():
     path = get_default_model_path()
     assert path.name == "yolov8n.pt"
+
+
+def test_get_default_output_dirs_in_development():
+    assert get_default_report_dir() == Path("data/reports")
+    assert get_default_capture_dir() == Path("data/captures")
+    assert get_default_recording_dir() == Path("data/recordings")
+
+
+def test_get_default_output_dirs_when_frozen(monkeypatch, tmp_path):
+    monkeypatch.setattr(sys, "frozen", True, raising=False)
+    monkeypatch.setattr(sys, "_MEIPASS", str(tmp_path), raising=False)
+    monkeypatch.setenv("LOCALAPPDATA", str(tmp_path))
+    monkeypatch.setenv("XDG_DATA_HOME", str(tmp_path))
+    assert get_default_report_dir() == tmp_path / "Vision" / "reports"
+    assert get_default_capture_dir() == tmp_path / "Vision" / "captures"
+    assert get_default_recording_dir() == tmp_path / "Vision" / "recordings"
+

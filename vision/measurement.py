@@ -39,18 +39,56 @@ class ThicknessMeasurement:
         return [round(float(v * ratio), 1) for v in diff]
 
 
+def _subpixel_peak(grad: np.ndarray, idx: int) -> float:
+    if idx <= 0 or idx >= len(grad) - 1:
+        return float(idx)
+    a = float(grad[idx - 1])
+    b = float(grad[idx])
+    c = float(grad[idx + 1])
+    denom = a - 2.0 * b + c
+    if abs(denom) < 1e-4:
+        return float(idx)
+    delta = 0.5 * (a - c) / denom
+    if abs(delta) > 0.5:
+        return float(idx)
+    return float(idx + delta)
+
+
+def _median_filter_1d(arr: np.ndarray, size: int = 7) -> np.ndarray:
+    if len(arr) < size:
+        return arr
+    pad = size // 2
+    padded = np.pad(arr, pad, mode="edge")
+    windows = np.lib.stride_tricks.sliding_window_view(padded, size)
+    return np.median(windows, axis=1).astype(arr.dtype)
+
+
 class SlabMeasurementEngine:
     DEFAULT_CALIBRATION: float = 0.34757
 
     def __init__(self, calibration_mm_per_px: float = DEFAULT_CALIBRATION):
         self.calibration = calibration_mm_per_px
-        self.target_thickness_mm = 174.0
+        self.target_thickness_mm = 78.0
         self.lower_limit_mm = 10.0
         self.upper_limit_mm = 300.0
         self.colour_space = "grayscale"
         self.threshold_mode = "otsu"
         self.manual_threshold = 128
         self.blur_ksize = 5
+        self._prev_top_edges: np.ndarray | None = None
+        self._prev_bottom_edges: np.ndarray | None = None
+        self._prev_cur_top: float | None = None
+        self._prev_cur_bot: float | None = None
+        self._prev_cur_px: float | None = None
+        self._prev_conf: float = 0.0
+
+    def reset_state(self):
+        self._prev_top_edges = None
+        self._prev_bottom_edges = None
+        self._prev_cur_top = None
+        self._prev_cur_bot = None
+        self._prev_cur_px = None
+        self._prev_conf = 0.0
 
     def generate_synthetic_slab_frame(
         self, width: int = 1920, height: int = 1080, frame_number: int = 0
@@ -138,24 +176,83 @@ class SlabMeasurementEngine:
 
         sobel_y = cv2.Sobel(blurred, cv2.CV_32F, 0, 1, ksize=3)
 
-        detected_count = 0
-        step = max(1, col_count // 320)
-        for c in range(0, col_count, step):
-            col_grad = sobel_y[:, c]
-            min_idx = int(np.argmin(col_grad))
-            max_idx = int(np.argmax(col_grad))
+        row_profile = np.mean(thresh, axis=1)
+        binary_rows = (row_profile > 80).astype(np.uint8).reshape(-1, 1)
+        num_labels, labels, stats, centroids = cv2.connectedComponentsWithStats(binary_rows)
+        best_h = 0
+        cand_top = int(rh * 0.33)
+        cand_bot = int(rh * 0.78)
+        for i in range(1, num_labels):
+            h_stat = int(stats[i, cv2.CC_STAT_HEIGHT])
+            top_stat = int(stats[i, cv2.CC_STAT_TOP])
+            if h_stat > best_h and 20 <= h_stat <= int(rh * 0.75):
+                best_h = h_stat
+                cand_top = top_stat
+                cand_bot = top_stat + h_stat
 
-            if max_idx < min_idx and (min_idx - max_idx) > rh * 0.15:
-                top_edges[c : c + step] = ry + max_idx
-                bottom_edges[c : c + step] = ry + min_idx
-                detected_count += 1
-            else:
-                col_thresh = thresh[:, c]
-                nz = np.where(col_thresh > 0)[0]
-                if len(nz) > 10 and (nz[-1] - nz[0]) > rh * 0.15:
-                    top_edges[c : c + step] = ry + nz[0]
-                    bottom_edges[c : c + step] = ry + nz[-1]
+        has_prev = (
+            self._prev_top_edges is not None
+            and len(self._prev_top_edges) == col_count
+            and self._prev_conf >= 40.0
+        )
+        if has_prev:
+            pt = float(np.median(self._prev_top_edges)) - ry
+            pb = float(np.median(self._prev_bottom_edges)) - ry
+            if 0 <= pt < pb <= rh and (pb - pt) > rh * 0.15:
+                if best_h > 20 and abs(cand_top - pt) < 60:
+                    cand_top = int(0.3 * cand_top + 0.7 * pt)
+                    cand_bot = int(0.3 * cand_bot + 0.7 * pb)
+                elif best_h <= 20:
+                    cand_top = int(pt)
+                    cand_bot = int(pb)
+
+        w_top_min = max(0, cand_top - 45)
+        w_top_max = min(rh - 1, cand_top + 45)
+        w_bot_min = max(0, cand_bot - 45)
+        w_bot_max = min(rh - 1, cand_bot + 45)
+
+        contrast_ok = bool(np.ptp(blurred) >= 20)
+        detected_count = 0
+        detected_mask = np.zeros(col_count, dtype=bool)
+        step = max(1, col_count // 320)
+        if contrast_ok:
+            for c in range(0, col_count, step):
+                col_grad = sobel_y[:, c]
+                if w_top_max > w_top_min and w_bot_max > w_bot_min:
+                    top_sub = int(np.argmax(col_grad[w_top_min:w_top_max]))
+                    bot_sub = int(np.argmin(col_grad[w_bot_min:w_bot_max]))
+                    cur_top_idx = w_top_min + top_sub
+                    cur_bot_idx = w_bot_min + bot_sub
+                else:
+                    cur_bot_idx = int(np.argmin(col_grad))
+                    cur_top_idx = int(np.argmax(col_grad))
+
+                if (
+                    cur_top_idx < cur_bot_idx
+                    and (cur_bot_idx - cur_top_idx) > rh * 0.15
+                    and col_grad[cur_top_idx] > 10.0
+                    and col_grad[cur_bot_idx] < -10.0
+                ):
+                    ref_top = _subpixel_peak(col_grad, cur_top_idx)
+                    ref_bot = _subpixel_peak(-col_grad, cur_bot_idx)
+                    top_edges[c : c + step] = ry + ref_top
+                    bottom_edges[c : c + step] = ry + ref_bot
+                    detected_mask[c : c + step] = True
                     detected_count += 1
+
+        if detected_count > 0:
+            if not np.all(detected_mask):
+                valid_indices = np.where(detected_mask)[0]
+                all_indices = np.arange(col_count)
+                top_edges = np.interp(all_indices, valid_indices, top_edges[valid_indices])
+                bottom_edges = np.interp(all_indices, valid_indices, bottom_edges[valid_indices])
+        else:
+            top_edges = np.full(col_count, ry + cand_top, dtype=np.float32)
+            bottom_edges = np.full(col_count, ry + cand_bot, dtype=np.float32)
+
+        if len(top_edges) >= 7:
+            top_edges = _median_filter_1d(top_edges, 7)
+            bottom_edges = _median_filter_1d(bottom_edges, 7)
 
         kernel_size = 9
         if len(top_edges) >= kernel_size:
@@ -165,6 +262,15 @@ class SlabMeasurementEngine:
             top_edges = np.convolve(top_padded, np.ones(kernel_size) / kernel_size, mode="valid")
             bottom_edges = np.convolve(bottom_padded, np.ones(kernel_size) / kernel_size, mode="valid")
 
+        total_steps = max(1, col_count // step)
+        detection_ratio = (detected_count / total_steps) if contrast_ok else 0.0
+        alpha = 0.35 if detection_ratio > 0.4 else 0.15
+        if self._prev_top_edges is not None and len(self._prev_top_edges) == col_count:
+            top_edges = alpha * top_edges + (1.0 - alpha) * self._prev_top_edges
+            bottom_edges = alpha * bottom_edges + (1.0 - alpha) * self._prev_bottom_edges
+        self._prev_top_edges = top_edges.copy()
+        self._prev_bottom_edges = bottom_edges.copy()
+
         thicknesses_px = np.maximum(1.0, bottom_edges - top_edges)
         thicknesses_mm = thicknesses_px * self.calibration
 
@@ -173,12 +279,14 @@ class SlabMeasurementEngine:
         avg_mm = float(np.mean(thicknesses_mm))
         std_dev_mm = float(np.std(thicknesses_mm))
 
-        total_steps = max(1, col_count // step)
-        detection_ratio = detected_count / total_steps
-        raw_conf = (detection_ratio * 70.0) + max(0.0, 30.0 - std_dev_mm * 5.0)
-        confidence_pct = float(max(0.0, min(100.0, raw_conf)))
+        if not contrast_ok or detected_count == 0:
+            confidence_pct = 0.0
+        else:
+            raw_conf = (detection_ratio * 70.0) + max(0.0, 30.0 - std_dev_mm * 5.0)
+            confidence_pct = float(max(0.0, min(100.0, raw_conf)))
+        self._prev_conf = confidence_pct
 
-        is_valid = confidence_pct >= 40.0 and avg_mm > 20.0
+        is_valid = contrast_ok and confidence_pct >= 40.0 and avg_mm > 20.0
 
         if cursor_x is None or cursor_x < rx or cursor_x >= rx + rw:
             active_x = rx + rw // 2
@@ -188,8 +296,15 @@ class SlabMeasurementEngine:
         col_idx = min(len(top_edges) - 1, max(0, active_x - rx))
         cur_top = float(top_edges[col_idx])
         cur_bot = float(bottom_edges[col_idx])
-        cur_px = float(thicknesses_px[col_idx])
-        cur_mm = float(thicknesses_mm[col_idx])
+
+        if self._prev_cur_top is not None:
+            cur_top = alpha * cur_top + (1.0 - alpha) * self._prev_cur_top
+            cur_bot = alpha * cur_bot + (1.0 - alpha) * self._prev_cur_bot
+        self._prev_cur_top = cur_top
+        self._prev_cur_bot = cur_bot
+
+        cur_px = max(1.0, float(cur_bot - cur_top))
+        cur_mm = float(cur_px * self.calibration)
 
         is_normal = is_valid and (self.lower_limit_mm <= cur_mm <= self.upper_limit_mm)
 

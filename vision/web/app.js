@@ -31,7 +31,11 @@
   }
 
   function initThemeSystem() {
-    const savedTheme = localStorage.getItem("vision_theme") || localStorage.getItem("orbix_theme") || "dark";
+    if (!localStorage.getItem("vision_default_light_v1")) {
+      localStorage.setItem("vision_theme", "light");
+      localStorage.setItem("vision_default_light_v1", "1");
+    }
+    const savedTheme = localStorage.getItem("vision_theme") || "light";
     applyTheme(savedTheme);
 
     const toggleChk = document.getElementById("theme-toggle-chk");
@@ -411,6 +415,7 @@
   function showAboutModal() {
     showScadaModal("ABOUT \u2014 VISION", `
       <h4>VISION &mdash; SMART MATERIAL MANAGEMENT SYSTEM</h4>
+      <p><strong>Author &amp; Systems Engineer:</strong> Aditya Singh</p>
       <p><strong>Version:</strong> ${currentAppVersion} Production Build</p>
       <p><strong>Architecture:</strong> Hybrid Python 3.14 Vision Core + Accelerated Webview SCADA</p>
       <p><strong>Mill Subsystem:</strong> Continuous Casting / Roughing Mill In-line Gauging</p>
@@ -679,7 +684,7 @@
     const upperIn = document.getElementById("lim-upper-input");
 
     function pushLimits() {
-      const t = parseFloat(targetIn ? targetIn.value : 174.0) || 174.0;
+      const t = parseFloat(targetIn ? targetIn.value : 78.0) || 78.0;
       const l = parseFloat(lowerIn ? lowerIn.value : 10.0) || 10.0;
       const u = parseFloat(upperIn ? upperIn.value : 300.0) || 300.0;
       if (window.pywebview && window.pywebview.api && window.pywebview.api.set_limits) {
@@ -687,9 +692,18 @@
       }
     }
 
-    if (targetIn) targetIn.addEventListener("change", pushLimits);
-    if (lowerIn) lowerIn.addEventListener("change", pushLimits);
-    if (upperIn) upperIn.addEventListener("change", pushLimits);
+    if (targetIn) {
+      targetIn.addEventListener("change", pushLimits);
+      targetIn.addEventListener("input", () => { targetIn.dataset.userEdited = "true"; });
+    }
+    if (lowerIn) {
+      lowerIn.addEventListener("change", pushLimits);
+      lowerIn.addEventListener("input", () => { lowerIn.dataset.userEdited = "true"; });
+    }
+    if (upperIn) {
+      upperIn.addEventListener("change", pushLimits);
+      upperIn.addEventListener("input", () => { upperIn.dataset.userEdited = "true"; });
+    }
   }
 
   function initOperationButtons() {
@@ -852,6 +866,16 @@
   function initDetectionControls() {
     const selColor = document.getElementById("select-colour-space");
     const selThresh = document.getElementById("select-thresh-mode");
+    const threshContainer = document.getElementById("manual-thresh-container");
+    const threshSlider = document.getElementById("input-manual-thresh");
+    const threshValBadge = document.getElementById("manual-thresh-val");
+
+    function updateThreshVisibility() {
+      const isManual = selThresh && selThresh.value === "manual";
+      if (threshContainer) {
+        threshContainer.style.display = isManual ? "flex" : "none";
+      }
+    }
 
     if (selColor) {
       selColor.addEventListener("change", (e) => {
@@ -863,8 +887,26 @@
 
     if (selThresh) {
       selThresh.addEventListener("change", (e) => {
+        updateThreshVisibility();
+        const currentVal = threshSlider ? parseInt(threshSlider.value, 10) : 128;
         if (window.pywebview && window.pywebview.api && window.pywebview.api.set_threshold_mode) {
-          window.pywebview.api.set_threshold_mode(e.target.value);
+          window.pywebview.api.set_threshold_mode(e.target.value, currentVal);
+        }
+      });
+      updateThreshVisibility();
+    }
+
+    if (threshSlider) {
+      threshSlider.addEventListener("input", (e) => {
+        const val = parseInt(e.target.value, 10);
+        if (threshValBadge) threshValBadge.textContent = String(val);
+        if (window.pywebview && window.pywebview.api) {
+          if (window.pywebview.api.set_threshold_mode) {
+            window.pywebview.api.set_threshold_mode("manual", val);
+          }
+          if (window.pywebview.api.set_manual_threshold) {
+            window.pywebview.api.set_manual_threshold(val);
+          }
         }
       });
     }
@@ -967,7 +1009,9 @@
         const pt1 = calibPoints[0];
         const pt2 = calibPoints[1];
         const distPx = Math.hypot(pt2.x - pt1.x, pt2.y - pt1.y);
-        const input = window.prompt("Enter known reference distance in millimeters (mm):", "174.0");
+        const tgtInput = document.getElementById("target-thick-input");
+        const promptDefault = (tgtInput && parseFloat(tgtInput.value) > 0) ? parseFloat(tgtInput.value).toFixed(1) : "78.0";
+        const input = window.prompt("Enter known reference distance in millimeters (mm):", promptDefault);
         if (input !== null) {
           const knownMm = parseFloat(input);
           if (knownMm > 0 && distPx > 0) {
@@ -978,8 +1022,10 @@
             const elVal = document.getElementById("calib-mm-px");
             const elDer = document.getElementById("calib-px-mm");
             const elDate = document.getElementById("calib-date");
+            const statusCalib = document.getElementById("status-calib");
             if (elVal) elVal.textContent = `${newScale.toFixed(5)} mm/px`;
             if (elDer) elDer.textContent = `= ${(1 / newScale).toFixed(5)} px/mm (derived)`;
+            if (statusCalib) statusCalib.textContent = `${newScale.toFixed(5)} mm/px`;
             if (elDate) {
               const d = new Date();
               elDate.textContent = `${String(d.getDate()).padStart(2, "0")}-${String(d.getMonth() + 1).padStart(2, "0")}-${d.getFullYear()} ${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}:${String(d.getSeconds()).padStart(2, "0")}`;
@@ -1067,6 +1113,21 @@
     });
   }
 
+  function getOrCreateSvg(svg, tag, id, attrs) {
+    let el = svg.querySelector("#" + id);
+    if (!el) {
+      el = document.createElementNS("http://www.w3.org/2000/svg", tag);
+      el.id = id;
+      if (attrs) {
+        for (const k in attrs) {
+          el.setAttribute(k, attrs[k]);
+        }
+      }
+      svg.appendChild(el);
+    }
+    return el;
+  }
+
   function updateCaliperOverlay() {
     const svg = document.getElementById("caliper-overlay");
     const wrapper = document.getElementById("video-wrapper");
@@ -1092,54 +1153,93 @@
     const topY = vRect.oy + topRatio * vRect.rh;
     const botY = vRect.oy + botRatio * vRect.rh;
 
-    let roiHtml = "";
-    if (showRoiBox && (r.w < 1910 || r.h < 1070 || isSelectingRoi || roiDragStart)) {
-      const isSelecting = isSelectingRoi || roiDragStart;
-      const strokeColor = isSelecting ? "#ffb703" : "rgba(148, 163, 184, 0.65)";
-      const handleFill = isSelecting ? "#ffb703" : "#64748b";
-      const tagBg = isSelecting ? "#ffb703" : "#1e293b";
-      const tagText = isSelecting ? "#000000" : "#94a3b8";
-      const labelText = isSelecting ? "EDITING ROI..." : "ROI: SEARCH REGION";
+    const roiVisible = showRoiBox && (r.w < 1910 || r.h < 1070 || isSelectingRoi || roiDragStart);
+    const isSelecting = isSelectingRoi || roiDragStart;
+    const strokeColor = isSelecting ? "#ffb703" : "rgba(148, 163, 184, 0.65)";
+    const handleFill = isSelecting ? "#ffb703" : "#64748b";
+    const tagBg = isSelecting ? "#ffb703" : "#1e293b";
+    const tagText = isSelecting ? "#000000" : "#94a3b8";
+    const labelText = isSelecting ? "EDITING ROI..." : "ROI: SEARCH REGION";
 
-      roiHtml = `
-        <rect x="${rx}" y="${ry}" width="${rw}" height="${rh}" fill="rgba(100, 116, 139, 0.04)" stroke="${strokeColor}" stroke-width="${isSelecting ? 1.8 : 1.2}" stroke-dasharray="6 4"/>
-        <rect x="${rx - 3}" y="${ry - 3}" width="6" height="6" fill="${handleFill}"/>
-        <rect x="${rx + rw - 3}" y="${ry - 3}" width="6" height="6" fill="${handleFill}"/>
-        <rect x="${rx - 3}" y="${ry + rh - 3}" width="6" height="6" fill="${handleFill}"/>
-        <rect x="${rx + rw - 3}" y="${ry + rh - 3}" width="6" height="6" fill="${handleFill}"/>
-        <rect x="${rx}" y="${Math.max(2, ry - 14)}" width="${isSelecting ? 90 : 116}" height="14" fill="${tagBg}" rx="2" opacity="0.9"/>
-        <text x="${rx + 4}" y="${Math.max(12, ry - 3)}" fill="${tagText}" font-size="8.5" font-family="'Segoe UI Mono', monospace" font-weight="bold">${labelText}</text>
-      `;
-    }
+    const roiBox = getOrCreateSvg(svg, "rect", "svg-roi-box", { fill: "rgba(100, 116, 139, 0.04)", "stroke-dasharray": "6 4" });
+    roiBox.setAttribute("x", rx);
+    roiBox.setAttribute("y", ry);
+    roiBox.setAttribute("width", rw);
+    roiBox.setAttribute("height", rh);
+    roiBox.setAttribute("stroke", strokeColor);
+    roiBox.setAttribute("stroke-width", isSelecting ? "1.8" : "1.2");
+    roiBox.setAttribute("display", roiVisible ? "inline" : "none");
 
-    let edgeGraphic = "";
-    if (showEdges) {
-      edgeGraphic = `
-        <line x1="${rx}" y1="${topY}" x2="${rx + rw}" y2="${topY}" stroke="#00e5ff" stroke-width="1.8" stroke-dasharray="8 4" opacity="0.85"/>
-        <line x1="${rx}" y1="${botY}" x2="${rx + rw}" y2="${botY}" stroke="#00e5ff" stroke-width="1.8" stroke-dasharray="8 4" opacity="0.85"/>
-        <line x1="${cx}" y1="${topY - 12}" x2="${cx}" y2="${botY + 12}" stroke="#555555" stroke-width="1" stroke-dasharray="3 3"/>
-        <line x1="${cx}" y1="${topY}" x2="${cx}" y2="${botY}" stroke="#ffb703" stroke-width="2.5"/>
-        <circle cx="${cx}" cy="${topY}" r="4.5" fill="#00e5ff" stroke="#000000" stroke-width="1.5"/>
-        <circle cx="${cx}" cy="${botY}" r="4.5" fill="#00e5ff" stroke="#000000" stroke-width="1.5"/>
-      `;
-    }
+    const h1 = getOrCreateSvg(svg, "rect", "svg-roi-h1", { width: 6, height: 6 });
+    const h2 = getOrCreateSvg(svg, "rect", "svg-roi-h2", { width: 6, height: 6 });
+    const h3 = getOrCreateSvg(svg, "rect", "svg-roi-h3", { width: 6, height: 6 });
+    const h4 = getOrCreateSvg(svg, "rect", "svg-roi-h4", { width: 6, height: 6 });
+    [h1, h2, h3, h4].forEach((h) => {
+      h.setAttribute("fill", handleFill);
+      h.setAttribute("display", roiVisible ? "inline" : "none");
+    });
+    h1.setAttribute("x", rx - 3); h1.setAttribute("y", ry - 3);
+    h2.setAttribute("x", rx + rw - 3); h2.setAttribute("y", ry - 3);
+    h3.setAttribute("x", rx - 3); h3.setAttribute("y", ry + rh - 3);
+    h4.setAttribute("x", rx + rw - 3); h4.setAttribute("y", ry + rh - 3);
 
-    svg.innerHTML = `
-      ${roiHtml}
-      ${edgeGraphic}
-    `;
+    const tagRect = getOrCreateSvg(svg, "rect", "svg-roi-tag", { height: 14, rx: 2, opacity: "0.9" });
+    tagRect.setAttribute("x", rx);
+    tagRect.setAttribute("y", Math.max(2, ry - 14));
+    tagRect.setAttribute("width", isSelecting ? 90 : 116);
+    tagRect.setAttribute("fill", tagBg);
+    tagRect.setAttribute("display", roiVisible ? "inline" : "none");
 
+    const tagTxt = getOrCreateSvg(svg, "text", "svg-roi-txt", { "font-size": "8.5", "font-family": "'Segoe UI Mono', monospace", "font-weight": "bold" });
+    tagTxt.setAttribute("x", rx + 4);
+    tagTxt.setAttribute("y", Math.max(12, ry - 3));
+    tagTxt.setAttribute("fill", tagText);
+    tagTxt.textContent = labelText;
+    tagTxt.setAttribute("display", roiVisible ? "inline" : "none");
+
+    const edgeTop = getOrCreateSvg(svg, "line", "svg-edge-top", { stroke: "#00e5ff", "stroke-width": "1.8", "stroke-dasharray": "8 4", opacity: "0.85" });
+    const edgeBot = getOrCreateSvg(svg, "line", "svg-edge-bot", { stroke: "#00e5ff", "stroke-width": "1.8", "stroke-dasharray": "8 4", opacity: "0.85" });
+    const guideV = getOrCreateSvg(svg, "line", "svg-guide-v", { stroke: "#555555", "stroke-width": "1", "stroke-dasharray": "3 3" });
+    const caliperV = getOrCreateSvg(svg, "line", "svg-caliper-v", { stroke: "#ffb703", "stroke-width": "2.5" });
+    const dotTop = getOrCreateSvg(svg, "circle", "svg-dot-top", { r: "4.5", fill: "#00e5ff", stroke: "#000000", "stroke-width": "1.5" });
+    const dotBot = getOrCreateSvg(svg, "circle", "svg-dot-bot", { r: "4.5", fill: "#00e5ff", stroke: "#000000", "stroke-width": "1.5" });
+
+    const edgeGraphic = showEdges ? "inline" : "none";
+    [edgeTop, edgeBot, guideV, caliperV, dotTop, dotBot].forEach(el => el.setAttribute("display", edgeGraphic));
+
+    edgeTop.setAttribute("x1", rx); edgeTop.setAttribute("y1", topY);
+    edgeTop.setAttribute("x2", rx + rw); edgeTop.setAttribute("y2", topY);
+
+    edgeBot.setAttribute("x1", rx); edgeBot.setAttribute("y1", botY);
+    edgeBot.setAttribute("x2", rx + rw); edgeBot.setAttribute("y2", botY);
+
+    guideV.setAttribute("x1", cx); guideV.setAttribute("y1", topY - 12);
+    guideV.setAttribute("x2", cx); guideV.setAttribute("y2", botY + 12);
+
+    caliperV.setAttribute("x1", cx); caliperV.setAttribute("y1", topY);
+    caliperV.setAttribute("x2", cx); caliperV.setAttribute("y2", botY);
+
+    dotTop.setAttribute("cx", cx); dotTop.setAttribute("cy", topY);
+    dotBot.setAttribute("cx", cx); dotBot.setAttribute("cy", botY);
+
+    const calibG = getOrCreateSvg(svg, "g", "svg-calib-group");
     if (isCalibrating && calibPoints.length > 0) {
+      calibG.setAttribute("display", "inline");
+      let calibHtml = "";
       calibPoints.forEach((pt, idx) => {
         const sx = vRect.ox + (pt.x / 1920) * vRect.rw;
         const sy = vRect.oy + (pt.y / 1080) * vRect.rh;
-        svg.innerHTML += `
+        calibHtml += `
           <circle cx="${sx}" cy="${sy}" r="6" fill="#ffb703" stroke="#000000" stroke-width="2"/>
           <line x1="${sx - 12}" y1="${sy}" x2="${sx + 12}" y2="${sy}" stroke="#ffb703" stroke-width="1.5"/>
           <line x1="${sx}" y1="${sy - 12}" x2="${sx}" y2="${sy + 12}" stroke="#ffb703" stroke-width="1.5"/>
           <text x="${sx + 10}" y="${sy - 8}" fill="#ffb703" font-size="11" font-weight="bold">PT ${idx + 1}</text>
         `;
       });
+      calibG.innerHTML = calibHtml;
+    } else {
+      calibG.setAttribute("display", "none");
+      calibG.innerHTML = "";
     }
 
     const topLabel = document.getElementById("label-top-edge");
@@ -1226,7 +1326,9 @@
       ctx.fillText(String(dist), x - 8, h - 6);
     }
 
-    const targetY = padTop + plotH * (1.0 - 174.0 / 300.0);
+    const tgtEl = document.getElementById("target-thick-input");
+    const tgtVal = (tgtEl && parseFloat(tgtEl.value) > 0) ? parseFloat(tgtEl.value) : 78.0;
+    const targetY = padTop + plotH * (1.0 - Math.min(300, tgtVal) / 300.0);
     ctx.strokeStyle = targetStroke;
     ctx.lineWidth = 1.2;
     ctx.beginPath();
@@ -1256,7 +1358,9 @@
       ctx.beginPath();
       for (let i = 0; i < points.length; i++) {
         const x = padLeft + (plotW / (points.length - 1)) * i;
-        const normY = Math.max(0, Math.min(300, points[i])) / 300.0;
+        const rawPt = Number(points[i]);
+        const cleanPt = Number.isFinite(rawPt) ? rawPt : tgtVal;
+        const normY = Math.max(0, Math.min(300, cleanPt)) / 300.0;
         const y = padTop + plotH * (1.0 - normY);
         if (i === 0) ctx.moveTo(x, y);
         else ctx.lineTo(x, y);
@@ -1281,8 +1385,8 @@
     ctx.stroke();
     ctx.setLineDash([]);
 
-    let curThick = (data && data.thickness_mm) ? data.thickness_mm : 174.2;
-    const scrubberY = padTop + plotH * (1.0 - Math.min(300, curThick) / 300.0);
+    let curThick = (data && Number.isFinite(Number(data.thickness_mm))) ? Number(data.thickness_mm) : tgtVal;
+    const scrubberY = padTop + plotH * (1.0 - Math.max(0, Math.min(300, curThick)) / 300.0);
     ctx.fillStyle = scrubberStroke;
     ctx.beginPath();
     ctx.arc(scrubberX, scrubberY, 4, 0, Math.PI * 2);
@@ -1353,6 +1457,25 @@
     const stream = document.getElementById("video-stream");
     if (stream && payload.frame_b64) {
       stream.src = "data:image/jpeg;base64," + payload.frame_b64;
+    }
+
+    if (payload.target_mm !== undefined) {
+      const tgtIn = document.getElementById("lim-target-input");
+      if (tgtIn && !tgtIn.dataset.userEdited && document.activeElement !== tgtIn) {
+        tgtIn.value = Number(payload.target_mm).toFixed(1);
+      }
+    }
+    if (payload.lower_limit_mm !== undefined) {
+      const lowIn = document.getElementById("lim-lower-input");
+      if (lowIn && !lowIn.dataset.userEdited && document.activeElement !== lowIn) {
+        lowIn.value = Number(payload.lower_limit_mm).toFixed(1);
+      }
+    }
+    if (payload.upper_limit_mm !== undefined) {
+      const upIn = document.getElementById("lim-upper-input");
+      if (upIn && !upIn.dataset.userEdited && document.activeElement !== upIn) {
+        upIn.value = Number(payload.upper_limit_mm).toFixed(1);
+      }
     }
 
     const readoutMm = document.getElementById("readout-mm");
@@ -1483,11 +1606,15 @@
 
     const elVal = document.getElementById("calib-mm-px");
     const elDer = document.getElementById("calib-px-mm");
+    const statusCalib = document.getElementById("status-calib");
     if (elVal && !isCalibrating && payload.calibration) {
       elVal.textContent = `${payload.calibration.toFixed(5)} mm/px`;
     }
     if (elDer && !isCalibrating && payload.calibration > 0) {
       elDer.textContent = `= ${(1 / payload.calibration).toFixed(5)} px/mm (derived)`;
+    }
+    if (statusCalib && payload.calibration) {
+      statusCalib.textContent = `${payload.calibration.toFixed(5)} mm/px`;
     }
 
     const badgeRec = document.getElementById("badge-rec");

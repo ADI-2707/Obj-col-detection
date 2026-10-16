@@ -45,4 +45,33 @@ def get_default_log_dir() -> Path:
         log_dir = get_user_data_dir() / "logs"
     else:
         log_dir = Path("data/logs")
+    log_dir.mkdir(parents=True, exist_ok=True)
     return log_dir
+
+
+def get_default_report_dir() -> Path:
+    if is_frozen():
+        report_dir = get_user_data_dir() / "reports"
+    else:
+        report_dir = Path("data/reports")
+    report_dir.mkdir(parents=True, exist_ok=True)
+    return report_dir
+
+
+def get_default_capture_dir() -> Path:
+    if is_frozen():
+        capture_dir = get_user_data_dir() / "captures"
+    else:
+        capture_dir = Path("data/captures")
+    capture_dir.mkdir(parents=True, exist_ok=True)
+    return capture_dir
+
+
+def get_default_recording_dir() -> Path:
+    if is_frozen():
+        rec_dir = get_user_data_dir() / "recordings"
+    else:
+        rec_dir = Path("data/recordings")
+    rec_dir.mkdir(parents=True, exist_ok=True)
+    return rec_dir
+

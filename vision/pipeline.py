@@ -57,7 +57,7 @@ class Pipeline:
             if sys.platform == "win32":
                 try:
                     import ctypes
-                    icon_path = str(get_resource_path("assets/Vision_logo.ico")) if get_resource_path("assets/Vision_logo.ico").exists() else str(get_resource_path("assets/orbix_ico_logo.ico"))
+                    icon_path = str(get_resource_path("assets/Vision_logo.ico"))
                     if Path(icon_path).exists():
                         hwnd = ctypes.windll.user32.FindWindowW(None, self.WINDOW_NAME)
                         if hwnd:

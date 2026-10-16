@@ -69,11 +69,7 @@ class Visualizer:
         self.cursor_y = 622
         self.measurement_engine = SlabMeasurementEngine()
         self._systrol_logo = self._load_logo("assets/systrol_ico_logo.ico")
-        logo = self._load_logo("assets/Vision_logo.ico")
-        if logo is None:
-            logo = self._load_logo("assets/orbix_ico_logo.ico")
-        self._orbix_logo = logo
-        self._vision_logo = logo
+        self._vision_logo = self._load_logo("assets/Vision_logo.ico")
 
     def _load_logo(self, relative_path: str) -> np.ndarray | None:
         try:
@@ -236,7 +232,7 @@ class Visualizer:
         cv2.rectangle(canvas, (0, 0), (width, 48), self.COLOR_HEADER_BG, cv2.FILLED)
         cv2.line(canvas, (0, 48), (width, 48), self.COLOR_BORDER, 1)
 
-        self._overlay_icon(canvas, self._orbix_logo, 14, 12, 24)
+        self._overlay_icon(canvas, self._vision_logo, 14, 12, 24)
 
         title = f"VISION \u2014 SMART MATERIAL MANAGEMENT SYSTEM  v{__version__}"
         cv2.putText(canvas, title, (44, 25), self.FONT, 0.52, self.COLOR_TEXT_MAIN, 1, cv2.LINE_AA)

@@ -300,12 +300,69 @@ html, body {
   padding: 6px 8px;
 }
 
+.sidebar-left .card:nth-child(1) .source-btn-grid {
+  flex: 2;
+  min-height: 56px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-rows: 1fr 1fr;
+  gap: 6px;
+  width: 100%;
+}
+
+.sidebar-left .card:nth-child(1) .source-btn-grid .btn {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 6px;
+  font-size: 10px;
+  white-space: nowrap;
+  box-sizing: border-box;
+}
+
 .sidebar-left .card:nth-child(1) .source-status-text {
-  margin-top: auto;
+  margin-top: 0;
+  flex-shrink: 0;
+}
+
+.sidebar-left .card:nth-child(2) .roi-chip {
+  flex: 1;
+  min-height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 8px;
+  font-size: 10px;
+}
+
+.sidebar-left .card:nth-child(2) .coord-grid {
+  flex: 2;
+  min-height: 52px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 4px;
+}
+
+.sidebar-left .card:nth-child(2) .coord-item {
+  height: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 6px;
+  font-size: 9.5px;
 }
 
 .sidebar-left .card:nth-child(2) .coord-area {
-  margin-top: auto;
+  margin-top: 0;
+  flex-shrink: 0;
+  min-height: 22px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 6px;
 }
 
 .sidebar-left .card:nth-child(3) .blur-meta {
@@ -451,10 +508,56 @@ html, body {
   transition: border-color 0.15s;
 }
 
-.text-input:focus,
-.select-input:focus {
-  border-color: var(--border-focus);
+.thresh-slider-box {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  background: var(--bg-card-sub);
+  border: 1px solid var(--border-sub);
+  border-radius: 3px;
+  padding: 5px 8px;
+}
+
+.thresh-slider-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.thresh-val-badge {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--cyan-accent);
+}
+
+.thresh-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--bg-input);
+  border: 1px solid var(--border-card);
+  outline: none;
+  cursor: pointer;
+}
+
+.thresh-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--cyan-accent);
+  border: 2px solid #ffffff;
+  cursor: pointer;
   box-shadow: 0 0 6px var(--cyan-glow);
+  transition: transform 0.1s ease;
+}
+
+.thresh-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
 }
 
 .btn {
@@ -513,12 +616,12 @@ html, body {
 
 .btn-outline-alt {
   background: var(--bg-card-sub);
-  color: var(--text-muted);
+  color: var(--text-main);
   border-color: var(--border-sub);
 }
 
 .btn-outline-alt:hover {
-  color: var(--text-main);
+  color: var(--cyan-accent);
   border-color: var(--border-focus);
 }
 
@@ -548,15 +651,22 @@ html, body {
   font-size: 10px;
   font-weight: 700;
   background: var(--bg-card-sub);
-  color: var(--text-muted);
+  color: var(--text-main);
   border: 1px solid var(--border-sub);
   border-radius: 2px;
   cursor: pointer;
+  transition: all 0.15s ease;
 }
 
 .btn-mini:hover {
-  color: var(--text-main);
+  color: var(--cyan-accent);
   border-color: var(--border-focus);
+}
+
+#btn-roi-del:hover {
+  color: #ff334b !important;
+  border-color: #ff334b;
+  background: rgba(255, 51, 75, 0.12);
 }
 
 .btn-grid-2 {
@@ -792,6 +902,8 @@ html, body {
   height: 100%;
   pointer-events: none;
   z-index: 5;
+  will-change: transform;
+  transform: translateZ(0);
 }
 
 .video-hud-overlay {
@@ -1430,6 +1542,12 @@ html, body {
   color: var(--text-muted);
 }
 
+#item-help .dropdown-subtext {
+  font-size: 12px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+}
+
 .dropdown-divider {
   height: 1px;
   background: var(--border-card);
@@ -1939,10 +2057,23 @@ input:checked + .slider:before {
   line-height: 1;
   cursor: pointer;
   padding: 0 4px;
+  transition: all 0.15s ease;
 }
 
 .scada-modal-close:hover {
-  color: var(--red-alert);
+  color: #ff334b;
+  transform: scale(1.15);
+}
+
+#scada-modal-ok {
+  transition: all 0.15s ease;
+}
+
+#scada-modal-ok:hover {
+  color: #ff334b;
+  border-color: #ff334b;
+  background: rgba(255, 51, 75, 0.15);
+  box-shadow: 0 0 8px rgba(255, 51, 75, 0.3);
 }
 
 .scada-modal-body {
@@ -2186,6 +2317,24 @@ input:checked + .slider:before {
 [data-theme="light"] .scada-modal-footer {
   background: #f8fafc;
   border-top: 1px solid #e2e8f0;
+}
+
+[data-theme="light"] #btn-roi-del:hover {
+  color: #dc2626 !important;
+  border-color: #dc2626;
+  background: rgba(220, 38, 38, 0.1);
+}
+
+[data-theme="light"] .scada-modal-close:hover {
+  color: #dc2626;
+  transform: scale(1.15);
+}
+
+[data-theme="light"] #scada-modal-ok:hover {
+  color: #dc2626;
+  border-color: #dc2626;
+  background: rgba(220, 38, 38, 0.08);
+  box-shadow: 0 1px 4px rgba(220, 38, 38, 0.2);
 }
 
 

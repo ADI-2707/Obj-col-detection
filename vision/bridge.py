@@ -17,7 +17,12 @@ from vision.capture import FrameSource
 from vision.config import Config
 from vision.logger import CSVLogger
 from vision.measurement import SlabMeasurementEngine, ThicknessMeasurement
-from vision.paths import get_resource_path
+from vision.paths import (
+    get_default_capture_dir,
+    get_default_recording_dir,
+    get_default_report_dir,
+    get_resource_path,
+)
 
 
 def encode_frame_to_b64(frame: np.ndarray, quality: int = 75) -> str:
@@ -131,6 +136,10 @@ class BridgeAPI:
         self.engine.target_thickness_mm = float(target)
         self.engine.lower_limit_mm = float(lower)
         self.engine.upper_limit_mm = float(upper)
+        if self._app is not None and hasattr(self._app, "_engine") and self._app._engine is not None:
+            self._app._engine.target_thickness_mm = float(target)
+            self._app._engine.lower_limit_mm = float(lower)
+            self._app._engine.upper_limit_mm = float(upper)
         return {"status": "ok", "target": target, "lower": lower, "upper": upper}
 
     def set_roi(self, x: int, y: int, w: int, h: int) -> dict:
@@ -143,8 +152,12 @@ class BridgeAPI:
 
     def set_threshold_mode(self, mode: str, manual_val: int = 128) -> dict:
         self.engine.threshold_mode = str(mode).lower()
-        self.engine.manual_threshold = int(manual_val)
+        self.engine.manual_threshold = max(1, min(254, int(manual_val)))
         return {"status": "ok", "threshold_mode": self.engine.threshold_mode}
+
+    def set_manual_threshold(self, value: int) -> dict:
+        self.engine.manual_threshold = max(1, min(254, int(value)))
+        return {"status": "ok", "manual_threshold": self.engine.manual_threshold}
 
     def set_blur(self, ksize: int) -> dict:
         self.engine.blur_ksize = max(1, int(ksize))
@@ -154,6 +167,8 @@ class BridgeAPI:
         val = float(mm_per_px)
         if val > 0:
             self.engine.calibration = val
+            if self._app is not None and hasattr(self._app, "_engine") and self._app._engine is not None:
+                self._app._engine.calibration = val
             return {"status": "ok", "calibration": self.engine.calibration}
         return {"status": "error", "message": "Invalid scale"}
 
@@ -208,13 +223,14 @@ class BridgeAPI:
         except ValueError:
             parsed = url_str
         self.source_label = f"IP: {url_str}"
+        if self.engine is not None and hasattr(self.engine, "reset_state"):
+            self.engine.reset_state()
         if self._app is not None:
             self._app.switch_source(parsed)
         return {"status": "ok", "source": url_str}
 
     def capture_image(self) -> dict:
-        cap_dir = Path("data/captures")
-        cap_dir.mkdir(parents=True, exist_ok=True)
+        cap_dir = get_default_capture_dir()
         ts = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
         filepath = cap_dir / f"capture_{ts}.png"
         last_frame = self._app.last_rendered_frame if self._app else None
@@ -224,8 +240,7 @@ class BridgeAPI:
         return {"status": "ok", "captured": True, "path": str(filepath)}
 
     def generate_report(self) -> dict:
-        rep_dir = Path("data/reports")
-        rep_dir.mkdir(parents=True, exist_ok=True)
+        rep_dir = get_default_report_dir()
         ts = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
         filepath = rep_dir / f"slab_report_{ts}.csv"
         m = self._app.last_measurement if self._app else None
@@ -291,8 +306,7 @@ class WebviewApp:
                 self.api.current_recording_path = None
                 return {"status": "ok", "recording": False, "path": p}
             else:
-                rec_dir = Path("data/recordings")
-                rec_dir.mkdir(parents=True, exist_ok=True)
+                rec_dir = get_default_recording_dir()
                 ts = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
                 self._recording_path = str(rec_dir / f"dvr_recording_{ts}.avi")
                 fourcc = cv2.VideoWriter_fourcc(*"MJPG")
@@ -304,6 +318,8 @@ class WebviewApp:
     def switch_source(self, new_source):
         with self._source_lock:
             self._new_source = new_source
+            if self._engine is not None and hasattr(self._engine, "reset_state"):
+                self._engine.reset_state()
 
     def run(self):
         import logging
@@ -311,8 +327,6 @@ class WebviewApp:
         logging.getLogger("pywebview").setLevel(logging.CRITICAL)
 
         index_path = get_resource_path("vision/web/index.html")
-        if not index_path.exists():
-            index_path = get_resource_path("orbix/web/index.html")
         if not index_path.exists():
             index_path = Path(__file__).parent / "web" / "index.html"
 
@@ -332,7 +346,7 @@ class WebviewApp:
             min_size=(1024, 680),
             resizable=True,
             fullscreen=False,
-            background_color="#000000",
+            background_color="#f1f5f9",
         )
         self.api._window = self._window
         self._window.events.shown += self._apply_window_icon
@@ -354,7 +368,7 @@ class WebviewApp:
     def _apply_window_icon(self, *args):
         if sys.platform != "win32":
             return
-        icon_path = str(get_resource_path("assets/Vision_logo.ico")) if get_resource_path("assets/Vision_logo.ico").exists() else str(get_resource_path("assets/orbix_ico_logo.ico"))
+        icon_path = str(get_resource_path("assets/Vision_logo.ico"))
         if not Path(icon_path).exists():
             return
 
@@ -516,6 +530,9 @@ class WebviewApp:
                 "fps": round(fps, 1),
                 "processing_ms": int(round(proc_ms)),
                 "calibration": self._engine.calibration,
+                "target_mm": getattr(self._engine, "target_thickness_mm", 78.0),
+                "lower_limit_mm": getattr(self._engine, "lower_limit_mm", 10.0),
+                "upper_limit_mm": getattr(self._engine, "upper_limit_mm", 300.0),
                 "cursor_x": self.api.cursor_x,
                 "cursor_y": self.api.cursor_y,
                 "source_name": self.api.source_label,

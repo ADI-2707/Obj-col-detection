@@ -23,7 +23,6 @@ dev = [
 
 [project.scripts]
 vision = "vision.__main__:main"
-orbix = "vision.__main__:main"
 
 [tool.setuptools.packages.find]
 include = ["vision*"]
