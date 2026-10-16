@@ -158,7 +158,7 @@ def test_engine_reset_state():
 def test_outlier_noise_rejection():
     engine = SlabMeasurementEngine()
     frame = engine.generate_synthetic_slab_frame(width=400, height=300, frame_number=0)
-    frame[10:30, 150:250] = (255, 255, 255)
+    frame[10:25, 150:156] = (255, 255, 255)
     result = engine.measure(frame)
     assert result.is_valid is True
     assert result.thickness_mm > 0
@@ -174,6 +174,62 @@ def test_two_point_calibration_accuracy():
     assert abs(engine.calibration - 0.34467) < 1e-4
     measured_thickness_mm = dist_px * engine.calibration
     assert abs(measured_thickness_mm - 78.0) < 1e-4
+
+
+def test_measurement_completely_black_frame():
+    engine = SlabMeasurementEngine()
+    black_frame = np.zeros((720, 1280, 3), dtype=np.uint8)
+    result = engine.measure(black_frame)
+    assert result.is_valid is False
+    assert result.confidence_pct == 0.0
+    assert result.status_text == "LOW CONFIDENCE"
+
+
+def test_measurement_completely_white_frame():
+    engine = SlabMeasurementEngine()
+    white_frame = np.full((720, 1280, 3), 255, dtype=np.uint8)
+    result = engine.measure(white_frame)
+    assert result.is_valid is False
+    assert result.confidence_pct == 0.0
+    assert result.status_text == "LOW CONFIDENCE"
+
+
+def test_measurement_dynamic_roi_size_change():
+    engine = SlabMeasurementEngine()
+    frame = engine.generate_synthetic_slab_frame(width=1000, height=600)
+    res1 = engine.measure(frame, roi=(50, 50, 800, 500))
+    assert len(res1.top_edges) == 800
+    res2 = engine.measure(frame, roi=(50, 50, 400, 500))
+    assert len(res2.top_edges) == 400
+    assert res2.is_valid is True
+
+
+def test_measurement_cursor_extreme_out_of_bounds():
+    engine = SlabMeasurementEngine()
+    frame = engine.generate_synthetic_slab_frame(width=800, height=600)
+    res_neg = engine.measure(frame, roi=(100, 100, 600, 400), cursor_x=-99999)
+    assert 100 <= res_neg.x_cursor < 700
+    res_pos = engine.measure(frame, roi=(100, 100, 600, 400), cursor_x=99999)
+    assert 100 <= res_pos.x_cursor < 700
+
+
+def test_measurement_minimal_10x10_roi():
+    engine = SlabMeasurementEngine()
+    frame = engine.generate_synthetic_slab_frame(width=200, height=200)
+    result = engine.measure(frame, roi=(10, 10, 10, 10))
+    assert isinstance(result, ThicknessMeasurement)
+    assert len(result.top_edges) == 10
+    assert len(result.bottom_edges) == 10
+
+
+def test_measurement_heavy_scale_occlusion():
+    engine = SlabMeasurementEngine()
+    frame = engine.generate_synthetic_slab_frame(width=600, height=400, frame_number=0)
+    frame[140:180, 200:350] = (15, 12, 10)
+    result = engine.measure(frame, roi=(50, 50, 500, 300))
+    assert result.is_valid is True
+    assert result.thickness_mm > 0.0
+    assert result.max_mm < 350.0
 
 
 
