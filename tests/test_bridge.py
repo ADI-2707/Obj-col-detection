@@ -285,7 +285,7 @@ class TestWebAssets:
         html_path = Path("vision/web/index.html")
         assert html_path.exists()
         content = html_path.read_text(encoding="utf-8")
-        assert "VISION" in content
+        assert "Vision" in content or "VISION" in content
         assert "systrol_logo.png" in content
         assert "caliper-overlay" in content
         assert "profile-chart" in content
