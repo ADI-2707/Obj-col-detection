@@ -39,6 +39,21 @@ class ThicknessMeasurement:
         return [round(float(v * ratio), 1) for v in diff]
 
 
+def _subpixel_peak(grad: np.ndarray, idx: int) -> float:
+    if idx <= 0 or idx >= len(grad) - 1:
+        return float(idx)
+    a = float(grad[idx - 1])
+    b = float(grad[idx])
+    c = float(grad[idx + 1])
+    denom = a - 2.0 * b + c
+    if abs(denom) < 1e-4:
+        return float(idx)
+    delta = 0.5 * (a - c) / denom
+    if abs(delta) > 0.5:
+        return float(idx)
+    return float(idx + delta)
+
+
 class SlabMeasurementEngine:
     DEFAULT_CALIBRATION: float = 0.34757
 
@@ -166,8 +181,10 @@ class SlabMeasurementEngine:
                 cur_top_idx = int(np.argmax(col_grad))
 
             if cur_top_idx < cur_bot_idx and (cur_bot_idx - cur_top_idx) > rh * 0.15:
-                top_edges[c : c + step] = ry + cur_top_idx
-                bottom_edges[c : c + step] = ry + cur_bot_idx
+                ref_top = _subpixel_peak(col_grad, cur_top_idx)
+                ref_bot = _subpixel_peak(-col_grad, cur_bot_idx)
+                top_edges[c : c + step] = ry + ref_top
+                bottom_edges[c : c + step] = ry + ref_bot
                 detected_count += 1
             else:
                 col_thresh = thresh[:, c]
