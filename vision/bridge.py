@@ -131,6 +131,10 @@ class BridgeAPI:
         self.engine.target_thickness_mm = float(target)
         self.engine.lower_limit_mm = float(lower)
         self.engine.upper_limit_mm = float(upper)
+        if self._app is not None and hasattr(self._app, "_engine") and self._app._engine is not None:
+            self._app._engine.target_thickness_mm = float(target)
+            self._app._engine.lower_limit_mm = float(lower)
+            self._app._engine.upper_limit_mm = float(upper)
         return {"status": "ok", "target": target, "lower": lower, "upper": upper}
 
     def set_roi(self, x: int, y: int, w: int, h: int) -> dict:
@@ -522,6 +526,9 @@ class WebviewApp:
                 "fps": round(fps, 1),
                 "processing_ms": int(round(proc_ms)),
                 "calibration": self._engine.calibration,
+                "target_mm": getattr(self._engine, "target_thickness_mm", 78.0),
+                "lower_limit_mm": getattr(self._engine, "lower_limit_mm", 10.0),
+                "upper_limit_mm": getattr(self._engine, "upper_limit_mm", 300.0),
                 "cursor_x": self.api.cursor_x,
                 "cursor_y": self.api.cursor_y,
                 "source_name": self.api.source_label,

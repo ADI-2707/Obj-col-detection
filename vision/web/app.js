@@ -679,7 +679,7 @@
     const upperIn = document.getElementById("lim-upper-input");
 
     function pushLimits() {
-      const t = parseFloat(targetIn ? targetIn.value : 174.0) || 174.0;
+      const t = parseFloat(targetIn ? targetIn.value : 78.0) || 78.0;
       const l = parseFloat(lowerIn ? lowerIn.value : 10.0) || 10.0;
       const u = parseFloat(upperIn ? upperIn.value : 300.0) || 300.0;
       if (window.pywebview && window.pywebview.api && window.pywebview.api.set_limits) {
@@ -687,9 +687,18 @@
       }
     }
 
-    if (targetIn) targetIn.addEventListener("change", pushLimits);
-    if (lowerIn) lowerIn.addEventListener("change", pushLimits);
-    if (upperIn) upperIn.addEventListener("change", pushLimits);
+    if (targetIn) {
+      targetIn.addEventListener("change", pushLimits);
+      targetIn.addEventListener("input", () => { targetIn.dataset.userEdited = "true"; });
+    }
+    if (lowerIn) {
+      lowerIn.addEventListener("change", pushLimits);
+      lowerIn.addEventListener("input", () => { lowerIn.dataset.userEdited = "true"; });
+    }
+    if (upperIn) {
+      upperIn.addEventListener("change", pushLimits);
+      upperIn.addEventListener("input", () => { upperIn.dataset.userEdited = "true"; });
+    }
   }
 
   function initOperationButtons() {
@@ -1415,6 +1424,25 @@
     const stream = document.getElementById("video-stream");
     if (stream && payload.frame_b64) {
       stream.src = "data:image/jpeg;base64," + payload.frame_b64;
+    }
+
+    if (payload.target_mm !== undefined) {
+      const tgtIn = document.getElementById("lim-target-input");
+      if (tgtIn && !tgtIn.dataset.userEdited && document.activeElement !== tgtIn) {
+        tgtIn.value = Number(payload.target_mm).toFixed(1);
+      }
+    }
+    if (payload.lower_limit_mm !== undefined) {
+      const lowIn = document.getElementById("lim-lower-input");
+      if (lowIn && !lowIn.dataset.userEdited && document.activeElement !== lowIn) {
+        lowIn.value = Number(payload.lower_limit_mm).toFixed(1);
+      }
+    }
+    if (payload.upper_limit_mm !== undefined) {
+      const upIn = document.getElementById("lim-upper-input");
+      if (upIn && !upIn.dataset.userEdited && document.activeElement !== upIn) {
+        upIn.value = Number(payload.upper_limit_mm).toFixed(1);
+      }
     }
 
     const readoutMm = document.getElementById("readout-mm");
