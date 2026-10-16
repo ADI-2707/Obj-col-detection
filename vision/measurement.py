@@ -169,7 +169,19 @@ class SlabMeasurementEngine:
 
         row_profile = np.mean(thresh, axis=1)
         slab_rows = np.where(row_profile > 30)[0]
-        if len(slab_rows) > 10:
+        if self._prev_top_edges is not None and len(self._prev_top_edges) == col_count:
+            pt = float(np.median(self._prev_top_edges)) - ry
+            pb = float(np.median(self._prev_bottom_edges)) - ry
+            if 0 <= pt < pb <= rh:
+                cand_top = int(pt)
+                cand_bot = int(pb)
+            elif len(slab_rows) > 10:
+                cand_top = int(slab_rows[0])
+                cand_bot = int(slab_rows[-1])
+            else:
+                cand_top = int(rh * 0.33)
+                cand_bot = int(rh * 0.78)
+        elif len(slab_rows) > 10:
             cand_top = int(slab_rows[0])
             cand_bot = int(slab_rows[-1])
         else:
@@ -225,6 +237,15 @@ class SlabMeasurementEngine:
             top_edges = np.convolve(top_padded, np.ones(kernel_size) / kernel_size, mode="valid")
             bottom_edges = np.convolve(bottom_padded, np.ones(kernel_size) / kernel_size, mode="valid")
 
+        total_steps = max(1, col_count // step)
+        detection_ratio = detected_count / total_steps
+        alpha = 0.35 if detection_ratio > 0.4 else 0.15
+        if self._prev_top_edges is not None and len(self._prev_top_edges) == col_count:
+            top_edges = alpha * top_edges + (1.0 - alpha) * self._prev_top_edges
+            bottom_edges = alpha * bottom_edges + (1.0 - alpha) * self._prev_bottom_edges
+        self._prev_top_edges = top_edges.copy()
+        self._prev_bottom_edges = bottom_edges.copy()
+
         thicknesses_px = np.maximum(1.0, bottom_edges - top_edges)
         thicknesses_mm = thicknesses_px * self.calibration
 
@@ -233,8 +254,6 @@ class SlabMeasurementEngine:
         avg_mm = float(np.mean(thicknesses_mm))
         std_dev_mm = float(np.std(thicknesses_mm))
 
-        total_steps = max(1, col_count // step)
-        detection_ratio = detected_count / total_steps
         raw_conf = (detection_ratio * 70.0) + max(0.0, 30.0 - std_dev_mm * 5.0)
         confidence_pct = float(max(0.0, min(100.0, raw_conf)))
 
@@ -248,8 +267,15 @@ class SlabMeasurementEngine:
         col_idx = min(len(top_edges) - 1, max(0, active_x - rx))
         cur_top = float(top_edges[col_idx])
         cur_bot = float(bottom_edges[col_idx])
-        cur_px = float(thicknesses_px[col_idx])
-        cur_mm = float(thicknesses_mm[col_idx])
+
+        if self._prev_cur_top is not None:
+            cur_top = alpha * cur_top + (1.0 - alpha) * self._prev_cur_top
+            cur_bot = alpha * cur_bot + (1.0 - alpha) * self._prev_cur_bot
+        self._prev_cur_top = cur_top
+        self._prev_cur_bot = cur_bot
+
+        cur_px = max(1.0, float(cur_bot - cur_top))
+        cur_mm = float(cur_px * self.calibration)
 
         is_normal = is_valid and (self.lower_limit_mm <= cur_mm <= self.upper_limit_mm)
 
