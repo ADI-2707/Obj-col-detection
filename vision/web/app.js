@@ -1283,7 +1283,9 @@
       ctx.fillText(String(dist), x - 8, h - 6);
     }
 
-    const targetY = padTop + plotH * (1.0 - 174.0 / 300.0);
+    const tgtEl = document.getElementById("target-thick-input");
+    const tgtVal = (tgtEl && parseFloat(tgtEl.value) > 0) ? parseFloat(tgtEl.value) : 78.0;
+    const targetY = padTop + plotH * (1.0 - Math.min(300, tgtVal) / 300.0);
     ctx.strokeStyle = targetStroke;
     ctx.lineWidth = 1.2;
     ctx.beginPath();
@@ -1313,7 +1315,9 @@
       ctx.beginPath();
       for (let i = 0; i < points.length; i++) {
         const x = padLeft + (plotW / (points.length - 1)) * i;
-        const normY = Math.max(0, Math.min(300, points[i])) / 300.0;
+        const rawPt = Number(points[i]);
+        const cleanPt = Number.isFinite(rawPt) ? rawPt : tgtVal;
+        const normY = Math.max(0, Math.min(300, cleanPt)) / 300.0;
         const y = padTop + plotH * (1.0 - normY);
         if (i === 0) ctx.moveTo(x, y);
         else ctx.lineTo(x, y);
@@ -1338,8 +1342,8 @@
     ctx.stroke();
     ctx.setLineDash([]);
 
-    let curThick = (data && data.thickness_mm) ? data.thickness_mm : 174.2;
-    const scrubberY = padTop + plotH * (1.0 - Math.min(300, curThick) / 300.0);
+    let curThick = (data && Number.isFinite(Number(data.thickness_mm))) ? Number(data.thickness_mm) : tgtVal;
+    const scrubberY = padTop + plotH * (1.0 - Math.max(0, Math.min(300, curThick)) / 300.0);
     ctx.fillStyle = scrubberStroke;
     ctx.beginPath();
     ctx.arc(scrubberX, scrubberY, 4, 0, Math.PI * 2);
