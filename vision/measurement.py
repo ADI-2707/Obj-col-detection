@@ -75,6 +75,11 @@ class SlabMeasurementEngine:
         self.threshold_mode = "otsu"
         self.manual_threshold = 128
         self.blur_ksize = 5
+        self._prev_top_edges: np.ndarray | None = None
+        self._prev_bottom_edges: np.ndarray | None = None
+        self._prev_cur_top: float | None = None
+        self._prev_cur_bot: float | None = None
+        self._prev_cur_px: float | None = None
 
     def generate_synthetic_slab_frame(
         self, width: int = 1920, height: int = 1080, frame_number: int = 0
