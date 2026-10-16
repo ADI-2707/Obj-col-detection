@@ -566,12 +566,12 @@ html, body {
 
 .btn-outline-alt {
   background: var(--bg-card-sub);
-  color: var(--text-muted);
+  color: var(--text-main);
   border-color: var(--border-sub);
 }
 
 .btn-outline-alt:hover {
-  color: var(--text-main);
+  color: var(--cyan-accent);
   border-color: var(--border-focus);
 }
 
@@ -601,15 +601,22 @@ html, body {
   font-size: 10px;
   font-weight: 700;
   background: var(--bg-card-sub);
-  color: var(--text-muted);
+  color: var(--text-main);
   border: 1px solid var(--border-sub);
   border-radius: 2px;
   cursor: pointer;
+  transition: all 0.15s ease;
 }
 
 .btn-mini:hover {
-  color: var(--text-main);
+  color: var(--cyan-accent);
   border-color: var(--border-focus);
+}
+
+#btn-roi-del:hover {
+  color: #ff334b !important;
+  border-color: #ff334b;
+  background: rgba(255, 51, 75, 0.12);
 }
 
 .btn-grid-2 {
@@ -1994,10 +2001,23 @@ input:checked + .slider:before {
   line-height: 1;
   cursor: pointer;
   padding: 0 4px;
+  transition: all 0.15s ease;
 }
 
 .scada-modal-close:hover {
-  color: var(--red-alert);
+  color: #ff334b;
+  transform: scale(1.15);
+}
+
+#scada-modal-ok {
+  transition: all 0.15s ease;
+}
+
+#scada-modal-ok:hover {
+  color: #ff334b;
+  border-color: #ff334b;
+  background: rgba(255, 51, 75, 0.15);
+  box-shadow: 0 0 8px rgba(255, 51, 75, 0.3);
 }
 
 .scada-modal-body {
@@ -2241,6 +2261,24 @@ input:checked + .slider:before {
 [data-theme="light"] .scada-modal-footer {
   background: #f8fafc;
   border-top: 1px solid #e2e8f0;
+}
+
+[data-theme="light"] #btn-roi-del:hover {
+  color: #dc2626 !important;
+  border-color: #dc2626;
+  background: rgba(220, 38, 38, 0.1);
+}
+
+[data-theme="light"] .scada-modal-close:hover {
+  color: #dc2626;
+  transform: scale(1.15);
+}
+
+[data-theme="light"] #scada-modal-ok:hover {
+  color: #dc2626;
+  border-color: #dc2626;
+  background: rgba(220, 38, 38, 0.08);
+  box-shadow: 0 1px 4px rgba(220, 38, 38, 0.2);
 }
 
 
