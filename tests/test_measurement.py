@@ -165,4 +165,15 @@ def test_outlier_noise_rejection():
     assert result.max_mm < 350.0
 
 
+def test_two_point_calibration_accuracy():
+    engine = SlabMeasurementEngine(calibration_mm_per_px=0.34757)
+    dist_px = 226.3
+    known_mm = 78.0
+    derived_scale = known_mm / dist_px
+    engine.calibration = derived_scale
+    assert abs(engine.calibration - 0.34467) < 1e-4
+    measured_thickness_mm = dist_px * engine.calibration
+    assert abs(measured_thickness_mm - 78.0) < 1e-4
+
+
 
