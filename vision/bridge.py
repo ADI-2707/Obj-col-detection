@@ -324,8 +324,6 @@ class WebviewApp:
 
         index_path = get_resource_path("vision/web/index.html")
         if not index_path.exists():
-            index_path = get_resource_path("orbix/web/index.html")
-        if not index_path.exists():
             index_path = Path(__file__).parent / "web" / "index.html"
 
         if sys.platform == "win32":
@@ -366,7 +364,7 @@ class WebviewApp:
     def _apply_window_icon(self, *args):
         if sys.platform != "win32":
             return
-        icon_path = str(get_resource_path("assets/Vision_logo.ico")) if get_resource_path("assets/Vision_logo.ico").exists() else str(get_resource_path("assets/orbix_ico_logo.ico"))
+        icon_path = str(get_resource_path("assets/Vision_logo.ico"))
         if not Path(icon_path).exists():
             return
 

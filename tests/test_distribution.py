@@ -41,7 +41,7 @@ def test_package_bat_exists_and_contains_exclusions():
     assert ".venv" in content
     assert ".git" in content
     assert "__pycache__" in content
-    assert "Vision.zip" in content or "Orbix.zip" in content
+    assert "Vision.zip" in content
 
 
 def test_run_bat_exists_and_contains_self_healing_check():
@@ -59,8 +59,6 @@ def test_package_bat_execution_generates_valid_archive(tmp_path):
 
     root = Path(__file__).resolve().parent.parent
     zip_path = root / "Vision.zip"
-    if not zip_path.exists():
-        zip_path = root / "Orbix.zip"
     if zip_path.exists():
         zip_path.unlink()
 
@@ -84,7 +82,7 @@ def test_package_bat_execution_generates_valid_archive(tmp_path):
             assert any(name.endswith("requirements.txt") for name in namelist)
             assert any(name.endswith("run.bat") for name in namelist)
             assert any(name.endswith("package.bat") for name in namelist)
-            assert any(name.endswith("vision/__main__.py") or name.endswith("vision\\__main__.py") or name.endswith("orbix/__main__.py") for name in namelist)
+            assert any(name.endswith("vision/__main__.py") or name.endswith("vision\\__main__.py") for name in namelist)
             assert not any(".venv" in name for name in namelist)
             assert not any(".git/" in name or ".git\\" in name for name in namelist)
             assert not any("__pycache__" in name for name in namelist)
@@ -93,11 +91,9 @@ def test_package_bat_execution_generates_valid_archive(tmp_path):
             zip_path.unlink()
 
 
-def test_installer_iss_version_matches_orbix_version():
+def test_installer_iss_version_matches_vision_version():
     root = Path(__file__).resolve().parent.parent
     iss_file = root / "installer" / "VisionSetup.iss"
-    if not iss_file.exists():
-        iss_file = root / "installer" / "OrbixSetup.iss"
     assert iss_file.exists()
     content = iss_file.read_text(encoding="utf-8")
     import vision
@@ -109,12 +105,10 @@ def test_installer_iss_version_matches_orbix_version():
 def test_packaging_spec_configuration():
     root = Path(__file__).resolve().parent.parent
     spec_file = root / "packaging" / "vision.spec"
-    if not spec_file.exists():
-        spec_file = root / "packaging" / "orbix.spec"
     assert spec_file.exists()
     content = spec_file.read_text(encoding="utf-8")
     assert "yolov8n.pt" in content
-    assert "vision.ico" in content or "orbix.ico" in content
+    assert "vision.ico" in content
     assert "app_manifest.xml" in content
     assert "ultralytics" in content
 

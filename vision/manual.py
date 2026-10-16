@@ -71,8 +71,6 @@ def generate_features_manual_pdf(output_path: Path | None = None) -> Path:
 
     logo_path = get_resource_path("vision/web/systrol_logo.png")
     if not logo_path.exists():
-        logo_path = get_resource_path("orbix/web/systrol_logo.png")
-    if not logo_path.exists():
         logo_path = Path(__file__).parent / "web" / "systrol_logo.png"
 
     doc = SimpleDocTemplate(

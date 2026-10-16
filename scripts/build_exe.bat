@@ -19,17 +19,13 @@ if errorlevel 1 (
 )
 
 echo [INFO] Building standalone executable bundle via PyInstaller...
-if exist "packaging\vision.spec" (
-    ".venv\Scripts\python.exe" -m PyInstaller packaging\vision.spec --noconfirm --clean
-) else (
-    ".venv\Scripts\python.exe" -m PyInstaller packaging\orbix.spec --noconfirm --clean
-)
+".venv\Scripts\python.exe" -m PyInstaller packaging\vision.spec --noconfirm --clean
 if errorlevel 1 (
     echo [ERROR] PyInstaller build failed.
     exit /b 1
 )
 
-if not exist "dist\Vision\Vision.exe" if not exist "dist\Orbix\Orbix.exe" (
+if not exist "dist\Vision\Vision.exe" (
     echo [ERROR] Application executable was not created in dist\.
     exit /b 1
 )

@@ -31,7 +31,7 @@
   }
 
   function initThemeSystem() {
-    const savedTheme = localStorage.getItem("vision_theme") || localStorage.getItem("orbix_theme") || "dark";
+    const savedTheme = localStorage.getItem("vision_theme") || "dark";
     applyTheme(savedTheme);
 
     const toggleChk = document.getElementById("theme-toggle-chk");

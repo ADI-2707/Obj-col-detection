@@ -46,11 +46,7 @@ if not defined ISCC_EXE (
 )
 
 echo [INFO] Compiling installer with Inno Setup...
-if exist "installer\VisionSetup.iss" (
-    "%ISCC_EXE%" installer\VisionSetup.iss
-) else (
-    "%ISCC_EXE%" installer\OrbixSetup.iss
-)
+"%ISCC_EXE%" installer\VisionSetup.iss
 if errorlevel 1 (
     echo [ERROR] Installer compilation failed.
     exit /b 1

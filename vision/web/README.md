@@ -44,8 +44,7 @@ vision/web/
 ├── vision_mark.png       # Square application favicon and header badge
 ├── systrol_logo.png      # Systrol corporate engineering watermark
 ├── systrol_transparent.png # High-resolution transparent corporate branding watermark
-├── systrol_ico_logo.png  # Systrol taskbar icon asset
-└── orbix_logo.png        # Legacy product logo asset
+└── systrol_ico_logo.png  # Systrol taskbar icon asset
 ```
 
 ---

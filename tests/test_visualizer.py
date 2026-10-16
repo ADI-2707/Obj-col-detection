@@ -276,9 +276,9 @@ class TestVisualizerLogos:
     def test_logos_loaded(self):
         vis = Visualizer()
         assert vis._systrol_logo is not None
-        assert vis._orbix_logo is not None
+        assert vis._vision_logo is not None
         assert vis._systrol_logo.shape[2] == 4
-        assert vis._orbix_logo.shape[2] == 4
+        assert vis._vision_logo.shape[2] == 4
 
     def test_overlay_icon_bounds(self):
         vis = Visualizer()
