@@ -80,6 +80,7 @@ class SlabMeasurementEngine:
         self._prev_cur_top: float | None = None
         self._prev_cur_bot: float | None = None
         self._prev_cur_px: float | None = None
+        self._prev_conf: float = 0.0
 
     def reset_state(self):
         self._prev_top_edges = None
@@ -87,6 +88,7 @@ class SlabMeasurementEngine:
         self._prev_cur_top = None
         self._prev_cur_bot = None
         self._prev_cur_px = None
+        self._prev_conf = 0.0
 
     def generate_synthetic_slab_frame(
         self, width: int = 1920, height: int = 1080, frame_number: int = 0
@@ -183,19 +185,24 @@ class SlabMeasurementEngine:
         for i in range(1, num_labels):
             h_stat = int(stats[i, cv2.CC_STAT_HEIGHT])
             top_stat = int(stats[i, cv2.CC_STAT_TOP])
-            if h_stat > best_h and h_stat > 15:
+            if h_stat > best_h and 20 <= h_stat <= int(rh * 0.75):
                 best_h = h_stat
                 cand_top = top_stat
                 cand_bot = top_stat + h_stat
 
-        if self._prev_top_edges is not None and len(self._prev_top_edges) == col_count:
+        has_prev = (
+            self._prev_top_edges is not None
+            and len(self._prev_top_edges) == col_count
+            and self._prev_conf >= 40.0
+        )
+        if has_prev:
             pt = float(np.median(self._prev_top_edges)) - ry
             pb = float(np.median(self._prev_bottom_edges)) - ry
             if 0 <= pt < pb <= rh and (pb - pt) > rh * 0.15:
-                if best_h > 20 and abs(cand_top - pt) < 50:
+                if best_h > 20 and abs(cand_top - pt) < 60:
                     cand_top = int(0.3 * cand_top + 0.7 * pt)
                     cand_bot = int(0.3 * cand_bot + 0.7 * pb)
-                else:
+                elif best_h <= 20:
                     cand_top = int(pt)
                     cand_bot = int(pb)
 
@@ -277,6 +284,7 @@ class SlabMeasurementEngine:
         else:
             raw_conf = (detection_ratio * 70.0) + max(0.0, 30.0 - std_dev_mm * 5.0)
             confidence_pct = float(max(0.0, min(100.0, raw_conf)))
+        self._prev_conf = confidence_pct
 
         is_valid = contrast_ok and confidence_pct >= 40.0 and avg_mm > 20.0
 
