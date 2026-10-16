@@ -152,8 +152,12 @@ class BridgeAPI:
 
     def set_threshold_mode(self, mode: str, manual_val: int = 128) -> dict:
         self.engine.threshold_mode = str(mode).lower()
-        self.engine.manual_threshold = int(manual_val)
+        self.engine.manual_threshold = max(1, min(254, int(manual_val)))
         return {"status": "ok", "threshold_mode": self.engine.threshold_mode}
+
+    def set_manual_threshold(self, value: int) -> dict:
+        self.engine.manual_threshold = max(1, min(254, int(value)))
+        return {"status": "ok", "manual_threshold": self.engine.manual_threshold}
 
     def set_blur(self, ksize: int) -> dict:
         self.engine.blur_ksize = max(1, int(ksize))

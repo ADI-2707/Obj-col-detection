@@ -862,6 +862,16 @@
   function initDetectionControls() {
     const selColor = document.getElementById("select-colour-space");
     const selThresh = document.getElementById("select-thresh-mode");
+    const threshContainer = document.getElementById("manual-thresh-container");
+    const threshSlider = document.getElementById("input-manual-thresh");
+    const threshValBadge = document.getElementById("manual-thresh-val");
+
+    function updateThreshVisibility() {
+      const isManual = selThresh && selThresh.value === "manual";
+      if (threshContainer) {
+        threshContainer.style.display = isManual ? "flex" : "none";
+      }
+    }
 
     if (selColor) {
       selColor.addEventListener("change", (e) => {
@@ -873,8 +883,26 @@
 
     if (selThresh) {
       selThresh.addEventListener("change", (e) => {
+        updateThreshVisibility();
+        const currentVal = threshSlider ? parseInt(threshSlider.value, 10) : 128;
         if (window.pywebview && window.pywebview.api && window.pywebview.api.set_threshold_mode) {
-          window.pywebview.api.set_threshold_mode(e.target.value);
+          window.pywebview.api.set_threshold_mode(e.target.value, currentVal);
+        }
+      });
+      updateThreshVisibility();
+    }
+
+    if (threshSlider) {
+      threshSlider.addEventListener("input", (e) => {
+        const val = parseInt(e.target.value, 10);
+        if (threshValBadge) threshValBadge.textContent = String(val);
+        if (window.pywebview && window.pywebview.api) {
+          if (window.pywebview.api.set_threshold_mode) {
+            window.pywebview.api.set_threshold_mode("manual", val);
+          }
+          if (window.pywebview.api.set_manual_threshold) {
+            window.pywebview.api.set_manual_threshold(val);
+          }
         }
       });
     }
