@@ -200,27 +200,34 @@ class SlabMeasurementEngine:
         w_bot_min = max(0, cand_bot - 45)
         w_bot_max = min(rh - 1, cand_bot + 45)
 
+        contrast_ok = bool(np.ptp(blurred) >= 20)
         detected_count = 0
         detected_mask = np.zeros(col_count, dtype=bool)
         step = max(1, col_count // 320)
-        for c in range(0, col_count, step):
-            col_grad = sobel_y[:, c]
-            if w_top_max > w_top_min and w_bot_max > w_bot_min:
-                top_sub = int(np.argmax(col_grad[w_top_min:w_top_max]))
-                bot_sub = int(np.argmin(col_grad[w_bot_min:w_bot_max]))
-                cur_top_idx = w_top_min + top_sub
-                cur_bot_idx = w_bot_min + bot_sub
-            else:
-                cur_bot_idx = int(np.argmin(col_grad))
-                cur_top_idx = int(np.argmax(col_grad))
+        if contrast_ok:
+            for c in range(0, col_count, step):
+                col_grad = sobel_y[:, c]
+                if w_top_max > w_top_min and w_bot_max > w_bot_min:
+                    top_sub = int(np.argmax(col_grad[w_top_min:w_top_max]))
+                    bot_sub = int(np.argmin(col_grad[w_bot_min:w_bot_max]))
+                    cur_top_idx = w_top_min + top_sub
+                    cur_bot_idx = w_bot_min + bot_sub
+                else:
+                    cur_bot_idx = int(np.argmin(col_grad))
+                    cur_top_idx = int(np.argmax(col_grad))
 
-            if cur_top_idx < cur_bot_idx and (cur_bot_idx - cur_top_idx) > rh * 0.15:
-                ref_top = _subpixel_peak(col_grad, cur_top_idx)
-                ref_bot = _subpixel_peak(-col_grad, cur_bot_idx)
-                top_edges[c : c + step] = ry + ref_top
-                bottom_edges[c : c + step] = ry + ref_bot
-                detected_mask[c : c + step] = True
-                detected_count += 1
+                if (
+                    cur_top_idx < cur_bot_idx
+                    and (cur_bot_idx - cur_top_idx) > rh * 0.15
+                    and col_grad[cur_top_idx] > 10.0
+                    and col_grad[cur_bot_idx] < -10.0
+                ):
+                    ref_top = _subpixel_peak(col_grad, cur_top_idx)
+                    ref_bot = _subpixel_peak(-col_grad, cur_bot_idx)
+                    top_edges[c : c + step] = ry + ref_top
+                    bottom_edges[c : c + step] = ry + ref_bot
+                    detected_mask[c : c + step] = True
+                    detected_count += 1
 
         if detected_count > 0:
             if not np.all(detected_mask):
@@ -245,7 +252,7 @@ class SlabMeasurementEngine:
             bottom_edges = np.convolve(bottom_padded, np.ones(kernel_size) / kernel_size, mode="valid")
 
         total_steps = max(1, col_count // step)
-        detection_ratio = detected_count / total_steps
+        detection_ratio = (detected_count / total_steps) if contrast_ok else 0.0
         alpha = 0.35 if detection_ratio > 0.4 else 0.15
         if self._prev_top_edges is not None and len(self._prev_top_edges) == col_count:
             top_edges = alpha * top_edges + (1.0 - alpha) * self._prev_top_edges
@@ -261,10 +268,13 @@ class SlabMeasurementEngine:
         avg_mm = float(np.mean(thicknesses_mm))
         std_dev_mm = float(np.std(thicknesses_mm))
 
-        raw_conf = (detection_ratio * 70.0) + max(0.0, 30.0 - std_dev_mm * 5.0)
-        confidence_pct = float(max(0.0, min(100.0, raw_conf)))
+        if not contrast_ok or detected_count == 0:
+            confidence_pct = 0.0
+        else:
+            raw_conf = (detection_ratio * 70.0) + max(0.0, 30.0 - std_dev_mm * 5.0)
+            confidence_pct = float(max(0.0, min(100.0, raw_conf)))
 
-        is_valid = confidence_pct >= 40.0 and avg_mm > 20.0
+        is_valid = contrast_ok and confidence_pct >= 40.0 and avg_mm > 20.0
 
         if cursor_x is None or cursor_x < rx or cursor_x >= rx + rw:
             active_x = rx + rw // 2
