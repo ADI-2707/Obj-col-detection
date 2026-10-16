@@ -31,7 +31,11 @@
   }
 
   function initThemeSystem() {
-    const savedTheme = localStorage.getItem("vision_theme") || "dark";
+    if (!localStorage.getItem("vision_default_light_v1")) {
+      localStorage.setItem("vision_theme", "light");
+      localStorage.setItem("vision_default_light_v1", "1");
+    }
+    const savedTheme = localStorage.getItem("vision_theme") || "light";
     applyTheme(savedTheme);
 
     const toggleChk = document.getElementById("theme-toggle-chk");

@@ -346,7 +346,7 @@ class WebviewApp:
             min_size=(1024, 680),
             resizable=True,
             fullscreen=False,
-            background_color="#000000",
+            background_color="#f1f5f9",
         )
         self.api._window = self._window
         self._window.events.shown += self._apply_window_icon
