@@ -175,25 +175,29 @@ class SlabMeasurementEngine:
         sobel_y = cv2.Sobel(blurred, cv2.CV_32F, 0, 1, ksize=3)
 
         row_profile = np.mean(thresh, axis=1)
-        slab_rows = np.where(row_profile > 30)[0]
+        binary_rows = (row_profile > 80).astype(np.uint8).reshape(-1, 1)
+        num_labels, labels, stats, centroids = cv2.connectedComponentsWithStats(binary_rows)
+        best_h = 0
+        cand_top = int(rh * 0.33)
+        cand_bot = int(rh * 0.78)
+        for i in range(1, num_labels):
+            h_stat = int(stats[i, cv2.CC_STAT_HEIGHT])
+            top_stat = int(stats[i, cv2.CC_STAT_TOP])
+            if h_stat > best_h and h_stat > 15:
+                best_h = h_stat
+                cand_top = top_stat
+                cand_bot = top_stat + h_stat
+
         if self._prev_top_edges is not None and len(self._prev_top_edges) == col_count:
             pt = float(np.median(self._prev_top_edges)) - ry
             pb = float(np.median(self._prev_bottom_edges)) - ry
-            if 0 <= pt < pb <= rh:
-                cand_top = int(pt)
-                cand_bot = int(pb)
-            elif len(slab_rows) > 10:
-                cand_top = int(slab_rows[0])
-                cand_bot = int(slab_rows[-1])
-            else:
-                cand_top = int(rh * 0.33)
-                cand_bot = int(rh * 0.78)
-        elif len(slab_rows) > 10:
-            cand_top = int(slab_rows[0])
-            cand_bot = int(slab_rows[-1])
-        else:
-            cand_top = int(rh * 0.33)
-            cand_bot = int(rh * 0.78)
+            if 0 <= pt < pb <= rh and (pb - pt) > rh * 0.15:
+                if best_h > 20 and abs(cand_top - pt) < 50:
+                    cand_top = int(0.3 * cand_top + 0.7 * pt)
+                    cand_bot = int(0.3 * cand_bot + 0.7 * pb)
+                else:
+                    cand_top = int(pt)
+                    cand_bot = int(pb)
 
         w_top_min = max(0, cand_top - 45)
         w_top_max = min(rh - 1, cand_top + 45)
