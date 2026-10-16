@@ -54,6 +54,15 @@ def _subpixel_peak(grad: np.ndarray, idx: int) -> float:
     return float(idx + delta)
 
 
+def _median_filter_1d(arr: np.ndarray, size: int = 7) -> np.ndarray:
+    if len(arr) < size:
+        return arr
+    pad = size // 2
+    padded = np.pad(arr, pad, mode="edge")
+    windows = np.lib.stride_tricks.sliding_window_view(padded, size)
+    return np.median(windows, axis=1).astype(arr.dtype)
+
+
 class SlabMeasurementEngine:
     DEFAULT_CALIBRATION: float = 0.34757
 
@@ -198,6 +207,10 @@ class SlabMeasurementEngine:
         else:
             top_edges = np.full(col_count, ry + cand_top, dtype=np.float32)
             bottom_edges = np.full(col_count, ry + cand_bot, dtype=np.float32)
+
+        if len(top_edges) >= 7:
+            top_edges = _median_filter_1d(top_edges, 7)
+            bottom_edges = _median_filter_1d(bottom_edges, 7)
 
         kernel_size = 9
         if len(top_edges) >= kernel_size:
