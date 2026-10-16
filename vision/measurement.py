@@ -68,7 +68,7 @@ class SlabMeasurementEngine:
 
     def __init__(self, calibration_mm_per_px: float = DEFAULT_CALIBRATION):
         self.calibration = calibration_mm_per_px
-        self.target_thickness_mm = 174.0
+        self.target_thickness_mm = 78.0
         self.lower_limit_mm = 10.0
         self.upper_limit_mm = 300.0
         self.colour_space = "grayscale"
