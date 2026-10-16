@@ -138,16 +138,36 @@ class SlabMeasurementEngine:
 
         sobel_y = cv2.Sobel(blurred, cv2.CV_32F, 0, 1, ksize=3)
 
+        row_profile = np.mean(thresh, axis=1)
+        slab_rows = np.where(row_profile > 30)[0]
+        if len(slab_rows) > 10:
+            cand_top = int(slab_rows[0])
+            cand_bot = int(slab_rows[-1])
+        else:
+            cand_top = int(rh * 0.33)
+            cand_bot = int(rh * 0.78)
+
+        w_top_min = max(0, cand_top - 45)
+        w_top_max = min(rh - 1, cand_top + 45)
+        w_bot_min = max(0, cand_bot - 45)
+        w_bot_max = min(rh - 1, cand_bot + 45)
+
         detected_count = 0
         step = max(1, col_count // 320)
         for c in range(0, col_count, step):
             col_grad = sobel_y[:, c]
-            min_idx = int(np.argmin(col_grad))
-            max_idx = int(np.argmax(col_grad))
+            if w_top_max > w_top_min and w_bot_max > w_bot_min:
+                top_sub = int(np.argmax(col_grad[w_top_min:w_top_max]))
+                bot_sub = int(np.argmin(col_grad[w_bot_min:w_bot_max]))
+                cur_top_idx = w_top_min + top_sub
+                cur_bot_idx = w_bot_min + bot_sub
+            else:
+                cur_bot_idx = int(np.argmin(col_grad))
+                cur_top_idx = int(np.argmax(col_grad))
 
-            if max_idx < min_idx and (min_idx - max_idx) > rh * 0.15:
-                top_edges[c : c + step] = ry + max_idx
-                bottom_edges[c : c + step] = ry + min_idx
+            if cur_top_idx < cur_bot_idx and (cur_bot_idx - cur_top_idx) > rh * 0.15:
+                top_edges[c : c + step] = ry + cur_top_idx
+                bottom_edges[c : c + step] = ry + cur_bot_idx
                 detected_count += 1
             else:
                 col_thresh = thresh[:, c]
