@@ -411,6 +411,7 @@
   function showAboutModal() {
     showScadaModal("ABOUT \u2014 VISION", `
       <h4>VISION &mdash; SMART MATERIAL MANAGEMENT SYSTEM</h4>
+      <p><strong>Author &amp; Systems Engineer:</strong> Aditya Singh</p>
       <p><strong>Version:</strong> ${currentAppVersion} Production Build</p>
       <p><strong>Architecture:</strong> Hybrid Python 3.14 Vision Core + Accelerated Webview SCADA</p>
       <p><strong>Mill Subsystem:</strong> Continuous Casting / Roughing Mill In-line Gauging</p>
