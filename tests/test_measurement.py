@@ -232,4 +232,16 @@ def test_measurement_heavy_scale_occlusion():
     assert result.max_mm < 350.0
 
 
+def test_measurement_empty_to_slab_transition():
+    engine = SlabMeasurementEngine()
+    empty_frame = np.zeros((720, 1280, 3), dtype=np.uint8)
+    for _ in range(5):
+        res_empty = engine.measure(empty_frame)
+    assert res_empty.is_valid is False
+    assert res_empty.confidence_pct == 0.0
 
+    slab_frame = engine.generate_synthetic_slab_frame(width=1280, height=720, frame_number=1)
+    res_slab = engine.measure(slab_frame)
+    assert res_slab.is_valid is True
+    assert res_slab.confidence_pct >= 50.0
+    assert 50.0 <= res_slab.thickness_mm <= 150.0
