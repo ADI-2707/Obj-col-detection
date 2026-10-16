@@ -792,6 +792,8 @@ html, body {
   height: 100%;
   pointer-events: none;
   z-index: 5;
+  will-change: transform;
+  transform: translateZ(0);
 }
 
 .video-hud-overlay {
