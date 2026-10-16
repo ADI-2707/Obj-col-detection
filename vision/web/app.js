@@ -1161,8 +1161,8 @@
     const dotTop = getOrCreateSvg(svg, "circle", "svg-dot-top", { r: "4.5", fill: "#00e5ff", stroke: "#000000", "stroke-width": "1.5" });
     const dotBot = getOrCreateSvg(svg, "circle", "svg-dot-bot", { r: "4.5", fill: "#00e5ff", stroke: "#000000", "stroke-width": "1.5" });
 
-    const edgesDisp = showEdges ? "inline" : "none";
-    [edgeTop, edgeBot, guideV, caliperV, dotTop, dotBot].forEach(el => el.setAttribute("display", edgesDisp));
+    const edgeGraphic = showEdges ? "inline" : "none";
+    [edgeTop, edgeBot, guideV, caliperV, dotTop, dotBot].forEach(el => el.setAttribute("display", edgeGraphic));
 
     edgeTop.setAttribute("x1", rx); edgeTop.setAttribute("y1", topY);
     edgeTop.setAttribute("x2", rx + rw); edgeTop.setAttribute("y2", topY);
