@@ -154,6 +154,8 @@ class BridgeAPI:
         val = float(mm_per_px)
         if val > 0:
             self.engine.calibration = val
+            if self._app is not None and hasattr(self._app, "_engine") and self._app._engine is not None:
+                self._app._engine.calibration = val
             return {"status": "ok", "calibration": self.engine.calibration}
         return {"status": "error", "message": "Invalid scale"}
 
